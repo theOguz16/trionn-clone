@@ -11,7 +11,7 @@ class AudioManager {
 
   private analyser: AnalyserNode | null = null;
 
-  private frequencyData: Uint8Array | null = null;
+  private frequencyData: Uint8Array<ArrayBuffer> | null = null;
 
   private chargeOscillator: OscillatorNode | null = null;
 
@@ -27,7 +27,8 @@ class AudioManager {
       return this.context;
     }
 
-    const context = new AudioContext();
+    const context =
+      new AudioContext();
 
     const masterGain =
       context.createGain();
@@ -36,21 +37,37 @@ class AudioManager {
       context.createAnalyser();
 
     masterGain.gain.value =
-      this.muted ? 0 : 0.65;
+      this.muted
+        ? 0
+        : 0.65;
 
     analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.8;
 
-    masterGain.connect(analyser);
-    analyser.connect(context.destination);
+    analyser.smoothingTimeConstant =
+      0.8;
 
-    this.context = context;
-    this.masterGain = masterGain;
-    this.analyser = analyser;
+    masterGain.connect(
+      analyser,
+    );
+
+    analyser.connect(
+      context.destination,
+    );
+
+    this.context =
+      context;
+
+    this.masterGain =
+      masterGain;
+
+    this.analyser =
+      analyser;
 
     this.frequencyData =
       new Uint8Array(
-        analyser.frequencyBinCount,
+        new ArrayBuffer(
+          analyser.frequencyBinCount,
+        ),
       );
 
     return context;
@@ -60,16 +77,18 @@ class AudioManager {
     const context =
       this.ensureContext();
 
-    if (context.state === "suspended") {
+    if (
+      context.state ===
+      "suspended"
+    ) {
       await context.resume();
     }
 
-    return context.state === "running";
+    return (
+      context.state ===
+      "running"
+    );
   }
-
-  // -------------------------
-  // CHARGE
-  // -------------------------
 
   async startCharge() {
     const running =
@@ -84,7 +103,8 @@ class AudioManager {
       return;
     }
 
-    const context = this.context;
+    const context =
+      this.context;
 
     const oscillator =
       context.createOscillator();
@@ -95,7 +115,8 @@ class AudioManager {
     const now =
       context.currentTime;
 
-    oscillator.type = "sawtooth";
+    oscillator.type =
+      "sawtooth";
 
     oscillator.frequency.setValueAtTime(
       85,
@@ -112,10 +133,17 @@ class AudioManager {
       now + 0.03,
     );
 
-    oscillator.connect(gain);
-    gain.connect(this.masterGain);
+    oscillator.connect(
+      gain,
+    );
 
-    oscillator.start(now);
+    gain.connect(
+      this.masterGain,
+    );
+
+    oscillator.start(
+      now,
+    );
 
     this.chargeOscillator =
       oscillator;
@@ -138,30 +166,31 @@ class AudioManager {
     const normalized =
       Math.max(
         0,
-        Math.min(progress, 1),
+        Math.min(
+          progress,
+          1,
+        ),
       );
 
     const now =
       this.context.currentTime;
 
-    const frequency =
-      85 +
-      normalized * 260;
-
-    const volume =
-      0.02 +
-      normalized * 0.065;
-
-    this.chargeOscillator.frequency
+    this.chargeOscillator
+      .frequency
       .setTargetAtTime(
-        frequency,
+        85 +
+          normalized *
+            260,
         now,
         0.02,
       );
 
-    this.chargeGain.gain
+    this.chargeGain
+      .gain
       .setTargetAtTime(
-        volume,
+        0.02 +
+          normalized *
+            0.065,
         now,
         0.02,
       );
@@ -185,8 +214,11 @@ class AudioManager {
     const gain =
       this.chargeGain;
 
-    this.chargeOscillator = null;
-    this.chargeGain = null;
+    this.chargeOscillator =
+      null;
+
+    this.chargeGain =
+      null;
 
     const now =
       context.currentTime;
@@ -205,21 +237,19 @@ class AudioManager {
       now + 0.15,
     );
 
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      gain.disconnect();
-    };
+    oscillator.onended =
+      () => {
+        oscillator.disconnect();
+        gain.disconnect();
+      };
   }
-
-  // -------------------------
-  // BLAST
-  // -------------------------
 
   playBlast() {
     if (
       !this.context ||
       !this.masterGain ||
-      this.context.state !== "running"
+      this.context.state !==
+        "running"
     ) {
       return;
     }
@@ -236,61 +266,68 @@ class AudioManager {
     const now =
       context.currentTime;
 
-    oscillator.type = "sawtooth";
+    oscillator.type =
+      "sawtooth";
 
     oscillator.frequency.setValueAtTime(
       130,
       now,
     );
 
-    oscillator.frequency
-      .exponentialRampToValueAtTime(
-        42,
-        now + 0.35,
-      );
+    oscillator.frequency.exponentialRampToValueAtTime(
+      42,
+      now + 0.35,
+    );
 
     gain.gain.setValueAtTime(
       0.32,
       now,
     );
 
-    gain.gain
-      .exponentialRampToValueAtTime(
-        0.0001,
-        now + 0.4,
-      );
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + 0.4,
+    );
 
-    oscillator.connect(gain);
-    gain.connect(this.masterGain);
+    oscillator.connect(
+      gain,
+    );
 
-    oscillator.start(now);
+    gain.connect(
+      this.masterGain,
+    );
+
+    oscillator.start(
+      now,
+    );
 
     oscillator.stop(
       now + 0.42,
     );
 
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      gain.disconnect();
-    };
+    oscillator.onended =
+      () => {
+        oscillator.disconnect();
+        gain.disconnect();
+      };
   }
-
-  // -------------------------
-  // NORMAL PLUCK
-  // -------------------------
 
   pluck({
     frequency,
     strength = 0.35,
     duration = 0.45,
   }: PluckOptions) {
-    const context = this.context;
-    const masterGain = this.masterGain;
+    const context =
+      this.context;
+
+    const masterGain =
+      this.masterGain;
 
     if (
       !context ||
       !masterGain ||
-      context.state !== "running"
+      context.state !==
+        "running"
     ) {
       return;
     }
@@ -304,17 +341,22 @@ class AudioManager {
     const now =
       context.currentTime;
 
-    oscillator.type = "sine";
+    oscillator.type =
+      "sine";
 
     oscillator.frequency.setValueAtTime(
       frequency,
       now,
     );
 
-    const volume = Math.max(
-      0.0001,
-      Math.min(strength, 1),
-    );
+    const volume =
+      Math.max(
+        0.0001,
+        Math.min(
+          strength,
+          1,
+        ),
+      );
 
     envelope.gain.setValueAtTime(
       0.0001,
@@ -331,29 +373,36 @@ class AudioManager {
       now + duration,
     );
 
-    oscillator.connect(envelope);
-    envelope.connect(masterGain);
-
-    oscillator.start(now);
-
-    oscillator.stop(
-      now + duration + 0.02,
+    oscillator.connect(
+      envelope,
     );
 
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      envelope.disconnect();
-    };
-  }
+    envelope.connect(
+      masterGain,
+    );
 
-  // -------------------------
-  // MASTER
-  // -------------------------
+    oscillator.start(
+      now,
+    );
+
+    oscillator.stop(
+      now +
+        duration +
+        0.02,
+    );
+
+    oscillator.onended =
+      () => {
+        oscillator.disconnect();
+        envelope.disconnect();
+      };
+  }
 
   setMuted(
     muted: boolean,
   ) {
-    this.muted = muted;
+    this.muted =
+      muted;
 
     if (
       !this.context ||
@@ -365,22 +414,22 @@ class AudioManager {
     const now =
       this.context.currentTime;
 
-    this.masterGain.gain
+    this.masterGain
+      .gain
       .cancelScheduledValues(
         now,
       );
 
-    this.masterGain.gain
+    this.masterGain
+      .gain
       .setTargetAtTime(
-        muted ? 0 : 0.65,
+        muted
+          ? 0
+          : 0.65,
         now,
         0.02,
       );
   }
-
-  // -------------------------
-  // ANALYSER
-  // -------------------------
 
   getEnergy() {
     if (
@@ -403,12 +452,15 @@ class AudioManager {
       index += 1
     ) {
       total +=
-        this.frequencyData[index];
+        this.frequencyData[
+          index
+        ];
     }
 
     return (
       total /
-      this.frequencyData.length /
+      this.frequencyData
+        .length /
       255
     );
   }
@@ -434,15 +486,23 @@ class AudioManager {
 
     if (
       this.context &&
-      this.context.state !== "closed"
+      this.context.state !==
+        "closed"
     ) {
       await this.context.close();
     }
 
-    this.context = null;
-    this.masterGain = null;
-    this.analyser = null;
-    this.frequencyData = null;
+    this.context =
+      null;
+
+    this.masterGain =
+      null;
+
+    this.analyser =
+      null;
+
+    this.frequencyData =
+      null;
   }
 }
 
