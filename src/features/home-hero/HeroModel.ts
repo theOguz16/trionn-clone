@@ -4,55 +4,123 @@ import {
   GLTFLoader,
 } from "three/addons/loaders/GLTFLoader.js";
 
+import {
+  createHeroSurfaceMaterial,
+  type HeroSurfaceController,
+} from "./HeroSurfaceMaterial";
+
 type HeroMeshState = {
-  position:
+  mesh: THREE.Mesh;
+
+  basePosition:
     THREE.Vector3;
 
-  rotation:
-    THREE.Euler;
+  baseQuaternion:
+    THREE.Quaternion;
 
-  scale:
+  scrollDir:
     THREE.Vector3;
 
-  explodeDirection:
+  blastDir:
     THREE.Vector3;
 
   spinAxis:
     THREE.Vector3;
 
-  spinSpeed:
-    number;
+  spinSpeed: number;
 
-  delay:
-    number;
+  delay: number;
 
-  phase:
-    number;
+  scrollScale: number;
 
-  flash:
-    number;
+  phase: number;
+
+  flash: number;
+
+  surfaces:
+    HeroSurfaceController[];
 };
 
-type MaterialState = {
-  roughness?:
-    number;
+function seeded01(
+  index: number,
+  salt: number,
+) {
+  const value =
+    Math.sin(
+      (
+        index +
+        1
+      ) *
+        12.9898 +
+        salt *
+          78.233,
+    ) *
+    43758.5453;
 
-  emissiveIntensity?:
-    number;
+  return (
+    value -
+    Math.floor(
+      value,
+    )
+  );
+}
 
-  clearcoatRoughness?:
-    number;
+function createSeededDirection(
+  index: number,
+) {
+  const direction =
+    new THREE.Vector3(
+      seeded01(
+        index,
+        3,
+      ) *
+        2 -
+        1,
 
-  transmission?:
-    number;
-};
+      seeded01(
+        index,
+        7,
+      ) *
+        2 -
+        1,
+
+      seeded01(
+        index,
+        11,
+      ) *
+        2 -
+        1,
+    );
+
+  if (
+    direction.lengthSq() <
+    0.001
+  ) {
+    direction.set(
+      1,
+      0,
+      0,
+    );
+  }
+
+  return direction.normalize();
+}
 
 export class HeroModel {
   readonly root =
     new THREE.Group();
 
-  readonly meshes:
+  meshes:
     THREE.Mesh[] = [];
+
+  private readonly states:
+    HeroMeshState[] = [];
+
+  private readonly stateByMesh =
+    new WeakMap<
+      THREE.Mesh,
+      HeroMeshState
+    >();
 
   private readonly geometries =
     new Set<
@@ -64,20 +132,25 @@ export class HeroModel {
       THREE.Material
     >();
 
-  private readonly meshStates =
-    new WeakMap<
-      THREE.Mesh,
-      HeroMeshState
-    >();
+  private guideAnchorsLocal = [
+    new THREE.Vector3(
+      -0.7,
+      -0.2,
+      0.1,
+    ),
 
-  private readonly materialStates =
-    new WeakMap<
-      THREE.Material,
-      MaterialState
-    >();
+    new THREE.Vector3(
+      0.7,
+      0.18,
+      0.1,
+    ),
 
-  private destroyed =
-    false;
+    new THREE.Vector3(
+      0,
+      -0.75,
+      0.1,
+    ),
+  ];
 
   async load(
     url: string,
@@ -86,305 +159,516 @@ export class HeroModel {
       new GLTFLoader();
 
     const gltf =
-      await loader
-        .loadAsync(
-          url,
-        );
+      await loader.loadAsync(
+        url,
+      );
 
-    if (
-      this.destroyed
-    ) {
-      return;
-    }
+    this.destroy();
 
-    const model =
+    const sourceRoot =
       gltf.scene;
 
-    // -------------------------
-    // NORMALIZE
-    // -------------------------
+    sourceRoot.updateMatrixWorld(
+      true,
+    );
 
-    const bounds =
+    const initialBox =
       new THREE.Box3()
         .setFromObject(
-          model,
+          sourceRoot,
         );
 
-    const size =
-      bounds.getSize(
+    const initialSize =
+      initialBox.getSize(
         new THREE.Vector3(),
       );
 
-    const center =
-      bounds.getCenter(
+    const initialCenter =
+      initialBox.getCenter(
         new THREE.Vector3(),
       );
-
-    model.position.sub(
-      center,
-    );
 
     const largestAxis =
       Math.max(
-        size.x,
-        size.y,
-        size.z,
+        initialSize.x,
+        initialSize.y,
+        initialSize.z,
+        0.0001,
       );
 
-    if (
-      largestAxis > 0
-    ) {
-      model.scale
-        .multiplyScalar(
-          2.7 /
-            largestAxis,
-        );
-    }
+    /*
+     * Normalise the temporary GLB
+     * before flattening its meshes.
+     */
+    const normalisedScale =
+      3.42 /
+      largestAxis;
 
-    this.root.add(
-      model,
+    sourceRoot.scale.setScalar(
+      normalisedScale,
     );
 
-    this.root
-      .updateMatrixWorld(
-        true,
+    sourceRoot.position.set(
+      -initialCenter.x *
+        normalisedScale,
+
+      -initialCenter.y *
+        normalisedScale,
+
+      -initialCenter.z *
+        normalisedScale,
+    );
+
+    sourceRoot.updateMatrixWorld(
+      true,
+    );
+
+    const normalisedBox =
+      new THREE.Box3()
+        .setFromObject(
+          sourceRoot,
+        );
+
+    const normalisedSize =
+      normalisedBox.getSize(
+        new THREE.Vector3(),
       );
 
-    const discoveredMeshes:
+    const normalisedCenter =
+      normalisedBox.getCenter(
+        new THREE.Vector3(),
+      );
+
+    const sourceMeshes:
       THREE.Mesh[] = [];
 
-    model.traverse(
+    sourceRoot.traverse(
       (
-        child,
+        object,
       ) => {
         if (
-          child instanceof
+          object instanceof
           THREE.Mesh
         ) {
-          discoveredMeshes
-            .push(
-              child,
-            );
+          sourceMeshes.push(
+            object,
+          );
         }
       },
     );
 
-    const total =
-      Math.max(
-        discoveredMeshes
-          .length,
-        1,
-      );
+    const panelMeshes:
+      THREE.Mesh[] = [];
 
-    discoveredMeshes
-      .forEach(
-        (
-          mesh,
-          index,
-        ) => {
-          this.prepareMesh(
-            mesh,
-            index,
-            total,
+    sourceMeshes.forEach(
+      (
+        sourceMesh,
+        index,
+      ) => {
+        /*
+         * Bake the source hierarchy
+         * into geometry, then center
+         * each part around its own
+         * pivot.
+         *
+         * Result: identical assembled
+         * model, cleaner deterministic
+         * explosion.
+         */
+        const geometry =
+          sourceMesh.geometry
+            .clone();
+
+        geometry.applyMatrix4(
+          sourceMesh.matrixWorld,
+        );
+
+        geometry.computeBoundingBox();
+
+        const box =
+          geometry.boundingBox;
+
+        if (!box) {
+          geometry.dispose();
+
+          return;
+        }
+
+        const center =
+          box.getCenter(
+            new THREE.Vector3(),
           );
-        },
-      );
-  }
 
-  private prepareMesh(
-    mesh: THREE.Mesh,
-    index: number,
-    total: number,
-  ) {
-    this.meshes.push(
-      mesh,
-    );
-
-    this.geometries.add(
-      mesh.geometry,
-    );
-
-    if (
-      Array.isArray(
-        mesh.material,
-      )
-    ) {
-      mesh.material =
-        mesh.material.map(
-          (
-            material,
-          ) =>
-            this.prepareMaterial(
-              material,
-            ),
+        geometry.translate(
+          -center.x,
+          -center.y,
+          -center.z,
         );
-    } else {
-      mesh.material =
-        this.prepareMaterial(
-          mesh.material,
-        );
-    }
 
-    const explodeDirection =
-      this.calculateExplodeDirection(
-        mesh,
-        index,
-      );
+        geometry.computeBoundingSphere();
 
-    const spinAxis =
-      this.calculateSpinAxis(
-        index,
-      );
+        const sourceMaterials =
+          Array.isArray(
+            sourceMesh.material,
+          )
+            ? sourceMesh.material
+            : [
+                sourceMesh.material,
+              ];
 
-    /*
-     * Trionn panel explosion'ında
-     * her panel aynı anda başlamıyor.
-     */
-    const delay =
-      total <= 1
-        ? 0
-        : (
-            index /
+        const controllers:
+          HeroSurfaceController[] =
+          [];
+
+        const nextMaterials =
+          sourceMaterials.map(
             (
-              total -
-              1
-            )
-          ) *
-          0.12;
+              sourceMaterial,
+            ) => {
+              if (
+                sourceMaterial instanceof
+                THREE.MeshStandardMaterial
+              ) {
+                const controller =
+                  createHeroSurfaceMaterial(
+                    sourceMaterial,
+                  );
 
-    const spinSpeed =
-      0.8 +
-      this.seededRandom(
-        index +
-          17,
-      ) *
-        1.4;
+                controllers.push(
+                  controller,
+                );
 
-    const phase =
-      (
-        index %
-        3
-      ) *
-      (
-        Math.PI *
-        2 /
-        3
-      );
+                this.materials.add(
+                  controller.material,
+                );
 
-    this.meshStates.set(
-      mesh,
-      {
-        position:
-          mesh.position
-            .clone(),
+                return controller.material;
+              }
 
-        rotation:
-          mesh.rotation
-            .clone(),
+              const clone =
+                sourceMaterial.clone();
 
-        scale:
-          mesh.scale
-            .clone(),
+              const maybeColor =
+                clone as THREE.Material & {
+                  color?: THREE.Color;
+                };
 
-        explodeDirection,
+              if (
+                maybeColor.color
+              ) {
+                maybeColor.color.set(
+                  0x090b0e,
+                );
+              }
 
-        spinAxis,
+              this.materials.add(
+                clone,
+              );
 
-        spinSpeed,
+              return clone;
+            },
+          );
 
-        delay,
+        const material =
+          Array.isArray(
+            sourceMesh.material,
+          )
+            ? nextMaterials
+            : nextMaterials[0];
 
-        phase,
+        const mesh =
+          new THREE.Mesh(
+            geometry,
+            material,
+          );
 
-        flash: 0,
-      },
-    );
-  }
+        mesh.name =
+          sourceMesh.name ||
+          `hero-panel-${index}`;
 
-  private prepareMaterial(
-    source:
-      THREE.Material,
-  ) {
-    const material =
-      source.clone();
-
-    this.materials.add(
-      material,
-    );
-
-    if (
-      material instanceof
-      THREE.MeshStandardMaterial
-    ) {
-      material
-        .envMapIntensity =
-        3;
-
-      material.roughness =
-        Math.min(
-          material
-            .roughness,
-          0.28,
+        mesh.position.copy(
+          center,
         );
 
-      const state:
-        MaterialState = {
-          roughness:
-            material
-              .roughness,
+        mesh.castShadow =
+          false;
 
-          emissiveIntensity:
-            material
-              .emissiveIntensity,
+        mesh.receiveShadow =
+          false;
+
+        mesh.frustumCulled =
+          false;
+
+        mesh.renderOrder =
+          sourceMesh.renderOrder;
+
+        mesh.userData = {
+          ...sourceMesh.userData,
         };
 
-      if (
-        material instanceof
-        THREE.MeshPhysicalMaterial
-      ) {
-        material.clearcoat =
-          Math.max(
-            material
-              .clearcoat,
-            0.4,
+        this.root.add(
+          mesh,
+        );
+
+        this.geometries.add(
+          geometry,
+        );
+
+        /*
+         * Scroll direction:
+         * clean radial separation,
+         * flattened in Z.
+         */
+        const radial =
+          center
+            .clone()
+            .sub(
+              normalisedCenter,
+            );
+
+        if (
+          radial.lengthSq() <
+          0.01
+        ) {
+          const angle =
+            seeded01(
+              index,
+              23,
+            ) *
+            Math.PI *
+            2;
+
+          radial.set(
+            Math.cos(
+              angle,
+            ),
+
+            Math.sin(
+              angle,
+            ),
+
+            0,
+          );
+        }
+
+        radial.z *=
+          0.16;
+
+        radial.normalize();
+
+        const randomDir =
+          createSeededDirection(
+            index,
           );
 
-        material
-          .clearcoatRoughness =
-          0.05;
+        /*
+         * Blast keeps some radial
+         * organisation but becomes
+         * much more explosive.
+         */
+        const blastDir =
+          radial
+            .clone()
+            .multiplyScalar(
+              0.58,
+            )
+            .addScaledVector(
+              randomDir,
+              0.42,
+            )
+            .normalize();
 
-        material.transmission =
-          Math.max(
-            material
-              .transmission,
-            0.35,
+        const spinAxis =
+          createSeededDirection(
+            index +
+              101,
           );
 
-        state
-          .clearcoatRoughness =
-          material
-            .clearcoatRoughness;
+        const state:
+          HeroMeshState = {
+          mesh,
 
-        state
-          .transmission =
-          material
-            .transmission;
-      }
+          basePosition:
+            center.clone(),
 
-      this.materialStates.set(
-        material,
-        state,
-      );
-    }
+          baseQuaternion:
+            mesh.quaternion.clone(),
 
-    return material;
+          scrollDir:
+            radial.clone(),
+
+          blastDir,
+
+          spinAxis,
+
+          spinSpeed:
+            0.28 +
+            seeded01(
+              index,
+              31,
+            ) *
+              0.42,
+
+          delay:
+            seeded01(
+              index,
+              41,
+            ) *
+            0.11,
+
+          scrollScale:
+            0.78 +
+            seeded01(
+              index,
+              47,
+            ) *
+              0.3,
+
+          phase:
+            Math.atan2(
+              center.y,
+              center.x,
+            ),
+
+          flash:
+            0,
+
+          surfaces:
+            controllers,
+        };
+
+        this.states.push(
+          state,
+        );
+
+        this.stateByMesh.set(
+          mesh,
+          state,
+        );
+
+        /*
+         * Ignore likely helper/
+         * wire meshes for raycast
+         * when possible.
+         */
+        if (
+          !/edge|wire|outline/i.test(
+            mesh.name,
+          )
+        ) {
+          panelMeshes.push(
+            mesh,
+          );
+        }
+      },
+    );
+
+    this.meshes =
+      panelMeshes.length >
+      0
+        ? panelMeshes
+        : this.states.map(
+            (
+              state,
+            ) =>
+              state.mesh,
+          );
+
+    /*
+     * Three anchors around the
+     * assembled model.
+     */
+    const halfX =
+      normalisedSize.x *
+      0.5;
+
+    const halfY =
+      normalisedSize.y *
+      0.5;
+
+    const halfZ =
+      normalisedSize.z *
+      0.5;
+
+    this.guideAnchorsLocal = [
+      new THREE.Vector3(
+        normalisedCenter.x -
+          halfX *
+            0.43,
+
+        normalisedCenter.y -
+          halfY *
+            0.12,
+
+        normalisedCenter.z +
+          halfZ *
+            0.08,
+      ),
+
+      new THREE.Vector3(
+        normalisedCenter.x +
+          halfX *
+            0.43,
+
+        normalisedCenter.y +
+          halfY *
+            0.14,
+
+        normalisedCenter.z +
+          halfZ *
+            0.08,
+      ),
+
+      new THREE.Vector3(
+        normalisedCenter.x -
+          halfX *
+            0.02,
+
+        normalisedCenter.y -
+          halfY *
+            0.44,
+
+        normalisedCenter.z +
+          halfZ *
+            0.08,
+      ),
+    ];
+
+    /*
+     * Source scene is no longer
+     * needed after flattening.
+     */
+    sourceMeshes.forEach(
+      (
+        mesh,
+      ) => {
+        mesh.geometry.dispose();
+
+        const sourceMaterials =
+          Array.isArray(
+            mesh.material,
+          )
+            ? mesh.material
+            : [
+                mesh.material,
+              ];
+
+        sourceMaterials.forEach(
+          (
+            material,
+          ) => {
+            material.dispose();
+          },
+        );
+      },
+    );
   }
 
   flashMesh(
     mesh: THREE.Mesh,
   ) {
     const state =
-      this.meshStates.get(
+      this.stateByMesh.get(
         mesh,
       );
 
@@ -396,303 +680,134 @@ export class HeroModel {
       1;
   }
 
-  private calculateExplodeDirection(
-    mesh: THREE.Mesh,
-    index: number,
-  ) {
-    const parent =
-      mesh.parent;
-
-    if (!parent) {
-      return this
-        .fallbackDirection(
-          index,
-        );
-    }
-
-    const meshWorld =
-      mesh.getWorldPosition(
-        new THREE.Vector3(),
-      );
-
-    const centerWorld =
-      this.root
-        .getWorldPosition(
-          new THREE.Vector3(),
-        );
-
-    const meshLocal =
-      parent.worldToLocal(
-        meshWorld.clone(),
-      );
-
-    const centerLocal =
-      parent.worldToLocal(
-        centerWorld.clone(),
-      );
-
-    const direction =
-      meshLocal.sub(
-        centerLocal,
-      );
-
-    if (
-      direction
-        .lengthSq() <
-      0.0001
-    ) {
-      return this
-        .fallbackDirection(
-          index,
-        );
-    }
-
-    return direction
-      .normalize();
-  }
-
-  private fallbackDirection(
-    index: number,
-  ) {
-    const angle =
-      index *
-      2.3999632297;
-
-    const z =
-      Math.sin(
-        (
-          index +
-          1
-        ) *
-          1.731,
-      ) *
-      0.55;
-
-    const radial =
-      Math.sqrt(
-        Math.max(
-          0,
-          1 -
-            z *
-              z,
-        ),
-      );
-
-    return new THREE.Vector3(
-      Math.cos(
-        angle,
-      ) *
-        radial,
-
-      Math.sin(
-        angle,
-      ) *
-        radial,
-
-      z,
-    ).normalize();
-  }
-
-  private calculateSpinAxis(
-    index: number,
-  ) {
-    return new THREE.Vector3(
-      Math.sin(
-        index *
-          1.7 +
-          0.3,
-      ),
-
-      Math.cos(
-        index *
-          1.3 +
-          0.8,
-      ),
-
-      Math.sin(
-        index *
-          0.9 +
-          1.1,
-      ),
-    ).normalize();
-  }
-
-  private seededRandom(
-    seed: number,
-  ) {
-    const value =
-      Math.sin(
-        seed *
-          12.9898,
-      ) *
-      43758.5453;
-
-    return (
-      value -
-      Math.floor(
-        value,
-      )
+  getGuideAnchorWorldPositions() {
+    this.root.updateWorldMatrix(
+      true,
+      false,
     );
-  }
 
-  private updateMaterialFlash(
-    material:
-      | THREE.Material
-      | THREE.Material[],
-    flash: number,
-  ) {
-    const materials =
-      Array.isArray(
-        material,
-      )
-        ? material
-        : [
-            material,
-          ];
-
-    for (
-      const current of
-      materials
-    ) {
-      if (
-        !(
-          current instanceof
-          THREE.MeshStandardMaterial
-        )
-      ) {
-        continue;
-      }
-
-      const state =
-        this.materialStates
-          .get(
-            current,
-          );
-
-      if (!state) {
-        continue;
-      }
-
-      /*
-       * Bunlar Trionn'ın
-       * yayınladığı hover
-       * charge değerleri.
-       */
-      current
-        .envMapIntensity =
-        3 +
-        flash *
-          1.6;
-
-      if (
-        current instanceof
-        THREE.MeshPhysicalMaterial
-      ) {
-        current
-          .clearcoatRoughness =
-          Math.max(
-            0.01,
-            0.05 -
-              flash *
-                0.035,
-          );
-
-        current
-          .transmission =
-          Math.min(
-            1,
-            0.35 +
-              flash *
-                0.32,
-          );
-      } else {
-        const baseRoughness =
-          state
-            .roughness ??
-          0.28;
-
-        current.roughness =
-          Math.max(
-            0.04,
-            baseRoughness -
-              flash *
-                0.08,
-          );
-
-        const baseEmissive =
-          state
-            .emissiveIntensity ??
-          0;
-
-        current
-          .emissiveIntensity =
-          baseEmissive +
-          flash *
-            0.15;
-      }
-    }
+    return this.guideAnchorsLocal.map(
+      (
+        anchor,
+      ) =>
+        this.root.localToWorld(
+          anchor.clone(),
+        ),
+    );
   }
 
   update(
     time: number,
     delta: number,
-    explodeAmount: number,
+    scrollAmount: number,
+    blastAmount: number,
+    charge: number,
+    coreWorld: THREE.Vector3,
   ) {
-    const explode =
+    const scrollDrive =
       THREE.MathUtils.clamp(
-        explodeAmount,
+        scrollAmount,
         0,
         1,
       );
 
-    const driftAmount =
-      1 -
-      explode;
+    const blastDrive =
+      THREE.MathUtils.clamp(
+        blastAmount,
+        0,
+        1,
+      );
 
-    /*
-     * Orijinal kod yaklaşık
-     * frame başına 0.92 decay.
-     * Delta-time bağımsız hale
-     * getiriyoruz.
-     */
-    const flashDecay =
-      Math.pow(
-        0.92,
-        delta *
-          60,
+    const activity =
+      Math.max(
+        scrollDrive,
+        blastDrive,
       );
 
     for (
-      const mesh of
-      this.meshes
+      const state of
+      this.states
     ) {
-      const state =
-        this.meshStates
-          .get(
-            mesh,
-          );
-
-      if (!state) {
-        continue;
-      }
+      const {
+        mesh,
+      } =
+        state;
 
       state.flash *=
-        flashDecay;
-
-      const amount =
-        Math.max(
-          0,
-          explode -
-            state.delay,
+        Math.pow(
+          0.92,
+          delta *
+            60,
         );
 
       /*
-       * Trionn'ın yayınladığı
-       * explosion multiplier.
+       * Scroll:
+       * staggered but compact.
        */
-      const burst =
-        amount *
+      const scrollStart =
+        state.delay *
+        1.25;
+
+      const scrollLocal =
+        THREE.MathUtils.clamp(
+          (
+            scrollDrive -
+            scrollStart
+          ) /
+            Math.max(
+              0.001,
+              1 -
+                scrollStart,
+            ),
+          0,
+          1,
+        );
+
+      const scrollAmt =
+        scrollLocal *
+        scrollLocal *
+        (
+          3 -
+          2 *
+            scrollLocal
+        );
+
+      /*
+       * Hold blast:
+       * original-style stronger
+       * stagger and full distance.
+       */
+      const blastLocal =
+        THREE.MathUtils.clamp(
+          (
+            blastDrive -
+            state.delay
+          ) /
+            Math.max(
+              0.001,
+              1 -
+                state.delay,
+            ),
+          0,
+          1,
+        );
+
+      const scrollDistance =
+        scrollAmt *
+        state.scrollScale *
+        1.12;
+
+      const blastDistance =
+        blastLocal *
         5.5;
+
+      const driftScale =
+        1 -
+        THREE.MathUtils.clamp(
+          activity,
+          0,
+          1,
+        );
 
       const driftX =
         Math.sin(
@@ -701,7 +816,7 @@ export class HeroModel {
             state.phase,
         ) *
         0.012 *
-        driftAmount;
+        driftScale;
 
       const driftY =
         Math.cos(
@@ -710,7 +825,7 @@ export class HeroModel {
             state.phase,
         ) *
         0.008 *
-        driftAmount;
+        driftScale;
 
       const driftZ =
         Math.sin(
@@ -720,78 +835,80 @@ export class HeroModel {
               1.5,
         ) *
         0.006 *
-        driftAmount;
+        driftScale;
 
-      mesh.position.set(
-        state
-          .position.x +
-          state
-            .explodeDirection
-            .x *
-            burst +
-          driftX,
+      mesh.position
+        .copy(
+          state.basePosition,
+        )
+        .addScaledVector(
+          state.scrollDir,
+          scrollDistance,
+        )
+        .addScaledVector(
+          state.blastDir,
+          blastDistance,
+        );
 
-        state
-          .position.y +
-          state
-            .explodeDirection
-            .y *
-            burst +
-          driftY,
+      mesh.position.x +=
+        driftX;
 
-        state
-          .position.z +
-          state
-            .explodeDirection
-            .z *
-            burst +
-          driftZ,
+      mesh.position.y +=
+        driftY;
+
+      mesh.position.z +=
+        driftZ;
+
+      /*
+       * Scroll gets tiny controlled
+       * rotation; blast gets the
+       * dramatic rotation.
+       */
+      const spinAmount =
+        scrollAmt *
+          state.spinSpeed *
+          Math.PI *
+          0.16 +
+        blastLocal *
+          state.spinSpeed *
+          Math.PI;
+
+      mesh.quaternion.copy(
+        state.baseQuaternion,
       );
 
-      mesh.rotation.set(
-        state
-          .rotation.x +
-          state
-            .spinAxis.x *
-            state
-              .spinSpeed *
-            amount *
-            Math.PI,
+      if (
+        spinAmount !==
+        0
+      ) {
+        const spin =
+          new THREE.Quaternion()
+            .setFromAxisAngle(
+              state.spinAxis,
+              spinAmount,
+            );
 
-        state
-          .rotation.y +
-          state
-            .spinAxis.y *
-            state
-              .spinSpeed *
-            amount *
-            Math.PI,
+        mesh.quaternion.multiply(
+          spin,
+        );
+      }
 
-        state
-          .rotation.z +
-          state
-            .spinAxis.z *
-            state
-              .spinSpeed *
-            amount *
-            Math.PI,
-      );
-
-      mesh.scale.copy(
-        state.scale,
-      );
-
-      this.updateMaterialFlash(
-        mesh.material,
-        state.flash,
-      );
+      for (
+        const surface of
+        state.surfaces
+      ) {
+        surface.update({
+          time,
+          charge,
+          flash:
+            state.flash,
+          coreWorld,
+        });
+      }
     }
   }
 
   destroy() {
-    this.destroyed =
-      true;
-
     for (
       const geometry of
       this.geometries
@@ -806,8 +923,15 @@ export class HeroModel {
       material.dispose();
     }
 
-    this.meshes.length =
+    this.geometries.clear();
+
+    this.materials.clear();
+
+    this.states.length =
       0;
+
+    this.meshes =
+      [];
 
     this.root.clear();
   }

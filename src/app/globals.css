@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090909;
+  --background: #0a0a0a;
   --foreground: #ffffff;
 }
 
@@ -23,8 +23,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 a {
@@ -39,12 +44,15 @@ select {
   font: inherit;
 }
 
+button {
+  color: inherit;
+}
+
 canvas {
   display: block;
 }
 
 ::selection {
   background: #ffffff;
-  color: #090909;
+  color: #0a0a0a;
 }
-

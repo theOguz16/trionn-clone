@@ -28,14 +28,17 @@ const navigationItems = [
     label: "Work",
     href: "/work",
   },
+
   {
     label: "Services",
     href: "/services",
   },
+
   {
     label: "About",
     href: "/about",
   },
+
   {
     label: "Contact",
     href: "/contact",
@@ -45,57 +48,482 @@ const navigationItems = [
 const socialItems = [
   {
     label: "Linkedin",
-    href: "https://www.linkedin.com/company/trionn/",
+    href:
+      "https://www.linkedin.com/company/trionn/",
   },
+
   {
     label: "Facebook",
-    href: "https://www.facebook.com/trionndesign/",
+    href:
+      "https://www.facebook.com/trionndesign/",
   },
+
   {
     label: "Dribbble",
-    href: "https://dribbble.com/trionn",
+    href:
+      "https://dribbble.com/trionn",
   },
+
   {
     label: "Instagram",
-    href: "https://www.instagram.com/trionn/",
+    href:
+      "https://www.instagram.com/trionn/",
   },
 ];
 
-function NavLabel({
-  children,
-}: {
-  children: string;
-}) {
+function BrandMark() {
   return (
-    <span className="relative block h-[0.88em] overflow-hidden">
-      <span className="nav-label-primary block">
-        {children}
+    <span className="flex items-center gap-[4px]">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 22 20"
+        className="h-[18px] w-[20px]"
+        fill="none"
+      >
+        <path
+          d="M2.5 15.5L7.2 7.2L9 10.2L12.5 3.6"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+
+        <path
+          d="M6.2 15.5H13.1L10.9 11.7"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+
+        <path
+          d="M13 5.7L19.2 15.5H14.8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+
+        <path
+          d="M2 11.4H5.2"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
+      </svg>
+
+      <span className="text-[15px] font-medium leading-none tracking-[-0.045em]">
+        TRIONN
       </span>
 
-      <span className="nav-label-secondary absolute left-0 top-full block">
-        {children}
+      <sup className="-ml-[2px] self-start pt-[1px] text-[4px] font-normal tracking-normal">
+        ®
+      </sup>
+    </span>
+  );
+}
+
+function SoundButton({
+  soundOn,
+  light = false,
+  onClick,
+}: {
+  soundOn: boolean;
+  light?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={
+        soundOn
+          ? "Mute sound"
+          : "Enable sound"
+      }
+      aria-pressed={soundOn}
+      className={[
+        "flex h-[28px] w-[28px] items-center justify-center rounded-full focus:outline-none",
+
+        light
+          ? "bg-black/[0.065] text-black/55"
+          : "bg-white/[0.07] text-white/75",
+      ].join(" ")}
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        className="h-[11px] w-[11px]"
+        fill="none"
+      >
+        <path
+          d="M4 8H7L10.4 5.2V14.8L7 12H4V8Z"
+          fill="currentColor"
+        />
+
+        <path
+          d="M12.4 7.1C13.8 8.5 13.8 11.5 12.4 12.9"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+
+        {soundOn ? (
+          <path
+            d="M14.4 5.5C16.8 7.8 16.8 12.2 14.4 14.5"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+        ) : (
+          <path
+            d="M5 4L16 16"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+        )}
+      </svg>
+    </button>
+  );
+}
+
+function SwapText({
+  text,
+}: {
+  text: string;
+}) {
+  const renderChars =
+    (
+      layer:
+        "a" | "b",
+    ) =>
+      text
+        .split("")
+        .map(
+          (
+            char,
+            index,
+          ) => (
+            <span
+              key={`${layer}-${char}-${index}`}
+              data-swap-char
+              className="inline-block"
+            >
+              {char === " "
+                ? "\u00a0"
+                : char}
+            </span>
+          ),
+        );
+
+  return (
+    <span
+      data-swap-track
+      data-swap-active="a"
+      className="relative inline-grid overflow-hidden"
+    >
+      <span
+        aria-hidden="true"
+        className="invisible whitespace-nowrap"
+      >
+        {text}
+      </span>
+
+      <span
+        aria-hidden="true"
+        data-swap-layer="a"
+        className="absolute inset-0 flex whitespace-nowrap"
+      >
+        {renderChars(
+          "a",
+        )}
+      </span>
+
+      <span
+        aria-hidden="true"
+        data-swap-layer="b"
+        className="absolute inset-0 flex whitespace-nowrap opacity-0"
+      >
+        {renderChars(
+          "b",
+        )}
       </span>
     </span>
   );
 }
 
+function playSwapAnimation(
+  root:
+    HTMLElement,
+) {
+  const track =
+    root.querySelector<HTMLElement>(
+      "[data-swap-track]",
+    );
+
+  if (!track) {
+    return;
+  }
+
+  const activeKey =
+    track.dataset
+      .swapActive ===
+    "b"
+      ? "b"
+      : "a";
+
+  const incomingKey =
+    activeKey === "a"
+      ? "b"
+      : "a";
+
+  const outgoing =
+    track.querySelector<HTMLElement>(
+      `[data-swap-layer="${activeKey}"]`,
+    );
+
+  const incoming =
+    track.querySelector<HTMLElement>(
+      `[data-swap-layer="${incomingKey}"]`,
+    );
+
+  if (
+    !outgoing ||
+    !incoming
+  ) {
+    return;
+  }
+
+  const outgoingChars =
+    Array.from(
+      outgoing.querySelectorAll<HTMLElement>(
+        "[data-swap-char]",
+      ),
+    );
+
+  const incomingChars =
+    Array.from(
+      incoming.querySelectorAll<HTMLElement>(
+        "[data-swap-char]",
+      ),
+    );
+
+  const allChars = [
+    ...outgoingChars,
+    ...incomingChars,
+  ];
+
+  gsap.killTweensOf(
+    allChars,
+  );
+
+  gsap.killTweensOf(
+    [
+      outgoing,
+      incoming,
+    ],
+  );
+
+  gsap.set(
+    outgoing,
+    {
+      autoAlpha:
+        1,
+    },
+  );
+
+  gsap.set(
+    outgoingChars,
+    {
+      x:
+        0,
+
+      y:
+        0,
+
+      autoAlpha:
+        1,
+
+      filter:
+        "blur(0px)",
+    },
+  );
+
+  gsap.set(
+    incoming,
+    {
+      autoAlpha:
+        1,
+    },
+  );
+
+  gsap.set(
+    incomingChars,
+    {
+      x:
+        -13,
+
+      y: (
+        index,
+      ) =>
+        index %
+          2 ===
+        0
+          ? 3
+          : -3,
+
+      autoAlpha:
+        0,
+
+      filter:
+        "blur(2px)",
+    },
+  );
+
+  const timeline =
+    gsap.timeline({
+      onComplete:
+        () => {
+          gsap.set(
+            outgoing,
+            {
+              autoAlpha:
+                0,
+            },
+          );
+
+          gsap.set(
+            incomingChars,
+            {
+              x:
+                0,
+
+              y:
+                0,
+
+              autoAlpha:
+                1,
+
+              filter:
+                "blur(0px)",
+            },
+          );
+
+          track.dataset
+            .swapActive =
+            incomingKey;
+        },
+    });
+
+  /*
+   * First copy:
+   * wave -> blur -> disappear.
+   */
+  timeline.to(
+    outgoingChars,
+    {
+      x:
+        9,
+
+      y: (
+        index,
+      ) =>
+        Math.sin(
+          index *
+            1.18,
+        ) *
+        4,
+
+      autoAlpha:
+        0,
+
+      filter:
+        "blur(3px)",
+
+      duration:
+        0.3,
+
+      stagger: {
+        each:
+          0.015,
+
+        from:
+          "start",
+      },
+
+      ease:
+        "power2.in",
+    },
+
+    0,
+  );
+
+  /*
+   * Second copy:
+   * rewrites from the left with
+   * a tiny spring/bounce.
+   */
+  timeline.to(
+    incomingChars,
+    {
+      x:
+        0,
+
+      y:
+        0,
+
+      autoAlpha:
+        1,
+
+      filter:
+        "blur(0px)",
+
+      duration:
+        0.4,
+
+      stagger: {
+        each:
+          0.018,
+
+        from:
+          "start",
+      },
+
+      ease:
+        "back.out(1.65)",
+    },
+
+    0.13,
+  );
+}
+
 export function SiteHeader() {
   const rootRef =
-    useRef<HTMLElement>(null);
+    useRef<HTMLElement>(
+      null,
+    );
 
-  const menuLayerRef =
-    useRef<HTMLDivElement>(null);
-
-  const backdropRef =
-    useRef<HTMLButtonElement>(null);
+  const layerRef =
+    useRef<HTMLDivElement>(
+      null,
+    );
 
   const panelRef =
-    useRef<HTMLDivElement>(null);
+    useRef<HTMLElement>(
+      null,
+    );
+
+  const backdropRef =
+    useRef<HTMLButtonElement>(
+      null,
+    );
 
   const timelineRef =
     useRef<ReturnType<
       typeof gsap.timeline
-    > | null>(null);
+    > | null>(
+      null,
+    );
 
   const [
     isOpen,
@@ -109,25 +537,29 @@ export function SiteHeader() {
   ] =
     useState(true);
 
-  // -------------------------
-  // MENU ANIMATION
-  // -------------------------
+  const [
+    hoveredMenuIndex,
+    setHoveredMenuIndex,
+  ] =
+    useState<
+      number | null
+    >(null);
 
   useGSAP(
     () => {
       const layer =
-        menuLayerRef.current;
-
-      const backdrop =
-        backdropRef.current;
+        layerRef.current;
 
       const panel =
         panelRef.current;
 
+      const backdrop =
+        backdropRef.current;
+
       if (
         !layer ||
-        !backdrop ||
-        !panel
+        !panel ||
+        !backdrop
       ) {
         return;
       }
@@ -135,7 +567,9 @@ export function SiteHeader() {
       gsap.set(
         layer,
         {
-          autoAlpha: 0,
+          autoAlpha:
+            0,
+
           pointerEvents:
             "none",
         },
@@ -144,62 +578,95 @@ export function SiteHeader() {
       gsap.set(
         backdrop,
         {
-          autoAlpha: 0,
+          autoAlpha:
+            0,
         },
       );
 
+      /*
+       * The card does not physically
+       * slide across the viewport.
+       * Its background is revealed
+       * in place.
+       */
       gsap.set(
         panel,
         {
-          xPercent: 101,
+          clipPath:
+            "inset(0 0 100% 92% round 6px)",
+
+          willChange:
+            "clip-path",
         },
       );
 
       gsap.set(
-        ".menu-nav-row",
+        "[data-menu-controls]",
         {
-          yPercent: 110,
-          rotate: 1.5,
+          autoAlpha:
+            0,
+
+          y:
+            -3,
+
+          filter:
+            "blur(3px)",
         },
       );
 
       gsap.set(
-        ".menu-detail",
+        "[data-menu-item]",
         {
-          y: 14,
-          autoAlpha: 0,
+          autoAlpha:
+            0,
+
+          y:
+            8,
+
+          filter:
+            "blur(4px)",
         },
       );
 
       const timeline =
         gsap.timeline({
-          paused: true,
+          paused:
+            true,
 
           defaults: {
             overwrite:
               "auto",
           },
 
-          onStart: () => {
-            gsap.set(
-              layer,
-              {
-                autoAlpha: 1,
-                pointerEvents:
-                  "auto",
-              },
-            );
-          },
+          onStart:
+            () => {
+              gsap.set(
+                layer,
+                {
+                  autoAlpha:
+                    1,
+
+                  pointerEvents:
+                    "auto",
+                },
+              );
+            },
 
           onReverseComplete:
             () => {
               gsap.set(
                 layer,
                 {
-                  autoAlpha: 0,
+                  autoAlpha:
+                    0,
+
                   pointerEvents:
                     "none",
                 },
+              );
+
+              setHoveredMenuIndex(
+                null,
               );
             },
         });
@@ -208,46 +675,80 @@ export function SiteHeader() {
         .to(
           backdrop,
           {
-            autoAlpha: 1,
-            duration: 0.4,
+            autoAlpha:
+              1,
+
+            duration:
+              0.3,
+
             ease:
               "power2.out",
           },
+
           0,
         )
+
         .to(
           panel,
           {
-            xPercent: 0,
-            duration: 0.9,
+            clipPath:
+              "inset(0 0 0% 0% round 6px)",
+
+            duration:
+              0.7,
+
             ease:
               "power4.inOut",
           },
+
           0,
         )
+
         .to(
-          ".menu-nav-row",
+          "[data-menu-controls]",
           {
-            yPercent: 0,
-            rotate: 0,
-            duration: 0.8,
-            stagger: 0.055,
-            ease:
-              "power4.out",
-          },
-          0.42,
-        )
-        .to(
-          ".menu-detail",
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.55,
-            stagger: 0.035,
+            autoAlpha:
+              1,
+
+            y:
+              0,
+
+            filter:
+              "blur(0px)",
+
+            duration:
+              0.36,
+
             ease:
               "power3.out",
           },
-          0.52,
+
+          0.25,
+        )
+
+        .to(
+          "[data-menu-item]",
+          {
+            autoAlpha:
+              1,
+
+            y:
+              0,
+
+            filter:
+              "blur(0px)",
+
+            duration:
+              0.4,
+
+            stagger:
+              0.04,
+
+            ease:
+              "power3.out",
+          },
+
+          0.34,
         );
 
       timelineRef.current =
@@ -260,99 +761,111 @@ export function SiteHeader() {
           null;
       };
     },
+
     {
       scope:
         rootRef,
     },
   );
 
-  // -------------------------
-  // PLAY / REVERSE
-  // -------------------------
+  useEffect(
+    () => {
+      const timeline =
+        timelineRef.current;
 
-  useEffect(() => {
-    const timeline =
-      timelineRef.current;
+      if (!timeline) {
+        return;
+      }
 
-    if (!timeline) {
-      return;
-    }
+      if (isOpen) {
+        timeline.play();
 
-    if (isOpen) {
-      timeline.play();
-    } else {
+        return;
+      }
+
       timeline.reverse();
-    }
-  }, [isOpen]);
+    },
 
-  // -------------------------
-  // SCROLL LOCK
-  // -------------------------
+    [
+      isOpen,
+    ],
+  );
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+  useEffect(
+    () => {
+      if (!isOpen) {
+        return;
+      }
 
-    const html =
-      document.documentElement;
+      const html =
+        document.documentElement;
 
-    const previousOverflow =
-      html.style.overflow;
+      const previousOverflow =
+        html.style.overflow;
 
-    html.style.overflow =
-      "hidden";
-
-    scrollManager.stop();
-
-    return () => {
       html.style.overflow =
-        previousOverflow;
+        "hidden";
 
-      scrollManager.start();
-    };
-  }, [isOpen]);
+      scrollManager.stop();
 
-  // -------------------------
-  // ESC
-  // -------------------------
+      return () => {
+        html.style.overflow =
+          previousOverflow;
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeyDown =
-      (
-        event:
-          KeyboardEvent,
-      ) => {
-        if (
-          event.key ===
-          "Escape"
-        ) {
-          setIsOpen(
-            false,
-          );
-        }
+        scrollManager.start();
       };
+    },
 
-    window.addEventListener(
-      "keydown",
-      handleKeyDown,
-    );
+    [
+      isOpen,
+    ],
+  );
 
-    return () => {
-      window.removeEventListener(
+  useEffect(
+    () => {
+      if (!isOpen) {
+        return;
+      }
+
+      const handleKeyDown =
+        (
+          event:
+            KeyboardEvent,
+        ) => {
+          if (
+            event.key ===
+            "Escape"
+          ) {
+            setIsOpen(
+              false,
+            );
+          }
+        };
+
+      window.addEventListener(
         "keydown",
         handleKeyDown,
       );
-    };
-  }, [isOpen]);
 
-  // -------------------------
-  // SOUND
-  // -------------------------
+      return () => {
+        window.removeEventListener(
+          "keydown",
+          handleKeyDown,
+        );
+      };
+    },
+
+    [
+      isOpen,
+    ],
+  );
+
+  const closeMenu =
+    () => {
+      setIsOpen(
+        false,
+      );
+    };
 
   const toggleSound =
     async () => {
@@ -364,129 +877,65 @@ export function SiteHeader() {
       );
 
       if (next) {
-        await audioManager
-          .unlock();
+        await audioManager.unlock();
 
-        audioManager
-          .setMuted(
-            false,
-          );
+        audioManager.setMuted(
+          false,
+        );
 
         return;
       }
 
-      audioManager
-        .setMuted(
-          true,
-        );
-    };
-
-  const closeMenu =
-    () => {
-      setIsOpen(
-        false,
+      audioManager.setMuted(
+        true,
       );
     };
 
   return (
     <header
       ref={rootRef}
-      className="pointer-events-none fixed inset-x-0 top-0 z-[300] text-white"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[300]"
     >
-      {/* ===================== */}
-      {/* GLOBAL HEADER */}
-      {/* ===================== */}
+      {/* CLOSED HEADER */}
 
-      <div className="relative z-[40] flex h-[72px] items-center justify-between px-5 md:h-[84px] md:px-8">
-        {/* LOGO */}
-
+      <div
+        data-hero-nav-vibrate
+        className="relative z-[40] flex h-[72px] items-center justify-between px-[18px] md:px-[32px]"
+      >
         <TransitionLink
           href="/"
           onClick={
             closeMenu
           }
-          className="pointer-events-auto text-[19px] font-medium leading-none tracking-[-0.055em] md:text-[21px]"
+          className="pointer-events-auto text-[#eeeeeb]"
         >
-          TRIONN
-          <sup className="ml-[2px] align-top text-[6px] font-normal tracking-normal">
-            ®
-          </sup>
+          <BrandMark />
         </TransitionLink>
 
-        {/* DESKTOP CONTROLS */}
+        <div
+          className={[
+            "pointer-events-auto ml-auto flex items-center gap-[7px] transition-opacity duration-200",
 
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-[5px] md:flex">
-          <button
-            type="button"
-            aria-label="Display mode"
-            className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-white/10 bg-black/20 text-[11px] backdrop-blur-md"
-          >
-            ☼
-          </button>
-
-          <button
-            type="button"
-            aria-label={
-              soundOn
-                ? "Mute sound"
-                : "Enable sound"
-            }
-            aria-pressed={
+            isOpen
+              ? "pointer-events-none opacity-0"
+              : "opacity-100",
+          ].join(" ")}
+        >
+          <SoundButton
+            soundOn={
               soundOn
             }
             onClick={
               toggleSound
             }
-            className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-white/10 bg-black/20 backdrop-blur-md"
+          />
+
+          <TransitionLink
+            href="/contact"
+            className="hidden h-[31px] items-center justify-center rounded-full bg-[#f5f5f2] px-[16px] text-[11.5px] font-normal uppercase tracking-[-0.005em] !text-[#111] focus:outline-none md:flex"
           >
-            <span className="flex h-[11px] items-end gap-[2px]">
-              <span
-                className={[
-                  "block w-px bg-white transition-[height] duration-300",
-                  soundOn
-                    ? "h-[5px]"
-                    : "h-[2px]",
-                ].join(
-                  " ",
-                )}
-              />
-
-              <span
-                className={[
-                  "block w-px bg-white transition-[height] duration-300",
-                  soundOn
-                    ? "h-[10px]"
-                    : "h-[2px]",
-                ].join(
-                  " ",
-                )}
-              />
-
-              <span
-                className={[
-                  "block w-px bg-white transition-[height] duration-300",
-                  soundOn
-                    ? "h-[7px]"
-                    : "h-[2px]",
-                ].join(
-                  " ",
-                )}
-              />
-            </span>
-          </button>
-        </div>
-
-        {/* RIGHT */}
-
-        <div className="pointer-events-auto flex items-center gap-5 text-[9px] font-medium uppercase tracking-[0.03em] md:gap-7 md:text-[10px]">
-          {!isOpen && (
-            <TransitionLink
-              href="/contact"
-              className="hidden md:block"
-            >
-              Let&apos;s talk
-            </TransitionLink>
-          )}
+            Let&apos;s talk
+          </TransitionLink>
 
           <button
             type="button"
@@ -494,68 +943,37 @@ export function SiteHeader() {
               isOpen
             }
             aria-controls="site-navigation"
-            aria-label={
-              isOpen
-                ? "Close menu"
-                : "Open menu"
-            }
+            aria-label="Open menu"
             onClick={() => {
               setIsOpen(
-                (
-                  current,
-                ) =>
-                  !current,
+                true,
               );
             }}
-            className="flex items-center gap-3"
+            className="flex h-[31px] items-center gap-[6px] rounded-full border border-white/60 bg-transparent px-[12px] text-[7.5px] font-normal uppercase tracking-[0.035em] text-[#eeeeeb] focus:outline-none"
           >
             <span>
-              {isOpen
-                ? "Close"
-                : "Menu"}
+              Menu
             </span>
 
-            <span className="relative flex h-[34px] w-[34px] items-center justify-center rounded-full border border-white/10 bg-black/20 backdrop-blur-md md:h-[38px] md:w-[38px]">
-              <span
-                className={[
-                  "absolute h-px w-[13px] bg-white transition-transform duration-500",
-                  isOpen
-                    ? "rotate-45"
-                    : "-translate-y-[3px]",
-                ].join(
-                  " ",
-                )}
-              />
+            <span className="flex w-[8px] flex-col gap-[2.5px]">
+              <span className="h-px w-full bg-current" />
 
-              <span
-                className={[
-                  "absolute h-px w-[13px] bg-white transition-transform duration-500",
-                  isOpen
-                    ? "-rotate-45"
-                    : "translate-y-[3px]",
-                ].join(
-                  " ",
-                )}
-              />
+              <span className="h-px w-full bg-current" />
             </span>
           </button>
         </div>
       </div>
 
-      {/* ===================== */}
-      {/* SLIDE MENU */}
-      {/* ===================== */}
+      {/* OPEN MENU */}
 
       <div
         id="site-navigation"
-        ref={menuLayerRef}
+        ref={layerRef}
         aria-hidden={
           !isOpen
         }
-        className="pointer-events-none invisible fixed inset-0 z-[30]"
+        className="pointer-events-none fixed inset-0 z-[30] opacity-0"
       >
-        {/* BACKDROP */}
-
         <button
           ref={backdropRef}
           type="button"
@@ -563,103 +981,244 @@ export function SiteHeader() {
           onClick={
             closeMenu
           }
-          className="absolute inset-0 cursor-default bg-black/20 backdrop-blur-[1px]"
+          className="absolute inset-0 cursor-default bg-black/[0.1] focus:outline-none"
         />
 
-        {/* RIGHT PANEL */}
-
-        <div
+        <aside
           ref={panelRef}
-          className="absolute inset-y-0 right-0 w-full border-l border-white/[0.08] bg-[#090909] text-white shadow-[-40px_0_100px_rgba(0,0,0,0.22)] md:w-[min(760px,55vw)]"
+          className="absolute bottom-3 right-3 top-3 w-[calc(100vw-24px)] overflow-hidden rounded-[6px] bg-[#fafafa] text-[#151515] shadow-[0_10px_45px_rgba(0,0,0,0.16)] md:w-[356px]"
         >
-          <div className="flex h-[100svh] flex-col overflow-hidden px-5 pb-6 pt-[104px] md:px-8 md:pb-8 md:pt-[112px]">
-            {/* NAVIGATION */}
+          {/* PANEL CONTROLS */}
+
+          <div
+            data-menu-controls
+            className="absolute right-[17px] top-[17px] z-10 flex items-center gap-[7px]"
+          >
+            <SoundButton
+              light
+              soundOn={
+                soundOn
+              }
+              onClick={
+                toggleSound
+              }
+            />
+
+            <a
+              href="/contact"
+              style={{
+                color:
+                  "#ffffff",
+
+                WebkitTextFillColor:
+                  "#ffffff",
+              }}
+              className="flex h-[31px] items-center rounded-full bg-[#090909] px-[16px] text-[11.5px] font-normal uppercase tracking-[-0.005em]"
+            >
+              Let&apos;s talk
+            </a>
+
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={
+                closeMenu
+              }
+              className="flex h-[31px] items-center gap-[6px] rounded-full border border-black/75 px-[12px] text-[7.5px] font-normal uppercase tracking-[0.035em] text-[#111] focus:outline-none"
+            >
+              <span>
+                Menu
+              </span>
+
+              <span className="text-[11px] leading-none">
+                ×
+              </span>
+            </button>
+          </div>
+
+          <div className="flex h-full flex-col px-[27px] pb-[29px] pt-[222px]">
+            {/* MAIN NAV */}
 
             <nav
               aria-label="Main navigation"
-              className="shrink-0"
+              onMouseLeave={() => {
+                setHoveredMenuIndex(
+                  null,
+                );
+              }}
             >
-              <ul>
+              <ul className="space-y-[4px]">
                 {navigationItems.map(
                   (
                     item,
-                  ) => (
-                    <li
-                      key={
-                        item.label
-                      }
-                      className="overflow-hidden"
-                    >
-                      <TransitionLink
-                        href={
-                          item.href
+                    index,
+                  ) => {
+                    const hovered =
+                      hoveredMenuIndex ===
+                      index;
+
+                    const dimmed =
+                      hoveredMenuIndex !==
+                        null &&
+                      !hovered;
+
+                    return (
+                      <li
+                        key={
+                          item.label
                         }
-                        onClick={
-                          closeMenu
-                        }
-                        className="group block w-fit"
+                        data-menu-item
+                        onMouseEnter={() => {
+                          setHoveredMenuIndex(
+                            index,
+                          );
+                        }}
                       >
-                        <span className="menu-nav-row block text-[clamp(3.6rem,7.2vw,6.8rem)] font-medium uppercase leading-[0.76] tracking-[-0.075em] md:text-[clamp(4.2rem,5.6vw,6.8rem)]">
-                          <NavLabel>
+                        <TransitionLink
+                          href={
+                            item.href
+                          }
+                          onClick={
+                            closeMenu
+                          }
+                          style={{
+                            opacity:
+                              dimmed
+                                ? 0.25
+                                : 1,
+                          }}
+                          className="flex w-full items-center justify-between text-[29px] font-normal leading-[1.12] tracking-[-0.052em] text-[#171717] transition-opacity duration-300"
+                        >
+                          <span>
                             {
                               item.label
                             }
-                          </NavLabel>
-                        </span>
-                      </TransitionLink>
-                    </li>
-                  ),
+                          </span>
+
+                          <span
+                            className={[
+                              "text-[11px] transition-[opacity,transform] duration-250",
+
+                              hovered
+                                ? "translate-x-0 opacity-100"
+                                : "-translate-x-[5px] opacity-0",
+                            ].join(" ")}
+                          >
+                            →
+                          </span>
+                        </TransitionLink>
+                      </li>
+                    );
+                  },
                 )}
               </ul>
             </nav>
 
-            {/* DETAILS */}
+            {/* NAME STORY */}
 
-            <div className="mt-auto grid grid-cols-2 gap-x-5 gap-y-7 border-t border-white/[0.12] pt-5 md:grid-cols-2 md:gap-x-8">
-              {/* BUSINESS */}
+            <TransitionLink
+              data-menu-item
+              href="/trionn-story"
+              aria-label="The TRIONN name Story"
+              onClick={
+                closeMenu
+              }
+              onMouseEnter={
+                (
+                  event,
+                ) => {
+                  playSwapAnimation(
+                    event.currentTarget,
+                  );
+                }
+              }
+              className="group relative mt-[21px] flex h-[35px] w-[214px] items-center overflow-hidden rounded-full border border-black/[0.32] px-[12px] text-[10px] font-normal uppercase tracking-[-0.01em]"
+            >
+              <span className="mr-[5px] shrink-0">
+                ✦
+              </span>
 
-              <div className="menu-detail">
-                <p className="mb-3 text-[8px] font-medium uppercase tracking-[0.08em] text-white/35 md:text-[9px]">
+              <SwapText
+                text="THE TRIONN NAME STORY"
+              />
+
+              <span className="absolute right-[11px] translate-x-[7px] text-[10px] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                →
+              </span>
+            </TransitionLink>
+
+            {/* LOWER INFO */}
+
+            <div className="mb-[19px] mt-auto">
+              <div
+                data-menu-item
+              >
+                <p className="mb-[12px] text-[10px] font-normal uppercase tracking-[-0.005em] text-black/35">
                   Business enquiry
                 </p>
 
-                <div className="text-[10px] leading-[1.65] tracking-[-0.01em] md:text-[11px]">
-                  <p>
-                    <span className="mr-2 text-white/35">
+                <div className="space-y-[7px] text-[13px] leading-none text-black/72">
+                  <p className="flex items-center">
+                    <span className="mr-[14px] w-[12px] text-[12px] text-black/35">
                       E.
                     </span>
 
                     <a
                       href="mailto:hello@trionn.com"
-                      className="transition-opacity duration-300 hover:opacity-50"
+                      aria-label="hello@trionn.com"
+                      onMouseEnter={
+                        (
+                          event,
+                        ) => {
+                          playSwapAnimation(
+                            event.currentTarget,
+                          );
+                        }
+                      }
+                      className="transition-opacity duration-200"
                     >
-                      hello@trionn.com
+                      <SwapText
+                        text="hello@trionn.com"
+                      />
                     </a>
                   </p>
 
-                  <p>
-                    <span className="mr-2 text-white/35">
+                  <p className="flex items-center">
+                    <span className="mr-[14px] w-[12px] text-[12px] text-black/35">
                       P.
                     </span>
 
                     <a
                       href="tel:+919824182099"
-                      className="transition-opacity duration-300 hover:opacity-50"
+                      aria-label="+91 9824182099"
+                      onMouseEnter={
+                        (
+                          event,
+                        ) => {
+                          playSwapAnimation(
+                            event.currentTarget,
+                          );
+                        }
+                      }
+                      className="transition-opacity duration-200"
                     >
-                      +91 98241 82099
+                      <SwapText
+                        text="+91 9824182099"
+                      />
                     </a>
                   </p>
                 </div>
               </div>
 
-              {/* SOCIAL */}
-
-              <div className="menu-detail">
-                <p className="mb-3 text-[8px] font-medium uppercase tracking-[0.08em] text-white/35 md:text-[9px]">
+              <div
+                data-menu-item
+                className="mt-[44px]"
+              >
+                <p className="mb-[11px] text-[9px] font-normal uppercase tracking-[-0.005em] text-black/34">
                   Social
                 </p>
 
-                <div className="grid grid-cols-1 gap-y-[2px] text-[9px] uppercase leading-[1.55] tracking-[0.03em] md:text-[10px]">
+                <div className="grid grid-cols-2 gap-x-[32px] gap-y-[5px] text-[12px] leading-none text-black/70">
                   {socialItems.map(
                     (
                       item,
@@ -673,7 +1232,7 @@ export function SiteHeader() {
                         }
                         target="_blank"
                         rel="noreferrer"
-                        className="w-fit text-white/70 transition-opacity duration-300 hover:opacity-40"
+                        className="w-fit transition-opacity duration-250 hover:opacity-40"
                       >
                         {
                           item.label
@@ -683,78 +1242,10 @@ export function SiteHeader() {
                   )}
                 </div>
               </div>
-
-              {/* STORY */}
-
-              <div className="menu-detail col-span-2 flex items-end justify-between border-t border-white/[0.08] pt-4">
-                <TransitionLink
-                  href="/trionn-story"
-                  onClick={
-                    closeMenu
-                  }
-                  className="group text-[9px] uppercase tracking-[0.05em] md:text-[10px]"
-                >
-                  <NavLabel>
-                    ✦ The TRIONN name Story
-                  </NavLabel>
-                </TransitionLink>
-
-                <div className="hidden text-right text-[8px] uppercase leading-[1.45] tracking-[0.05em] text-white/35 sm:block md:text-[9px]">
-                  <p>
-                    Est. 2012
-                  </p>
-
-                  <p>
-                    14+ years shaping
-                  </p>
-
-                  <p>
-                    digital direction.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
-
-      {/* ===================== */}
-      {/* LINK ROLLOVER */}
-      {/* ===================== */}
-
-      <style jsx global>{`
-        .nav-label-primary,
-        .nav-label-secondary {
-          transition:
-            transform 0.55s
-              cubic-bezier(
-                0.76,
-                0,
-                0.24,
-                1
-              ),
-            opacity 0.55s ease;
-        }
-
-        #site-navigation
-          a:hover
-          .nav-label-primary {
-          transform: translateY(-100%);
-        }
-
-        #site-navigation
-          a:hover
-          .nav-label-secondary {
-          transform: translateY(-100%);
-        }
-
-        @media (pointer: coarse) {
-          .nav-label-primary,
-          .nav-label-secondary {
-            transition: none;
-          }
-        }
-      `}</style>
     </header>
   );
 }

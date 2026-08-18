@@ -3,6 +3,7 @@
 import {
   useEffect,
   useRef,
+  useSyncExternalStore,
 } from "react";
 
 import {
@@ -16,6 +17,7 @@ import {
 import {
   gsap,
   ScrollTrigger,
+  SplitText,
   useGSAP,
 } from "@/lib/gsap/client";
 
@@ -30,6 +32,326 @@ import {
 import {
   HeroScene,
 } from "./HeroScene";
+
+const HERO_WORDS = [
+  "something.",
+  "intention.",
+  "depth.",
+  "impact.",
+  "purpose.",
+];
+
+const COOKIE_KEY =
+  "trionn-cookie-choice";
+
+const COOKIE_CHANGE_EVENT =
+  "trionn-cookie-change";
+
+function subscribeCookieChoice(
+  callback: () => void,
+) {
+  const handleChange =
+    () => {
+      callback();
+    };
+
+  window.addEventListener(
+    "storage",
+    handleChange,
+  );
+
+  window.addEventListener(
+    COOKIE_CHANGE_EVENT,
+    handleChange,
+  );
+
+  return () => {
+    window.removeEventListener(
+      "storage",
+      handleChange,
+    );
+
+    window.removeEventListener(
+      COOKIE_CHANGE_EVENT,
+      handleChange,
+    );
+  };
+}
+
+function getCookieSnapshot() {
+  return (
+    window.localStorage.getItem(
+      COOKIE_KEY,
+    ) === null
+  );
+}
+
+function getCookieServerSnapshot() {
+  return false;
+}
+
+function AnimatedCtaText({
+  text,
+}: {
+  text: string;
+}) {
+  return (
+    <span
+      data-cta-label
+      className="flex w-max whitespace-nowrap"
+    >
+      {text
+        .split("")
+        .map(
+          (
+            char,
+            index,
+          ) => (
+            <span
+              key={`${char}-${index}`}
+              data-cta-char
+              className="inline-block"
+            >
+              {char === " "
+                ? "\u00a0"
+                : char}
+            </span>
+          ),
+        )}
+    </span>
+  );
+}
+
+function animateCtaIn(
+  root:
+    HTMLElement,
+) {
+  const label =
+    root.querySelector<HTMLElement>(
+      "[data-cta-label]",
+    );
+
+  const chars =
+    Array.from(
+      root.querySelectorAll<HTMLElement>(
+        "[data-cta-char]",
+      ),
+    );
+
+  const leftArrow =
+    root.querySelector<HTMLElement>(
+      "[data-cta-arrow-left]",
+    );
+
+  const rightArrow =
+    root.querySelector<HTMLElement>(
+      "[data-cta-arrow-right]",
+    );
+
+  if (
+    !label ||
+    chars.length ===
+      0
+  ) {
+    return;
+  }
+
+  /*
+   * Right-align the real text,
+   * regardless of its length.
+   */
+  const shift =
+    Math.max(
+      24,
+
+      root.clientWidth -
+        label.scrollWidth -
+        2,
+    );
+
+  gsap.killTweensOf(
+    chars,
+  );
+
+  if (leftArrow) {
+    gsap.killTweensOf(
+      leftArrow,
+    );
+  }
+
+  if (rightArrow) {
+    gsap.killTweensOf(
+      rightArrow,
+    );
+  }
+
+  /*
+   * Every character travels to the
+   * exact same final offset.
+   *
+   * Because movement is staggered,
+   * spacing opens temporarily during
+   * the transition just like the
+   * reference capture.
+   */
+  gsap.to(
+    chars,
+    {
+      x:
+        shift,
+
+      duration:
+        0.48,
+
+      stagger: {
+        each:
+          0.014,
+
+        from:
+          "start",
+      },
+
+      ease:
+        "power3.out",
+
+      overwrite:
+        true,
+    },
+  );
+
+  if (leftArrow) {
+    gsap.to(
+      leftArrow,
+      {
+        x:
+          0,
+
+        autoAlpha:
+          1,
+
+        duration:
+          0.28,
+
+        delay:
+          0.04,
+
+        ease:
+          "power2.out",
+      },
+    );
+  }
+
+  if (rightArrow) {
+    gsap.to(
+      rightArrow,
+      {
+        x:
+          9,
+
+        autoAlpha:
+          0,
+
+        duration:
+          0.24,
+
+        ease:
+          "power2.out",
+      },
+    );
+  }
+}
+
+function animateCtaOut(
+  root:
+    HTMLElement,
+) {
+  const chars =
+    Array.from(
+      root.querySelectorAll<HTMLElement>(
+        "[data-cta-char]",
+      ),
+    );
+
+  const leftArrow =
+    root.querySelector<HTMLElement>(
+      "[data-cta-arrow-left]",
+    );
+
+  const rightArrow =
+    root.querySelector<HTMLElement>(
+      "[data-cta-arrow-right]",
+    );
+
+  gsap.killTweensOf(
+    chars,
+  );
+
+  gsap.to(
+    chars,
+    {
+      x:
+        0,
+
+      duration:
+        0.42,
+
+      stagger: {
+        each:
+          0.011,
+
+        from:
+          "end",
+      },
+
+      ease:
+        "power3.out",
+
+      overwrite:
+        true,
+    },
+  );
+
+  if (leftArrow) {
+    gsap.to(
+      leftArrow,
+      {
+        x:
+          -9,
+
+        autoAlpha:
+          0,
+
+        duration:
+          0.24,
+
+        ease:
+          "power2.out",
+      },
+    );
+  }
+
+  if (rightArrow) {
+    gsap.to(
+      rightArrow,
+      {
+        x:
+          0,
+
+        autoAlpha:
+          1,
+
+        duration:
+          0.28,
+
+        delay:
+          0.06,
+
+        ease:
+          "power2.out",
+      },
+    );
+  }
+}
 
 export function HomeHero() {
   const sectionRef =
@@ -52,659 +374,726 @@ export function HomeHero() {
       null,
     );
 
-  const phraseOneRef =
+  const wordsRef =
     useRef<HTMLSpanElement>(
       null,
     );
 
-  const phraseTwoRef =
-    useRef<HTMLSpanElement>(
-      null,
+  const cookieVisible =
+    useSyncExternalStore(
+      subscribeCookieChoice,
+      getCookieSnapshot,
+      getCookieServerSnapshot,
     );
 
-  // -------------------------
-  // ROTATING HERO PHRASE
-  // -------------------------
+  const chooseCookies =
+    (
+      choice:
+        | "accept"
+        | "decline",
+    ) => {
+      window.localStorage.setItem(
+        COOKIE_KEY,
+        choice,
+      );
+
+      window.dispatchEvent(
+        new Event(
+          COOKIE_CHANGE_EVENT,
+        ),
+      );
+    };
 
   useGSAP(
     () => {
-      const first =
-        phraseOneRef
-          .current;
+      const container =
+        wordsRef.current;
 
-      const second =
-        phraseTwoRef
-          .current;
+      if (!container) {
+        return;
+      }
+
+      const wordElements =
+        Array.from(
+          container.querySelectorAll<HTMLElement>(
+            "[data-hero-word]",
+          ),
+        );
 
       if (
-        !first ||
-        !second
+        wordElements.length <
+        2
       ) {
         return;
       }
 
+      const splits =
+        wordElements.map(
+          (
+            element,
+          ) =>
+            new SplitText(
+              element,
+              {
+                type:
+                  "chars",
+              },
+            ),
+        );
+
       gsap.set(
-        first,
+        wordElements,
         {
-          autoAlpha: 0,
-          filter:
-            "blur(12px)",
-          yPercent: 10,
+          autoAlpha:
+            0,
+        },
+      );
+
+      splits.forEach(
+        (
+          split,
+        ) => {
+          gsap.set(
+            split.chars,
+            {
+              autoAlpha:
+                0,
+
+              filter:
+                "blur(12px)",
+
+              willChange:
+                "filter, opacity",
+            },
+          );
         },
       );
 
       gsap.set(
-        second,
+        wordElements[0],
         {
-          autoAlpha: 0,
-          filter:
-            "blur(12px)",
-          yPercent: 15,
+          autoAlpha:
+            1,
         },
       );
 
-      const intro =
-        gsap.to(
-          first,
-          {
-            autoAlpha: 1,
-            filter:
-              "blur(0px)",
-            yPercent: 0,
+      gsap.set(
+        splits[0].chars,
+        {
+          autoAlpha:
+            1,
 
-            duration: 0.8,
+          filter:
+            "blur(0px)",
+        },
+      );
 
-            delay: 1.35,
+      const timeline =
+        gsap.timeline({
+          repeat:
+            -1,
 
-            ease:
-              "power2.out",
-          },
-        );
+          delay:
+            3.2,
+        });
 
-      const loop =
-        gsap.timeline(
-          {
-            repeat: -1,
-            repeatDelay:
-              0.5,
+      for (
+        let index = 0;
+        index <
+        wordElements.length;
+        index += 1
+      ) {
+        const currentElement =
+          wordElements[
+            index
+          ];
 
-            delay:
-              4.3,
-          },
-        );
+        const currentSplit =
+          splits[
+            index
+          ];
 
-      loop
-        .to(
-          first,
-          {
-            autoAlpha: 0,
-            filter:
-              "blur(12px)",
-            yPercent: -12,
-            duration: 0.55,
-            ease:
-              "power2.in",
-          },
-        )
-        .to(
-          second,
-          {
-            autoAlpha: 1,
-            filter:
-              "blur(0px)",
-            yPercent: 0,
-            duration: 0.65,
-            ease:
-              "power2.out",
-          },
-          "-=0.25",
-        )
-        .to(
-          {},
-          {
-            duration: 2.5,
-          },
-        )
-        .to(
-          second,
-          {
-            autoAlpha: 0,
-            filter:
-              "blur(12px)",
-            yPercent: -12,
-            duration: 0.55,
-            ease:
-              "power2.in",
-          },
-        )
-        .to(
-          first,
-          {
-            autoAlpha: 1,
-            filter:
-              "blur(0px)",
-            yPercent: 0,
-            duration: 0.65,
-            ease:
-              "power2.out",
-          },
-          "-=0.25",
-        )
-        .to(
-          {},
-          {
-            duration: 2.5,
-          },
-        );
+        const nextIndex =
+          (
+            index +
+            1
+          ) %
+          wordElements.length;
+
+        const nextElement =
+          wordElements[
+            nextIndex
+          ];
+
+        const nextSplit =
+          splits[
+            nextIndex
+          ];
+
+        timeline
+          .to(
+            {},
+            {
+              duration:
+                2.25,
+            },
+          )
+
+          .to(
+            currentSplit.chars,
+            {
+              autoAlpha:
+                0,
+
+              filter:
+                "blur(12px)",
+
+              duration:
+                0.52,
+
+              stagger: {
+                each:
+                  0.035,
+
+                from:
+                  "random",
+              },
+
+              ease:
+                "power2.in",
+            },
+          )
+
+          .set(
+            nextElement,
+            {
+              autoAlpha:
+                1,
+            },
+
+            "<",
+          )
+
+          .fromTo(
+            nextSplit.chars,
+            {
+              autoAlpha:
+                0,
+
+              filter:
+                "blur(12px)",
+            },
+
+            {
+              autoAlpha:
+                1,
+
+              filter:
+                "blur(0px)",
+
+              duration:
+                0.72,
+
+              stagger: {
+                each:
+                  0.05,
+
+                from:
+                  "random",
+              },
+
+              ease:
+                "power2.out",
+            },
+
+            "-=0.31",
+          )
+
+          .set(
+            currentElement,
+            {
+              autoAlpha:
+                0,
+            },
+          );
+      }
 
       return () => {
-        intro.kill();
-        loop.kill();
+        timeline.kill();
+
+        splits.forEach(
+          (
+            split,
+          ) => {
+            split.revert();
+          },
+        );
       };
     },
+
     {
       scope:
         sectionRef,
     },
   );
 
-  // -------------------------
-  // HERO RUNTIME
-  // -------------------------
+  useEffect(
+    () => {
+      const section =
+        sectionRef.current;
 
-  useEffect(() => {
-    const section =
-      sectionRef
-        .current;
+      const visual =
+        visualRef.current;
 
-    const visual =
-      visualRef
-        .current;
+      const foreground =
+        foregroundRef.current;
 
-    const foreground =
-      foregroundRef
-        .current;
+      const canvas =
+        canvasRef.current;
 
-    const canvas =
-      canvasRef
-        .current;
+      if (
+        !section ||
+        !visual ||
+        !canvas
+      ) {
+        return;
+      }
 
-    if (
-      !section ||
-      !visual ||
-      !canvas
-    ) {
-      return;
-    }
-
-    const vibrateElements =
-      Array.from(
-        visual
-          .querySelectorAll<HTMLElement>(
+      const vibrateElements =
+        Array.from(
+          visual.querySelectorAll<HTMLElement>(
             "[data-hero-vibrate]",
           ),
+        );
+
+      const navElements =
+        Array.from(
+          document.querySelectorAll<HTMLElement>(
+            "[data-hero-nav-vibrate]",
+          ),
+        );
+
+      vibrateElements.push(
+        ...navElements,
       );
 
-    const globalHeader =
-      document
-        .querySelector<HTMLElement>(
-          "header",
-        );
+      let vibrationActive =
+        false;
 
-    if (
-      globalHeader
-    ) {
-      vibrateElements
-        .push(
-          globalHeader,
-        );
-    }
-
-    let wasVibrating =
-      false;
-
-    const applyVibration =
-      (
-        amount: number,
-        phase: number,
-      ) => {
-        if (
-          amount >
-          0.001
-        ) {
-          wasVibrating =
-            true;
-
-          const x =
-            Math.sin(
-              phase,
-            ) *
-            2.2 *
-            amount;
-
-          const y =
-            Math.cos(
-              phase *
-                1.31,
-            ) *
-            1.6 *
-            amount;
-
-          for (
-            const element of
-            vibrateElements
+      const applyVibration =
+        (
+          amount: number,
+          phase: number,
+        ) => {
+          if (
+            amount >
+            0.001
           ) {
-            element
-              .style
-              .transition =
-              "none";
+            vibrationActive =
+              true;
 
-            element
-              .style
-              .transform =
-              `translate(${x}px, ${y}px)`;
+            const x =
+              (
+                Math.sin(
+                  phase,
+                ) *
+                  3.7 +
+                Math.sin(
+                  phase *
+                    2.17,
+                ) *
+                  0.9
+              ) *
+              amount;
+
+            const y =
+              (
+                Math.cos(
+                  phase *
+                    1.31,
+                ) *
+                  2.6 +
+                Math.sin(
+                  phase *
+                    1.73,
+                ) *
+                  0.55
+              ) *
+              amount;
+
+            gsap.killTweensOf(
+              vibrateElements,
+            );
+
+            gsap.set(
+              vibrateElements,
+              {
+                x,
+                y,
+
+                force3D:
+                  true,
+              },
+            );
+
+            return;
           }
 
-          return;
-        }
+          if (
+            !vibrationActive
+          ) {
+            return;
+          }
 
-        if (
-          !wasVibrating
-        ) {
-          return;
-        }
+          vibrationActive =
+            false;
 
-        wasVibrating =
-          false;
+          gsap.to(
+            vibrateElements,
+            {
+              x:
+                0,
 
-        for (
-          const element of
-          vibrateElements
-        ) {
-          element
-            .style
-            .transition =
-            "transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+              y:
+                0,
 
-          element
-            .style
-            .transform =
-            "perspective(600px) translate(0px, 0px) rotateX(0deg)";
-        }
-      };
+              duration:
+                0.7,
 
-    const scene =
-      new HeroScene(
-        canvas,
-        {
-          onHoverPanel:
-            () => {
-              audioManager
-                .pluck(
-                  {
-                    frequency:
-                      520,
+              ease:
+                "power3.out",
 
-                    strength:
-                      0.035,
-
-                    duration:
-                      0.08,
-                  },
-                );
+              clearProps:
+                "transform",
             },
+          );
+        };
 
-          onWeldSpark:
-            () => {
-              audioManager
-                .pluck(
-                  {
-                    frequency:
-                      900 +
-                      Math.random() *
-                        180,
+      const scene =
+        new HeroScene(
+          canvas,
+          {
+            onHoverPanel:
+              () => {
+                audioManager.pluck({
+                  frequency:
+                    520,
 
-                    strength:
-                      0.045,
+                  strength:
+                    0.035,
 
-                    duration:
-                      0.055,
-                  },
-                );
-            },
+                  duration:
+                    0.08,
+                });
+              },
 
-          onChargeStart:
-            () => {
-              void audioManager
-                .startCharge();
-            },
+            onWeldSpark:
+              () => {
+                audioManager.pluck({
+                  frequency:
+                    980 +
+                    Math.random() *
+                      220,
 
-          onChargeProgress:
-            (
-              progress,
-            ) => {
-              audioManager
-                .updateCharge(
+                  strength:
+                    0.06,
+
+                  duration:
+                    0.07,
+                });
+              },
+
+            onChargeStart:
+              () => {
+                void audioManager.startCharge();
+              },
+
+            onChargeProgress:
+              (
+                progress,
+              ) => {
+                audioManager.updateCharge(
                   progress,
                 );
-            },
+              },
 
-          onBlast:
-            () => {
-              audioManager
-                .stopCharge();
+            onBlast:
+              () => {
+                audioManager.stopCharge();
 
-              audioManager
-                .playBlast();
-            },
+                audioManager.playBlast();
+              },
 
-          onReturnStart:
-            () => {
-              audioManager
-                .stopCharge();
-            },
+            onReturnStart:
+              () => {
+                audioManager.stopCharge();
+              },
 
-          onVibrate:
-            (
-              amount,
-              phase,
-            ) => {
-              applyVibration(
+            onVibrate:
+              (
                 amount,
                 phase,
-              );
-            },
-        },
-      );
-
-    const unregister =
-      canvasManager
-        .register(
-          scene,
-          true,
-        );
-
-    // -------------------------
-    // VISIBILITY
-    // -------------------------
-
-    const observer =
-      new IntersectionObserver(
-        (
-          [
-            entry,
-          ],
-        ) => {
-          canvasManager
-            .setActive(
-              scene.id,
-              entry
-                .isIntersecting,
-            );
-        },
-
-        {
-          rootMargin:
-            "20% 0px",
-        },
-      );
-
-    observer.observe(
-      section,
-    );
-
-    // -------------------------
-    // SCROLL BRIDGE
-    // -------------------------
-
-    const scrollTrigger =
-      ScrollTrigger
-        .create(
-          {
-            trigger:
-              section,
-
-            start:
-              "top top",
-
-            end:
-              "bottom bottom",
-
-            onUpdate:
-              (
-                self,
               ) => {
-                scene
-                  .setScrollProgress(
-                    self.progress,
-                  );
-
-                if (
-                  foreground
-                ) {
-                  const fade =
-                    gsap.utils
-                      .clamp(
-                        0,
-                        1,
-                        (
-                          self
-                            .progress -
-                          0.04
-                        ) /
-                          0.2,
-                      );
-
-                  gsap.set(
-                    foreground,
-                    {
-                      autoAlpha:
-                        1 -
-                        fade,
-                    },
-                  );
-                }
+                applyVibration(
+                  amount,
+                  phase,
+                );
               },
           },
         );
 
-    scene.setScrollProgress(
-      scrollTrigger
-        .progress,
-    );
-
-    // -------------------------
-    // POINTER MOVE
-    // -------------------------
-
-    const handlePointerMove =
-      (
-        event:
-          PointerEvent,
-      ) => {
-        const bounds =
-          visual
-            .getBoundingClientRect();
-
-        const pixelX =
-          event.clientX -
-          bounds.left;
-
-        const pixelY =
-          event.clientY -
-          bounds.top;
-
-        const x =
-          (
-            pixelX /
-            bounds.width
-          ) *
-            2 -
-          1;
-
-        const y =
-          -(
-            (
-              pixelY /
-              bounds.height
-            ) *
-              2 -
-            1
-          );
-
-        scene.setPointer(
-          x,
-          y,
-          pixelX,
-          pixelY,
+      const unregister =
+        canvasManager.register(
+          scene,
+          true,
         );
-      };
 
-    // -------------------------
-    // LEAVE
-    // -------------------------
+      const observer =
+        new IntersectionObserver(
+          (
+            [
+              entry,
+            ],
+          ) => {
+            canvasManager.setActive(
+              scene.id,
+              entry.isIntersecting,
+            );
+          },
 
-    const handlePointerLeave =
-      () => {
-        scene
-          .resetPointer();
+          {
+            rootMargin:
+              "20% 0px",
+          },
+        );
 
-        audioManager
-          .stopCharge();
-      };
-
-    // -------------------------
-    // DOWN
-    // -------------------------
-
-    const handlePointerDown =
-      (
-        event:
-          PointerEvent,
-      ) => {
-        if (
-          !event.isPrimary
-        ) {
-          return;
-        }
-
-        void audioManager
-          .unlock();
-
-        scene
-          .startHold();
-      };
-
-    // -------------------------
-    // UP
-    // -------------------------
-
-    const handlePointerUp =
-      (
-        event:
-          PointerEvent,
-      ) => {
-        if (
-          !event.isPrimary
-        ) {
-          return;
-        }
-
-        scene.endHold();
-
-        audioManager
-          .stopCharge();
-      };
-
-    visual.addEventListener(
-      "pointermove",
-      handlePointerMove,
-    );
-
-    visual.addEventListener(
-      "pointerleave",
-      handlePointerLeave,
-    );
-
-    visual.addEventListener(
-      "pointerdown",
-      handlePointerDown,
-    );
-
-    window.addEventListener(
-      "pointerup",
-      handlePointerUp,
-    );
-
-    window.addEventListener(
-      "pointercancel",
-      handlePointerUp,
-    );
-
-    // -------------------------
-    // CLEANUP
-    // -------------------------
-
-    return () => {
-      observer.disconnect();
-
-      scrollTrigger.kill();
-
-      audioManager
-        .stopCharge();
-
-      applyVibration(
-        0,
-        0,
+      observer.observe(
+        section,
       );
 
-      visual.removeEventListener(
+      const trigger =
+        ScrollTrigger.create({
+          trigger:
+            section,
+
+          start:
+            "top top",
+
+          end:
+            "bottom bottom",
+
+          onUpdate:
+            (
+              self,
+            ) => {
+              scene.setScrollProgress(
+                self.progress,
+              );
+
+              if (
+                !foreground
+              ) {
+                return;
+              }
+
+              const fade =
+                gsap.utils.clamp(
+                  0,
+                  1,
+
+                  (
+                    self.progress -
+                    0.045
+                  ) /
+                    0.19,
+                );
+
+              gsap.set(
+                foreground,
+                {
+                  autoAlpha:
+                    1 -
+                    fade,
+                },
+              );
+            },
+        });
+
+      scene.setScrollProgress(
+        trigger.progress,
+      );
+
+      const handlePointerMove =
+        (
+          event:
+            PointerEvent,
+        ) => {
+          const bounds =
+            visual.getBoundingClientRect();
+
+          const pixelX =
+            event.clientX -
+            bounds.left;
+
+          const pixelY =
+            event.clientY -
+            bounds.top;
+
+          const x =
+            (
+              pixelX /
+              bounds.width
+            ) *
+              2 -
+            1;
+
+          const y =
+            -(
+              (
+                pixelY /
+                bounds.height
+              ) *
+                2 -
+              1
+            );
+
+          scene.setPointer(
+            x,
+            y,
+            pixelX,
+            pixelY,
+          );
+        };
+
+      const handlePointerLeave =
+        () => {
+          scene.resetPointer();
+
+          audioManager.stopCharge();
+        };
+
+      const handlePointerDown =
+        (
+          event:
+            PointerEvent,
+        ) => {
+          if (
+            !event.isPrimary
+          ) {
+            return;
+          }
+
+          void audioManager.unlock();
+
+          scene.startHold();
+        };
+
+      const handlePointerUp =
+        (
+          event:
+            PointerEvent,
+        ) => {
+          if (
+            !event.isPrimary
+          ) {
+            return;
+          }
+
+          scene.endHold();
+
+          audioManager.stopCharge();
+        };
+
+      visual.addEventListener(
         "pointermove",
         handlePointerMove,
       );
 
-      visual.removeEventListener(
+      visual.addEventListener(
         "pointerleave",
         handlePointerLeave,
       );
 
-      visual.removeEventListener(
+      visual.addEventListener(
         "pointerdown",
         handlePointerDown,
       );
 
-      window.removeEventListener(
+      window.addEventListener(
         "pointerup",
         handlePointerUp,
       );
 
-      window.removeEventListener(
+      window.addEventListener(
         "pointercancel",
         handlePointerUp,
       );
 
-      unregister();
-    };
-  }, []);
+      return () => {
+        observer.disconnect();
+
+        trigger.kill();
+
+        audioManager.stopCharge();
+
+        gsap.killTweensOf(
+          vibrateElements,
+        );
+
+        gsap.set(
+          vibrateElements,
+          {
+            clearProps:
+              "transform",
+          },
+        );
+
+        visual.removeEventListener(
+          "pointermove",
+          handlePointerMove,
+        );
+
+        visual.removeEventListener(
+          "pointerleave",
+          handlePointerLeave,
+        );
+
+        visual.removeEventListener(
+          "pointerdown",
+          handlePointerDown,
+        );
+
+        window.removeEventListener(
+          "pointerup",
+          handlePointerUp,
+        );
+
+        window.removeEventListener(
+          "pointercancel",
+          handlePointerUp,
+        );
+
+        unregister();
+      };
+    },
+
+    [],
+  );
 
   return (
     <section
       ref={sectionRef}
-      className="relative h-[175svh] bg-[#090909] text-white md:h-[190svh]"
+      className="relative h-[180svh] bg-[#0a0a0a] text-white md:h-[190svh]"
     >
       <div
         ref={visualRef}
-        className="sticky top-0 h-[100svh] select-none overflow-hidden"
+        className="sticky top-0 h-[100svh] select-none overflow-hidden bg-[#0a0a0a]"
       >
-        {/* WEBGL */}
-
         <canvas
           ref={canvasRef}
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-0 h-full w-full"
         />
-
-        {/* DOM FOREGROUND */}
 
         <div
           ref={foregroundRef}
@@ -712,10 +1101,10 @@ export function HomeHero() {
         >
           {/* HEADLINE */}
 
-          <div className="absolute left-5 top-[13vh] md:left-10 md:top-[12vh]">
+          <div className="absolute left-[2.1vw] top-[11.9vh] max-md:left-5 max-md:top-[13vh]">
             <h1
               data-hero-vibrate
-              className="max-w-[11ch] text-[clamp(3rem,5.3vw,6rem)] font-medium leading-[0.93] tracking-[-0.065em]"
+              className="text-[clamp(3.95rem,5.1vw,5.55rem)] font-normal leading-[0.92] tracking-[-0.068em] text-[#c8c8c5]"
             >
               <span className="block">
                 <BlurTextReveal
@@ -725,63 +1114,198 @@ export function HomeHero() {
                 />
               </span>
 
-              <span className="relative block h-[0.98em] whitespace-nowrap">
-                <span
-                  ref={phraseOneRef}
-                  className="absolute left-0 top-0"
-                >
-                  mean something.
+              <span className="flex whitespace-nowrap">
+                <BlurTextReveal
+                  text="mean"
+                  delay={1.32}
+                  stagger={0.08}
+                />
+
+                <span aria-hidden="true">
+                  &nbsp;
                 </span>
 
                 <span
-                  ref={phraseTwoRef}
-                  className="absolute left-0 top-0 opacity-0"
+                  ref={wordsRef}
+                  className="relative inline-block min-w-[5.8em]"
                 >
-                  mean intention.
+                  {HERO_WORDS.map(
+                    (
+                      word,
+                      index,
+                    ) => (
+                      <span
+                        key={word}
+                        data-hero-word
+                        className={[
+                          "absolute left-0 top-0",
+
+                          index ===
+                          0
+                            ? ""
+                            : "opacity-0",
+                        ].join(" ")}
+                      >
+                        {
+                          word
+                        }
+                      </span>
+                    ),
+                  )}
+
+                  <span className="invisible">
+                    something.
+                  </span>
                 </span>
               </span>
             </h1>
 
-            <TransitionLink
-              data-hero-vibrate
-              href="/#contact"
-              className="pointer-events-auto mt-7 inline-flex min-w-36 items-center justify-between border-b border-white/40 pb-2 text-[9px] font-medium uppercase tracking-[0.12em] md:text-[10px]"
-            >
-              <span>
-                Start a project
-              </span>
+            {/* CTA */}
 
-              <span>
-                →
-              </span>
-            </TransitionLink>
+            <div
+              data-hero-vibrate
+              className="pointer-events-auto mt-[34px] flex flex-col gap-[18px] sm:flex-row"
+            >
+              <TransitionLink
+                href="/contact"
+                onMouseEnter={
+                  (
+                    event,
+                  ) => {
+                    animateCtaIn(
+                      event.currentTarget,
+                    );
+                  }
+                }
+                onMouseLeave={
+                  (
+                    event,
+                  ) => {
+                    animateCtaOut(
+                      event.currentTarget,
+                    );
+                  }
+                }
+                className="relative flex h-[34px] w-[220px] items-start overflow-hidden border-b border-[#bebeba]/70 pt-[2px] font-mono text-[11px] font-normal uppercase tracking-[-0.025em] text-[#c9c9c5]"
+              >
+                <span
+                  data-cta-arrow-left
+                  className="absolute left-0 top-[2px] z-10 -translate-x-[9px] opacity-0"
+                >
+                  →
+                </span>
+
+                <AnimatedCtaText
+                  text="Discuss your project"
+                />
+
+                <span
+                  data-cta-arrow-right
+                  className="absolute right-0 top-[2px]"
+                >
+                  →
+                </span>
+              </TransitionLink>
+
+              <a
+                href="https://calendly.com/hello-trionn/30min"
+                target="_blank"
+                rel="noreferrer"
+                onMouseEnter={
+                  (
+                    event,
+                  ) => {
+                    animateCtaIn(
+                      event.currentTarget,
+                    );
+                  }
+                }
+                onMouseLeave={
+                  (
+                    event,
+                  ) => {
+                    animateCtaOut(
+                      event.currentTarget,
+                    );
+                  }
+                }
+                className="relative flex h-[34px] w-[220px] items-start overflow-hidden border-b border-[#bebeba]/70 pt-[2px] font-mono text-[11px] font-normal uppercase tracking-[-0.025em] text-[#c9c9c5]"
+              >
+                <span
+                  data-cta-arrow-left
+                  className="absolute left-0 top-[2px] z-10 -translate-x-[9px] opacity-0"
+                >
+                  →
+                </span>
+
+                <AnimatedCtaText
+                  text="Book a 30-minute call"
+                />
+
+                <span
+                  data-cta-arrow-right
+                  className="absolute right-0 top-[2px]"
+                >
+                  →
+                </span>
+              </a>
+            </div>
           </div>
 
-          {/* EST / STAT */}
+          {/* STATS */}
 
           <div
             data-hero-vibrate
-            className="absolute right-5 top-[54%] hidden w-[230px] -translate-y-1/2 md:right-10 md:block"
+            className="absolute bottom-[6.8vh] right-[2.15vw] hidden w-[210px] md:block"
           >
-            <div className="flex items-start gap-3 border-t border-white/30 pt-3">
-              <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border border-white/40 text-[9px]">
-                ◎
+            <div className="grid grid-cols-[72px_1fr] border border-white/[0.16]">
+              <div className="flex min-h-[62px] flex-col items-center justify-center border-r border-white/[0.16]">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 28 18"
+                  className="mb-[5px] h-[16px] w-[25px]"
+                  fill="none"
+                >
+                  <ellipse
+                    cx="14"
+                    cy="9"
+                    rx="11"
+                    ry="7"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  />
+
+                  <ellipse
+                    cx="14"
+                    cy="9"
+                    rx="5"
+                    ry="7"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  />
+
+                  <path
+                    d="M3 9H25"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  />
+                </svg>
+
+                <span className="text-[7px] uppercase tracking-[0.05em]">
+                  Est. 2012
+                </span>
               </div>
 
-              <div className="text-[9px] uppercase leading-[1.35] tracking-[0.08em]">
-                <p>
-                  Est. 2012
-                </p>
-
-                <p>
+              <div className="flex min-h-[62px] items-center px-[11px] text-[7px] uppercase leading-[1.35] tracking-[0.04em] md:text-[8px]">
+                <span>
                   14+ years shaping
                   <br />
                   digital direction.
-                </p>
+                </span>
               </div>
             </div>
 
-            <p className="mt-5 text-[9px] leading-[1.45] text-white/70">
+            <p className="mt-[17px] text-[10px] leading-[1.35] text-white/75">
               Websites, AI products,
               brands, and systems built
               for clarity, scale and
@@ -789,32 +1313,83 @@ export function HomeHero() {
             </p>
           </div>
 
-          {/* BOTTOM LEFT */}
+          {/* SCROLL */}
 
           <div
             data-hero-vibrate
-            className="absolute bottom-6 left-5 md:bottom-8 md:left-10"
+            className="absolute bottom-[22px] left-[2.1vw] max-md:left-5"
           >
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-white/30 text-[8px]">
+            <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-white/30 text-[7px]">
               ↓
             </div>
           </div>
 
-          {/* INTERACTION HINT */}
+          {/* INTERACTION */}
 
           <div
             data-hero-vibrate
-            className="absolute bottom-6 right-5 text-right text-[8px] font-medium uppercase leading-[1.5] tracking-[0.08em] md:bottom-8 md:right-10 md:text-[9px]"
+            className="absolute bottom-[27px] left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[12px] font-normal uppercase leading-[1.3] tracking-[-0.025em] text-[#ccccca]"
           >
-            <p>
-              Hold to 💥 blast
+            <p className="flex items-center justify-center gap-[7px]">
+              <span>
+                Hold to
+              </span>
+
+              <span className="text-[15px] leading-none text-[#ff5a19]">
+                ✹
+              </span>
+
+              <span>
+                Blast
+              </span>
             </p>
 
             <p>
-              Dare ⚡ to touch the lines.
+              Dare{" "}
+              <span className="text-[#ffd126]">
+                ϟ
+              </span>{" "}
+              to touch the lines.
             </p>
           </div>
         </div>
+
+        {/* COOKIE */}
+
+        {cookieVisible && (
+          <div className="pointer-events-auto absolute bottom-[82px] left-1/2 z-20 flex -translate-x-1/2 items-center gap-6 border border-white/[0.12] bg-[#111]/95 px-4 py-[11px] text-[7px] uppercase tracking-[0.025em] text-white/60 backdrop-blur-sm md:text-[8px]">
+            <span className="whitespace-nowrap">
+              We use cookies to
+              enhance your experience.
+            </span>
+
+            <div className="flex items-center gap-[9px] text-white/85">
+              <button
+                type="button"
+                onClick={() => {
+                  chooseCookies(
+                    "decline",
+                  );
+                }}
+                className="uppercase transition-opacity hover:opacity-50"
+              >
+                Decline
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  chooseCookies(
+                    "accept",
+                  );
+                }}
+                className="uppercase transition-opacity hover:opacity-50"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

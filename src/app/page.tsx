@@ -1,18 +1,30 @@
+import type {
+  Metadata,
+} from "next";
+
 import {
   HomeHero,
 } from "@/features/home-hero/HomeHero";
 
+import {
+  ServicesSequence,
+} from "@/features/services-sequence/ServicesSequence";
+
+export const metadata:
+  Metadata = {
+    title:
+      "TRIONN | AI-Powered Creative Design & Development Studio in India",
+
+    description:
+      "Independent digital studio creating meaningful brand experiences through strategy, design, technology, AI, and development.",
+  };
+
 export default function Home() {
   return (
-    <main>
+    <main className="bg-[#090909]">
       <HomeHero />
 
-      <section className="flex min-h-screen items-center justify-center bg-[#ece9df] px-6 text-black">
-        <p className="max-w-3xl text-center text-4xl font-medium leading-tight md:text-7xl">
-          Architecture before
-          spectacle.
-        </p>
-      </section>
+      <ServicesSequence />
     </main>
   );
 }
