@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  useRef,
-} from "react";
+import { useRef } from "react";
 
 import {
   ScrollTrigger,
@@ -13,54 +11,37 @@ import {
   canvasManager,
 } from "@/runtime/canvas/CanvasManager";
 
-const STRIPE_COUNT =
-  6;
+const STRIPE_COUNT = 6;
 
-const STRIPE_START =
-  0.03;
+/*
+ * 0.04 + (5 × 0.11) + 0.41 = 1.00
+ *
+ * Final stripe therefore finishes
+ * exactly at the end of the wipe.
+ */
+const STRIPE_START = 0.04;
+const STRIPE_STEP = 0.11;
+const STRIPE_DURATION = 0.41;
 
-const STRIPE_STEP =
-  0.105;
-
-const STRIPE_DURATION =
-  0.445;
-
-function clamp01(
-  value:
-    number,
-) {
+function clamp01(value: number) {
   return Math.min(
     1,
-    Math.max(
-      0,
-      value,
-    ),
+    Math.max(0, value),
   );
 }
 
-function smoothStep(
-  value:
-    number,
-) {
-  const t =
-    clamp01(
-      value,
-    );
+function smoothStep(value: number) {
+  const t = clamp01(value);
 
   return (
     t *
     t *
-    (
-      3 -
-      2 * t
-    )
+    (3 - 2 * t)
   );
 }
 
 function setTheme(
-  theme:
-    | "dark"
-    | "light",
+  theme: "dark" | "light",
 ) {
   document.documentElement.dataset.pageTheme =
     theme;
@@ -68,9 +49,7 @@ function setTheme(
 
 export function HomeStripeWipe() {
   const sectionRef =
-    useRef<HTMLElement>(
-      null,
-    );
+    useRef<HTMLElement>(null);
 
   useGSAP(
     () => {
@@ -101,287 +80,218 @@ export function HomeStripeWipe() {
       }
 
       stripes.forEach(
-        (
-          stripe,
-        ) => {
+        (stripe) => {
           stripe.style.transform =
             "translate3d(0, 102%, 0)";
         },
       );
 
       if (caption) {
-        caption.style.opacity =
-          "0";
+        caption.style.opacity = "0";
 
         caption.style.transform =
           "translate3d(-50%, 10px, 0)";
       }
 
-      let heroPaused =
-        false;
+      let heroPaused = false;
 
       let currentTheme:
         | "dark"
-        | "light" =
-        "dark";
+        | "light" = "dark";
 
-      const setHeroPaused =
-        (
-          paused:
-            boolean,
-        ) => {
-          if (
-            heroPaused ===
-            paused
-          ) {
-            return;
-          }
+      const setHeroPaused = (
+        paused: boolean,
+      ) => {
+        if (
+          heroPaused === paused
+        ) {
+          return;
+        }
 
-          heroPaused =
-            paused;
+        heroPaused = paused;
 
-          canvasManager.setActive(
-            "home-hero",
-            !paused,
-          );
-        };
+        canvasManager.setActive(
+          "home-hero",
+          !paused,
+        );
+      };
 
-      const changeTheme =
-        (
-          theme:
-            | "dark"
-            | "light",
-        ) => {
-          if (
-            currentTheme ===
-            theme
-          ) {
-            return;
-          }
+      const changeTheme = (
+        theme:
+          | "dark"
+          | "light",
+      ) => {
+        if (
+          currentTheme === theme
+        ) {
+          return;
+        }
 
-          currentTheme =
-            theme;
+        currentTheme = theme;
 
-          setTheme(
-            theme,
-          );
-        };
+        setTheme(theme);
+      };
 
-      const update =
-        (
-          rawProgress:
-            number,
-        ) => {
-          const progress =
-            clamp01(
-              rawProgress,
+      const update = (
+        rawProgress: number,
+      ) => {
+        const progress =
+          clamp01(rawProgress);
+
+        /*
+         * Performance fix stays.
+         *
+         * At this point enough of the
+         * dark scene is already covered
+         * that WebGL can stop working.
+         */
+        setHeroPaused(
+          progress > 0.58,
+        );
+
+        /*
+         * Bottom → top.
+         *
+         * More spacing between starts
+         * than the previous version.
+         * This keeps the six bands
+         * visually distinct.
+         */
+        for (
+          let orderIndex = 0;
+          orderIndex <
+          STRIPE_COUNT;
+          orderIndex += 1
+        ) {
+          const stripeIndex =
+            STRIPE_COUNT -
+            1 -
+            orderIndex;
+
+          const start =
+            STRIPE_START +
+            orderIndex *
+              STRIPE_STEP;
+
+          const localProgress =
+            smoothStep(
+              (
+                progress -
+                start
+              ) /
+                STRIPE_DURATION,
             );
 
-          /*
-           * Keep model alive behind
-           * nearly the entire wipe.
-           */
-          setHeroPaused(
-            progress >
-              0.93,
-          );
-
-          /*
-           * Bottom → top.
-           *
-           * New timing:
-           *
-           * first starts .03
-           * every next one +.105
-           * duration .445
-           *
-           * final:
-           *
-           * .03 + 5*.105 + .445 = 1.0
-           *
-           * Deliberate.
-           */
-          for (
-            let orderIndex =
-              0;
-
-            orderIndex <
-            STRIPE_COUNT;
-
-            orderIndex +=
-              1
-          ) {
-            const stripeIndex =
-              STRIPE_COUNT -
+          const yPercent =
+            102 *
+            (
               1 -
-              orderIndex;
+              localProgress
+            );
 
-            const start =
-              STRIPE_START +
-              orderIndex *
-                STRIPE_STEP;
+          stripes[
+            stripeIndex
+          ].style.transform =
+            `translate3d(0, ${yPercent}%, 0)`;
+        }
 
-            const localProgress =
-              smoothStep(
-                (
-                  progress -
-                  start
-                ) /
-                  STRIPE_DURATION,
-              );
+        /*
+         * Caption stays inside the
+         * moving-band phase.
+         */
+        if (caption) {
+          const enter =
+            smoothStep(
+              (
+                progress -
+                0.2
+              ) /
+                0.14,
+            );
 
-            const y =
-              102 *
+          const leave =
+            smoothStep(
+              (
+                progress -
+                0.77
+              ) /
+                0.13,
+            );
+
+          const opacity =
+            enter *
+            (
+              1 -
+              leave
+            );
+
+          const y =
+            10 *
               (
                 1 -
-                localProgress
-              );
+                enter
+              ) -
+            7 *
+              leave;
 
-            stripes[
-              stripeIndex
-            ].style.transform =
-              `translate3d(
-                0,
-                ${y}%,
-                0
-              )`;
-          }
+          caption.style.opacity =
+            `${opacity}`;
 
-          if (caption) {
-            const enter =
-              smoothStep(
-                (
-                  progress -
-                  0.24
-                ) /
-                  0.13,
-              );
+          caption.style.transform =
+            `translate3d(-50%, ${y}px, 0)`;
+        }
 
-            const leave =
-              smoothStep(
-                (
-                  progress -
-                  0.79
-                ) /
-                  0.12,
-              );
-
-            const opacity =
-              enter *
-              (
-                1 -
-                leave
-              );
-
-            const y =
-              10 *
-                (
-                  1 -
-                  enter
-                ) -
-              7 *
-                leave;
-
-            caption.style.opacity =
-              `${opacity}`;
-
-            caption.style.transform =
-              `translate3d(
-                -50%,
-                ${y}px,
-                0
-              )`;
-          }
-
-          if (
-            progress >=
-            0.94
-          ) {
-            changeTheme(
-              "light",
-            );
-          } else {
-            changeTheme(
-              "dark",
-            );
-          }
-        };
+        if (
+          progress >=
+          0.9
+        ) {
+          changeTheme("light");
+        } else {
+          changeTheme("dark");
+        }
+      };
 
       const trigger =
         ScrollTrigger.create({
-          trigger:
-            section,
+          trigger: section,
 
-          start:
-            "top top",
+          start: "top top",
 
-          end:
-            "bottom bottom",
+          end: "bottom bottom",
 
           invalidateOnRefresh:
             true,
 
-          onUpdate:
-            (
-              self,
-            ) => {
-              update(
-                self.progress,
-              );
-            },
+          onUpdate: (self) => {
+            update(self.progress);
+          },
 
-          onEnter:
-            (
-              self,
-            ) => {
-              update(
-                self.progress,
-              );
-            },
+          onEnter: (self) => {
+            update(self.progress);
+          },
 
-          onEnterBack:
-            (
-              self,
-            ) => {
-              update(
-                self.progress,
-              );
-            },
+          onEnterBack: (self) => {
+            update(self.progress);
+          },
 
-          onLeave:
-            () => {
-              update(
-                1,
-              );
+          onLeave: () => {
+            update(1);
 
-              setHeroPaused(
-                true,
-              );
+            setHeroPaused(true);
 
-              changeTheme(
-                "light",
-              );
-            },
+            changeTheme("light");
+          },
 
-          onLeaveBack:
-            () => {
-              update(
-                0,
-              );
+          onLeaveBack: () => {
+            update(0);
 
-              setHeroPaused(
-                false,
-              );
+            setHeroPaused(false);
 
-              changeTheme(
-                "dark",
-              );
-            },
+            changeTheme("dark");
+          },
         });
 
-      update(
-        trigger.progress,
-      );
+      update(trigger.progress);
 
       return () => {
         trigger.kill();
@@ -392,10 +302,8 @@ export function HomeStripeWipe() {
         );
       };
     },
-
     {
-      scope:
-        sectionRef,
+      scope: sectionRef,
     },
   );
 
@@ -406,8 +314,8 @@ export function HomeStripeWipe() {
         pointer-events-none
         relative
         z-[45]
-        -mt-[155svh]
-        h-[270svh]
+        -mt-[145svh]
+        h-[280svh]
         bg-transparent
       "
     >
@@ -421,13 +329,9 @@ export function HomeStripeWipe() {
         "
       >
         {Array.from({
-          length:
-            STRIPE_COUNT,
+          length: STRIPE_COUNT,
         }).map(
-          (
-            _,
-            index,
-          ) => {
+          (_, index) => {
             const top =
               (
                 index /
@@ -441,9 +345,7 @@ export function HomeStripeWipe() {
 
             return (
               <div
-                key={
-                  index
-                }
+                key={index}
                 className="
                   absolute
                   left-0

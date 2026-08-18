@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
+  --background: #090909;
   --foreground: #ffffff;
 }
 
@@ -24,12 +24,10 @@ body {
   color: var(--foreground);
   overflow-x: hidden;
   font-family:
-    "Helvetica Neue",
-    Helvetica,
     Arial,
+    Helvetica,
     sans-serif;
   -webkit-font-smoothing: antialiased;
-  text-rendering: geometricPrecision;
 }
 
 a {
@@ -44,15 +42,75 @@ select {
   font: inherit;
 }
 
-button {
-  color: inherit;
-}
-
 canvas {
   display: block;
 }
 
 ::selection {
   background: #ffffff;
-  color: #0a0a0a;
+  color: #090909;
+}
+
+/*
+ * DARK AREA
+ */
+
+html:not([data-page-theme="light"])
+  [data-hero-nav-vibrate] {
+  mix-blend-mode: difference;
+}
+
+/*
+ * LIGHT AREA
+ *
+ * StripeWipe / KeyFacts explicitly
+ * switch the root theme instead of
+ * relying on blend-mode guessing.
+ */
+
+html[data-page-theme="light"]
+  [data-hero-nav-vibrate] {
+  mix-blend-mode: normal;
+}
+
+html[data-page-theme="light"]
+  [data-hero-nav-vibrate]
+  > a {
+  color: #1b1b1b !important;
+  -webkit-text-fill-color: #1b1b1b !important;
+}
+
+html[data-page-theme="light"]
+  [data-hero-nav-vibrate]
+  button[aria-label="Mute sound"],
+html[data-page-theme="light"]
+  [data-hero-nav-vibrate]
+  button[aria-label="Enable sound"] {
+  background: rgba(0, 0, 0, 0.07) !important;
+  color: #242424 !important;
+}
+
+html[data-page-theme="light"]
+  [data-hero-nav-vibrate]
+  a[href="/contact"] {
+  background: #323232 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-page-theme="light"]
+  [data-hero-nav-vibrate]
+  button[aria-label="Open menu"] {
+  border-color: rgba(
+    25,
+    25,
+    25,
+    0.68
+  ) !important;
+
+  color: #1b1b1b !important;
+}
+
+#site-navigation {
+  mix-blend-mode: normal;
 }

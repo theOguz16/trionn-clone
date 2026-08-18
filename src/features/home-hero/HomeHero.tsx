@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type RefObject,
   useEffect,
   useRef,
   useSyncExternalStore,
@@ -90,6 +91,80 @@ function getCookieServerSnapshot() {
   return false;
 }
 
+/*
+ * These are NOT short paths.
+ *
+ * Each ellipse is much larger than
+ * the viewport. We only see a small
+ * arc of it, so the line appears to
+ * continue beyond both edges of the
+ * screen.
+ *
+ * The WebGL canvas is rendered above
+ * this SVG, which means the lines
+ * visibly continue behind the model.
+ */
+
+function PersistentGuideLines({
+  lineRef,
+}: {
+  lineRef:
+    RefObject<
+      SVGSVGElement | null
+    >;
+}) {
+  return (
+    <svg
+      ref={lineRef}
+      aria-hidden="true"
+      viewBox="-500 -350 2600 1750"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-0"
+    >
+      <g
+        fill="none"
+        strokeLinecap="round"
+      >
+        <ellipse
+          cx="760"
+          cy="1130"
+          rx="1600"
+          ry="545"
+          transform="rotate(-13 760 1130)"
+          stroke="#3f4958"
+          strokeWidth="1.35"
+          opacity="0.72"
+          vectorEffect="non-scaling-stroke"
+        />
+
+        <ellipse
+          cx="720"
+          cy="1030"
+          rx="1420"
+          ry="700"
+          transform="rotate(-24 720 1030)"
+          stroke="#343e4c"
+          strokeWidth="1.2"
+          opacity="0.64"
+          vectorEffect="non-scaling-stroke"
+        />
+
+        <ellipse
+          cx="820"
+          cy="1080"
+          rx="1740"
+          ry="840"
+          transform="rotate(15 820 1080)"
+          stroke="#303947"
+          strokeWidth="1.1"
+          opacity="0.56"
+          vectorEffect="non-scaling-stroke"
+        />
+      </g>
+    </svg>
+  );
+}
+
 function AnimatedCtaText({
   text,
 }: {
@@ -150,20 +225,14 @@ function animateCtaIn(
 
   if (
     !label ||
-    chars.length ===
-      0
+    chars.length === 0
   ) {
     return;
   }
 
-  /*
-   * Right-align the real text,
-   * regardless of its length.
-   */
   const shift =
     Math.max(
       24,
-
       root.clientWidth -
         label.scrollWidth -
         2,
@@ -173,27 +242,6 @@ function animateCtaIn(
     chars,
   );
 
-  if (leftArrow) {
-    gsap.killTweensOf(
-      leftArrow,
-    );
-  }
-
-  if (rightArrow) {
-    gsap.killTweensOf(
-      rightArrow,
-    );
-  }
-
-  /*
-   * Every character travels to the
-   * exact same final offset.
-   *
-   * Because movement is staggered,
-   * spacing opens temporarily during
-   * the transition just like the
-   * reference capture.
-   */
   gsap.to(
     chars,
     {
@@ -353,6 +401,28 @@ function animateCtaOut(
   }
 }
 
+function smoothStep(
+  value:
+    number,
+) {
+  const t =
+    gsap.utils.clamp(
+      0,
+      1,
+      value,
+    );
+
+  return (
+    t *
+    t *
+    (
+      3 -
+      2 *
+        t
+    )
+  );
+}
+
 export function HomeHero() {
   const sectionRef =
     useRef<HTMLElement>(
@@ -369,8 +439,18 @@ export function HomeHero() {
       null,
     );
 
+  const statsRef =
+    useRef<HTMLDivElement>(
+      null,
+    );
+
   const canvasRef =
     useRef<HTMLCanvasElement>(
+      null,
+    );
+
+  const linesRef =
+    useRef<SVGSVGElement>(
       null,
     );
 
@@ -648,8 +728,14 @@ export function HomeHero() {
       const foreground =
         foregroundRef.current;
 
+      const stats =
+        statsRef.current;
+
       const canvas =
         canvasRef.current;
+
+      const persistentLines =
+        linesRef.current;
 
       if (
         !section ||
@@ -682,8 +768,11 @@ export function HomeHero() {
 
       const applyVibration =
         (
-          amount: number,
-          phase: number,
+          amount:
+            number,
+
+          phase:
+            number,
         ) => {
           if (
             amount >
@@ -871,6 +960,225 @@ export function HomeHero() {
         section,
       );
 
+      const applyProgress =
+        (
+          rawProgress:
+            number,
+        ) => {
+          const raw =
+            gsap.utils.clamp(
+              0,
+              1,
+              rawProgress,
+            );
+
+          /*
+           * 0.00 → 0.19
+           * first-screen explosion
+           *
+           * 0.19 → 0.50
+           * About:
+           * FULLY EXPLODED
+           *
+           * 0.50 → 0.62
+           * Focus transition:
+           * panels join again
+           *
+           * 0.62 → 0.88
+           * fully assembled
+           *
+           * 0.88 → 1
+           * complete WebGL fade
+           */
+
+          let sceneProgress =
+            0;
+
+          if (
+            raw <=
+            0.19
+          ) {
+            sceneProgress =
+              smoothStep(
+                raw /
+                  0.19,
+              );
+          } else if (
+            raw <=
+            0.5
+          ) {
+            sceneProgress =
+              1;
+          } else if (
+            raw <=
+            0.62
+          ) {
+            const join =
+              smoothStep(
+                (
+                  raw -
+                  0.5
+                ) /
+                  0.12,
+              );
+
+            sceneProgress =
+              1 -
+              join;
+          } else {
+            sceneProgress =
+              0;
+          }
+
+          scene.setScrollProgress(
+            sceneProgress,
+          );
+
+          /*
+           * Hero copy leaves early.
+           */
+
+          if (foreground) {
+            const fade =
+              gsap.utils.clamp(
+                0,
+                1,
+
+                (
+                  raw -
+                  0.035
+                ) /
+                  0.07,
+              );
+
+            gsap.set(
+              foreground,
+              {
+                autoAlpha:
+                  1 -
+                  fade,
+              },
+            );
+          }
+
+          /*
+           * Experience card survives into
+           * the first part of About.
+           */
+
+          if (stats) {
+            const statsFade =
+              gsap.utils.clamp(
+                0,
+                1,
+
+                (
+                  raw -
+                  0.28
+                ) /
+                  0.13,
+              );
+
+            gsap.set(
+              stats,
+              {
+                autoAlpha:
+                  1 -
+                  statsFade,
+
+                y:
+                  -12 *
+                  statsFade,
+              },
+            );
+          }
+
+          /*
+           * Huge ellipse guide lines:
+           *
+           * visible through hero and
+           * early exploded About,
+           * then disappear while About
+           * copy becomes dominant.
+           */
+
+          if (
+            persistentLines
+          ) {
+            const lineIn =
+              gsap.utils.clamp(
+                0,
+                1,
+
+                (
+                  raw -
+                  0.045
+                ) /
+                  0.08,
+              );
+
+            const lineOut =
+              gsap.utils.clamp(
+                0,
+                1,
+
+                (
+                  raw -
+                  0.31
+                ) /
+                  0.17,
+              );
+
+            gsap.set(
+              persistentLines,
+              {
+                autoAlpha:
+                  lineIn *
+                  (
+                    1 -
+                    lineOut
+                  ),
+
+                x:
+                  -24 *
+                  raw,
+
+                y:
+                  -10 *
+                  raw,
+              },
+            );
+          }
+
+          /*
+           * After the symbol has joined
+           * completely, the whole WebGL
+           * scene disappears while the
+           * stripe transition begins.
+           */
+
+          const canvasFade =
+            gsap.utils.clamp(
+              0,
+              1,
+
+              (
+                raw -
+                0.88
+              ) /
+                0.12,
+            );
+
+          gsap.set(
+            canvas,
+            {
+              autoAlpha:
+                1 -
+                canvasFade,
+            },
+          );
+        };
+
       const trigger =
         ScrollTrigger.create({
           trigger:
@@ -886,40 +1194,13 @@ export function HomeHero() {
             (
               self,
             ) => {
-              scene.setScrollProgress(
+              applyProgress(
                 self.progress,
-              );
-
-              if (
-                !foreground
-              ) {
-                return;
-              }
-
-              const fade =
-                gsap.utils.clamp(
-                  0,
-                  1,
-
-                  (
-                    self.progress -
-                    0.045
-                  ) /
-                    0.19,
-                );
-
-              gsap.set(
-                foreground,
-                {
-                  autoAlpha:
-                    1 -
-                    fade,
-                },
               );
             },
         });
 
-      scene.setScrollProgress(
+      applyProgress(
         trigger.progress,
       );
 
@@ -1083,24 +1364,28 @@ export function HomeHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-[180svh] bg-[#0a0a0a] text-white md:h-[190svh]"
+      className="relative h-[620svh] bg-[#090909] text-white"
     >
       <div
         ref={visualRef}
-        className="sticky top-0 h-[100svh] select-none overflow-hidden bg-[#0a0a0a]"
+        className="sticky top-0 h-[100svh] select-none overflow-hidden bg-[#090909]"
       >
+        <PersistentGuideLines
+          lineRef={
+            linesRef
+          }
+        />
+
         <canvas
           ref={canvasRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full"
+          className="pointer-events-none absolute inset-0 z-[1] h-full w-full"
         />
 
         <div
           ref={foregroundRef}
           className="pointer-events-none absolute inset-0 z-10 mix-blend-difference"
         >
-          {/* HEADLINE */}
-
           <div className="absolute left-[2.1vw] top-[11.9vh] max-md:left-5 max-md:top-[13vh]">
             <h1
               data-hero-vibrate
@@ -1144,7 +1429,9 @@ export function HomeHero() {
                           0
                             ? ""
                             : "opacity-0",
-                        ].join(" ")}
+                        ].join(
+                          " ",
+                        )}
                       >
                         {
                           word
@@ -1159,8 +1446,6 @@ export function HomeHero() {
                 </span>
               </span>
             </h1>
-
-            {/* CTA */}
 
             <div
               data-hero-vibrate
@@ -1252,69 +1537,6 @@ export function HomeHero() {
             </div>
           </div>
 
-          {/* STATS */}
-
-          <div
-            data-hero-vibrate
-            className="absolute bottom-[6.8vh] right-[2.15vw] hidden w-[210px] md:block"
-          >
-            <div className="grid grid-cols-[72px_1fr] border border-white/[0.16]">
-              <div className="flex min-h-[62px] flex-col items-center justify-center border-r border-white/[0.16]">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 28 18"
-                  className="mb-[5px] h-[16px] w-[25px]"
-                  fill="none"
-                >
-                  <ellipse
-                    cx="14"
-                    cy="9"
-                    rx="11"
-                    ry="7"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                  />
-
-                  <ellipse
-                    cx="14"
-                    cy="9"
-                    rx="5"
-                    ry="7"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                  />
-
-                  <path
-                    d="M3 9H25"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                  />
-                </svg>
-
-                <span className="text-[7px] uppercase tracking-[0.05em]">
-                  Est. 2012
-                </span>
-              </div>
-
-              <div className="flex min-h-[62px] items-center px-[11px] text-[7px] uppercase leading-[1.35] tracking-[0.04em] md:text-[8px]">
-                <span>
-                  14+ years shaping
-                  <br />
-                  digital direction.
-                </span>
-              </div>
-            </div>
-
-            <p className="mt-[17px] text-[10px] leading-[1.35] text-white/75">
-              Websites, AI products,
-              brands, and systems built
-              for clarity, scale and
-              impact.
-            </p>
-          </div>
-
-          {/* SCROLL */}
-
           <div
             data-hero-vibrate
             className="absolute bottom-[22px] left-[2.1vw] max-md:left-5"
@@ -1323,8 +1545,6 @@ export function HomeHero() {
               ↓
             </div>
           </div>
-
-          {/* INTERACTION */}
 
           <div
             data-hero-vibrate
@@ -1354,13 +1574,71 @@ export function HomeHero() {
           </div>
         </div>
 
-        {/* COOKIE */}
+        <div
+          ref={statsRef}
+          data-hero-vibrate
+          className="pointer-events-none absolute bottom-[6.8vh] right-[2.15vw] z-[12] hidden w-[210px] text-white md:block"
+        >
+          <div className="grid grid-cols-[72px_1fr] border border-white/[0.16]">
+            <div className="flex min-h-[62px] flex-col items-center justify-center border-r border-white/[0.16]">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 28 18"
+                className="mb-[5px] h-[16px] w-[25px]"
+                fill="none"
+              >
+                <ellipse
+                  cx="14"
+                  cy="9"
+                  rx="11"
+                  ry="7"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+
+                <ellipse
+                  cx="14"
+                  cy="9"
+                  rx="5"
+                  ry="7"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+
+                <path
+                  d="M3 9H25"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+              </svg>
+
+              <span className="text-[7px] uppercase tracking-[0.05em]">
+                Est. 2012
+              </span>
+            </div>
+
+            <div className="flex min-h-[62px] items-center px-[11px] text-[8px] uppercase leading-[1.35] tracking-[0.04em]">
+              <span>
+                14+ years shaping
+                <br />
+                digital direction.
+              </span>
+            </div>
+          </div>
+
+          <p className="mt-[17px] text-[10px] leading-[1.35] text-white/75">
+            Websites, AI products,
+            brands, and systems built
+            for clarity, scale and
+            impact.
+          </p>
+        </div>
 
         {cookieVisible && (
           <div className="pointer-events-auto absolute bottom-[82px] left-1/2 z-20 flex -translate-x-1/2 items-center gap-6 border border-white/[0.12] bg-[#111]/95 px-4 py-[11px] text-[7px] uppercase tracking-[0.025em] text-white/60 backdrop-blur-sm md:text-[8px]">
             <span className="whitespace-nowrap">
-              We use cookies to
-              enhance your experience.
+              We use cookies to enhance
+              your experience.
             </span>
 
             <div className="flex items-center gap-[9px] text-white/85">

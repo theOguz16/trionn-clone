@@ -7,8 +7,16 @@ import {
 } from "@/features/home-hero/HomeHero";
 
 import {
-  ServicesSequence,
-} from "@/features/services-sequence/ServicesSequence";
+  HomeAboutIntro,
+} from "@/features/home-about/HomeAboutIntro";
+
+import {
+  HomeStripeWipe,
+} from "@/features/home-about/HomeStripeWipe";
+
+import {
+  HomeKeyFacts,
+} from "@/features/home-about/HomeKeyFacts";
 
 export const metadata:
   Metadata = {
@@ -16,15 +24,19 @@ export const metadata:
       "TRIONN | AI-Powered Creative Design & Development Studio in India",
 
     description:
-      "Independent digital studio creating meaningful brand experiences through strategy, design, technology, AI, and development.",
+      "Independent AI-powered digital design and development studio creating purposeful digital experiences.",
   };
 
-export default function Home() {
+export default function HomePage() {
   return (
     <main className="bg-[#090909]">
       <HomeHero />
 
-      <ServicesSequence />
+      <HomeAboutIntro />
+
+      <HomeStripeWipe />
+
+      <HomeKeyFacts />
     </main>
   );
 }

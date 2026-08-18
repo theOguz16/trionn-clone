@@ -2,9 +2,7 @@
 
 "use client";
 
-import {
-  useRef,
-} from "react";
+import { useRef } from "react";
 
 import {
   ScrollTrigger,
@@ -29,126 +27,92 @@ const PARTNER_LOGOS = [
 ];
 
 type CardPose = {
-  z:
-    number;
-
-  rotateX:
-    number;
-
-  opacity:
-    number;
-
-  blur:
-    number;
+  z: number;
+  rotateX: number;
+  opacity: number;
+  blur: number;
 };
 
 type CardJourney = {
-  start:
-    CardPose;
-
-  middle:
-    CardPose;
-
-  end:
-    CardPose;
+  start: CardPose;
+  middle: CardPose;
+  end: CardPose;
 };
 
+type CardWindow = {
+  start: number;
+  end: number;
+};
+
+/*
+ * The cards now stay almost completely
+ * upright.
+ *
+ * Depth is created mainly through Z.
+ *
+ * No X/Y movement.
+ * No rotateY.
+ * No rotateZ.
+ * No artificial scale.
+ */
 const CARD_JOURNEYS:
   CardJourney[] = [
     /*
      * LEFT
      *
-     * First and closest.
-     * Also most upright.
+     * Closest from the beginning.
+     * Very upright.
+     * Reaches the camera first.
      */
     {
       start: {
-        z:
-          -65,
-
-        rotateX:
-          -5,
-
-        opacity:
-          0.62,
-
-        blur:
-          2.2,
+        z: -60,
+        rotateX: -2.5,
+        opacity: 0.78,
+        blur: 1.5,
       },
 
       middle: {
-        z:
-          26,
-
-        rotateX:
-          -1.5,
-
-        opacity:
-          1,
-
-        blur:
-          0,
+        z: 35,
+        rotateX: -0.5,
+        opacity: 1,
+        blur: 0,
       },
 
       end: {
-        z:
-          0,
-
-        rotateX:
-          0,
-
-        opacity:
-          1,
-
-        blur:
-          0,
+        z: 0,
+        rotateX: 0,
+        opacity: 1,
+        blur: 0,
       },
     },
 
     /*
      * CENTER
+     *
+     * Further back than left,
+     * but still almost vertical.
      */
     {
       start: {
-        z:
-          -150,
-
-        rotateX:
-          -11,
-
-        opacity:
-          0.48,
-
-        blur:
-          3.2,
+        z: -145,
+        rotateX: -5,
+        opacity: 0.6,
+        blur: 2.7,
       },
 
       middle: {
-        z:
-          -38,
-
-        rotateX:
-          -4,
-
-        opacity:
-          0.9,
-
-        blur:
-          0.9,
+        z: -30,
+        rotateX: -2,
+        opacity: 0.92,
+        blur: 0.65,
       },
 
       end: {
-        z:
-          0,
-
-        rotateX:
-          0,
-
-        opacity:
-          1,
-
-        blur:
-          0,
+        z: 0,
+        rotateX: 0,
+        opacity: 1,
+        blur: 0,
       },
     },
 
@@ -156,61 +120,58 @@ const CARD_JOURNEYS:
      * RIGHT
      *
      * Furthest away.
+     * Still much more upright than
+     * the previous version.
      */
     {
       start: {
-        z:
-          -235,
-
-        rotateX:
-          -17,
-
-        opacity:
-          0.34,
-
-        blur:
-          4.2,
+        z: -225,
+        rotateX: -8,
+        opacity: 0.42,
+        blur: 3.8,
       },
 
       middle: {
-        z:
-          -92,
-
-        rotateX:
-          -7,
-
-        opacity:
-          0.76,
-
-        blur:
-          1.65,
+        z: -75,
+        rotateX: -3.5,
+        opacity: 0.82,
+        blur: 1.2,
       },
 
       end: {
-        z:
-          0,
-
-        rotateX:
-          0,
-
-        opacity:
-          1,
-
-        blur:
-          0,
+        z: 0,
+        rotateX: 0,
+        opacity: 1,
+        blur: 0,
       },
     },
   ];
 
-const CARD_DELAYS = [
-  0,
-  0.13,
-  0.24,
-];
+/*
+ * LEFT finishes first.
+ * CENTER follows.
+ * RIGHT finishes last.
+ */
+const CARD_WINDOWS:
+  CardWindow[] = [
+    {
+      start: 0,
+      end: 0.72,
+    },
+
+    {
+      start: 0.08,
+      end: 0.86,
+    },
+
+    {
+      start: 0.16,
+      end: 1,
+    },
+  ];
 
 function clamp01(
-  value:
-    number,
+  value: number,
 ) {
   return Math.min(
     1,
@@ -222,8 +183,7 @@ function clamp01(
 }
 
 function smoothStep(
-  value:
-    number,
+  value: number,
 ) {
   const t =
     clamp01(
@@ -241,14 +201,9 @@ function smoothStep(
 }
 
 function lerp(
-  from:
-    number,
-
-  to:
-    number,
-
-  amount:
-    number,
+  from: number,
+  to: number,
+  amount: number,
 ) {
   return (
     from +
@@ -261,14 +216,9 @@ function lerp(
 }
 
 function interpolatePose(
-  from:
-    CardPose,
-
-  to:
-    CardPose,
-
-  progress:
-    number,
+  from: CardPose,
+  to: CardPose,
+  progress: number,
 ): CardPose {
   return {
     z:
@@ -302,22 +252,23 @@ function interpolatePose(
 }
 
 function getJourneyPose(
-  journey:
-    CardJourney,
-
-  progress:
-    number,
+  journey: CardJourney,
+  progress: number,
 ) {
+  /*
+   * Long approach phase.
+   * Short settling phase.
+   */
   if (
     progress <=
-    0.72
+    0.7
   ) {
     return interpolatePose(
       journey.start,
       journey.middle,
       smoothStep(
         progress /
-          0.72,
+          0.7,
       ),
     );
   }
@@ -328,49 +279,40 @@ function getJourneyPose(
     smoothStep(
       (
         progress -
-        0.72
+        0.7
       ) /
-        0.28,
+        0.3,
     ),
   );
 }
 
 function applyPose(
-  element:
-    HTMLElement,
-
-  pose:
-    CardPose,
+  shell: HTMLElement,
+  surface: HTMLElement,
+  pose: CardPose,
 ) {
   /*
-   * No X.
-   * No Y.
-   * No rotateY.
-   * No rotateZ.
-   * No explicit scale.
+   * Z creates the apparent size/depth.
    *
-   * Perspective itself produces
-   * apparent size change.
+   * rotateX is now intentionally tiny.
+   * That keeps the cards visually
+   * vertical instead of looking like
+   * they're falling backwards.
    */
-  element.style.transform =
+  shell.style.transform =
     [
-      `translate3d(
-        0,
-        0,
-        ${pose.z}px
-      )`,
+      `translate3d(0, 0, ${pose.z}px)`,
+      `rotateX(${pose.rotateX}deg)`,
+    ].join(" ");
 
-      `rotateX(
-        ${pose.rotateX}deg
-      )`,
-    ].join(
-      " ",
-    );
-
-  element.style.opacity =
+  shell.style.opacity =
     `${pose.opacity}`;
 
-  element.style.filter =
+  /*
+   * Blur is applied to the inner surface.
+   * This keeps the 3D transform cleaner.
+   */
+  surface.style.filter =
     `blur(${pose.blur}px)`;
 }
 
@@ -415,6 +357,13 @@ export function HomeKeyFacts() {
           ),
         );
 
+      const surfaces =
+        Array.from(
+          section.querySelectorAll<HTMLElement>(
+            "[data-card-surface]",
+          ),
+        );
+
       const partners =
         section.querySelector<HTMLElement>(
           "[data-partners]",
@@ -424,20 +373,30 @@ export function HomeKeyFacts() {
         !header ||
         !grid ||
         cards.length !==
-        3 ||
+          3 ||
+        surfaces.length !==
+          3 ||
         !partners
       ) {
         return;
       }
 
+      /*
+       * Initial header state.
+       */
+
       header.style.opacity =
         "0";
 
       header.style.transform =
-        "translate3d(0, 24px, 0)";
+        "translate3d(0, 22px, 0)";
 
       header.style.filter =
         "blur(3px)";
+
+      /*
+       * Initial card states.
+       */
 
       cards.forEach(
         (
@@ -446,6 +405,9 @@ export function HomeKeyFacts() {
         ) => {
           applyPose(
             card,
+            surfaces[
+              index
+            ],
             CARD_JOURNEYS[
               index
             ].start,
@@ -453,11 +415,19 @@ export function HomeKeyFacts() {
         },
       );
 
+      /*
+       * Initial partners state.
+       */
+
       partners.style.opacity =
         "0";
 
       partners.style.transform =
-        "translate3d(0, 24px, 0)";
+        "translate3d(0, 22px, 0)";
+
+      /*
+       * Header theme.
+       */
 
       const themeTrigger =
         ScrollTrigger.create({
@@ -492,16 +462,20 @@ export function HomeKeyFacts() {
             },
         });
 
+      /*
+       * KEY FACTS title.
+       */
+
       const headerTrigger =
         ScrollTrigger.create({
           trigger:
             header,
 
           start:
-            "top 98%",
+            "top 99%",
 
           end:
-            "top 72%",
+            "top 74%",
 
           onUpdate:
             (
@@ -519,7 +493,7 @@ export function HomeKeyFacts() {
                 `translate3d(
                   0,
                   ${
-                    24 *
+                    22 *
                     (
                       1 -
                       progress
@@ -556,12 +530,16 @@ export function HomeKeyFacts() {
                 "0";
 
               header.style.transform =
-                "translate3d(0, 24px, 0)";
+                "translate3d(0, 22px, 0)";
 
               header.style.filter =
                 "blur(3px)";
             },
         });
+
+      /*
+       * Cards.
+       */
 
       const updateCards =
         (
@@ -573,8 +551,8 @@ export function HomeKeyFacts() {
               card,
               index,
             ) => {
-              const delay =
-                CARD_DELAYS[
+              const window =
+                CARD_WINDOWS[
                   index
                 ];
 
@@ -582,16 +560,19 @@ export function HomeKeyFacts() {
                 clamp01(
                   (
                     progress -
-                    delay
+                    window.start
                   ) /
                     (
-                      1 -
-                      delay
+                      window.end -
+                      window.start
                     ),
                 );
 
               applyPose(
                 card,
+                surfaces[
+                  index
+                ],
                 getJourneyPose(
                   CARD_JOURNEYS[
                     index
@@ -609,10 +590,10 @@ export function HomeKeyFacts() {
             grid,
 
           start:
-            "top 100%",
+            "top 99%",
 
           end:
-            "top 46%",
+            "top 39%",
 
           invalidateOnRefresh:
             true,
@@ -659,6 +640,10 @@ export function HomeKeyFacts() {
             },
         });
 
+      /*
+       * Partners.
+       */
+
       const partnersTrigger =
         ScrollTrigger.create({
           trigger:
@@ -686,7 +671,7 @@ export function HomeKeyFacts() {
                 `translate3d(
                   0,
                   ${
-                    24 *
+                    22 *
                     (
                       1 -
                       progress
@@ -694,6 +679,24 @@ export function HomeKeyFacts() {
                   }px,
                   0
                 )`;
+            },
+
+          onLeave:
+            () => {
+              partners.style.opacity =
+                "1";
+
+              partners.style.transform =
+                "translate3d(0, 0, 0)";
+            },
+
+          onLeaveBack:
+            () => {
+              partners.style.opacity =
+                "0";
+
+              partners.style.transform =
+                "translate3d(0, 22px, 0)";
             },
         });
 
@@ -720,20 +723,20 @@ export function HomeKeyFacts() {
       className="
         relative
         z-[50]
-        -mt-[95svh]
-        min-h-[120svh]
+        -mt-[16svh]
+        min-h-[116svh]
         bg-[#dedddb]
         text-[#414141]
       "
     >
       <div
         className="
-          min-h-[120svh]
+          min-h-[116svh]
           overflow-hidden
           bg-[#dedddb]
           px-[2.1vw]
-          pb-[8svh]
-          pt-[6svh]
+          pb-[7svh]
+          pt-[5svh]
         "
       >
         {/* HEADER */}
@@ -779,7 +782,7 @@ export function HomeKeyFacts() {
           data-facts-grid
           className="
             mx-auto
-            mt-[5svh]
+            mt-[4.8svh]
             grid
             w-full
             max-w-[1000px]
@@ -796,14 +799,17 @@ export function HomeKeyFacts() {
           <div
             data-card-shell
             className="
+              relative
+              z-[3]
               origin-bottom
               opacity-0
-              will-change-[transform,opacity,filter]
+              will-change-[transform,opacity]
               [transform-style:preserve-3d]
               [backface-visibility:hidden]
             "
           >
             <article
+              data-card-surface
               className="
                 relative
                 h-[395px]
@@ -811,6 +817,7 @@ export function HomeKeyFacts() {
                 rounded-[6px]
                 bg-[#414146]
                 text-[#e7e6e3]
+                will-change-[filter]
               "
             >
               <div
@@ -828,16 +835,7 @@ export function HomeKeyFacts() {
                 }}
               />
 
-              <div
-                className="
-                  absolute
-                  inset-0
-                  bg-gradient-to-b
-                  from-transparent
-                  via-transparent
-                  to-black/25
-                "
-              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/25" />
 
               <p
                 className="
@@ -933,14 +931,17 @@ export function HomeKeyFacts() {
           <div
             data-card-shell
             className="
+              relative
+              z-[2]
               origin-bottom
               opacity-0
-              will-change-[transform,opacity,filter]
+              will-change-[transform,opacity]
               [transform-style:preserve-3d]
               [backface-visibility:hidden]
             "
           >
             <article
+              data-card-surface
               className="
                 relative
                 h-[395px]
@@ -948,6 +949,7 @@ export function HomeKeyFacts() {
                 rounded-[6px]
                 bg-[#e7e5e3]
                 text-[#474747]
+                will-change-[filter]
               "
             >
               <p
@@ -1019,14 +1021,17 @@ export function HomeKeyFacts() {
           <div
             data-card-shell
             className="
+              relative
+              z-[1]
               origin-bottom
               opacity-0
-              will-change-[transform,opacity,filter]
+              will-change-[transform,opacity]
               [transform-style:preserve-3d]
               [backface-visibility:hidden]
             "
           >
             <article
+              data-card-surface
               className="
                 relative
                 h-[395px]
@@ -1034,6 +1039,7 @@ export function HomeKeyFacts() {
                 rounded-[6px]
                 bg-[#414146]
                 text-[#e7e6e3]
+                will-change-[filter]
               "
             >
               <div
