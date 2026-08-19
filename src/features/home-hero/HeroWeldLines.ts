@@ -1,1 +1,1 @@
-export { HeroWeldLines } from "./HeroWeldLinesV2";
+export { HeroWeldLines } from "./HeroWeldLinesV3";
