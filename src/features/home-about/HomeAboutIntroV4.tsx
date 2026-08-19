@@ -87,17 +87,14 @@ export function HomeAboutIntro() {
         }
 
         /*
-         * HeroScene finishes its rejoin at raw hero progress 0.62.
-         * In this local About clock that lands at ~0.589.
-         *
-         * V3 started fading at 0.58, which meant the model was already
-         * becoming transparent just before the last pieces had settled.
-         * Keep it fully opaque until after the join, then dissolve it while
-         * the first light stripe starts entering the frame.
+         * HomeHero now performs its slow rejoin through raw 0.78, then
+         * holds the assembled symbol until 0.84. In this About-local clock
+         * raw 0.84 maps to ~0.89. Keep the canvas fully opaque through that
+         * assembled beat, then let the stripe wipe own the disappearance.
          */
         const fade = clamp01(
-          (localProgress - 0.595) /
-            0.12,
+          (localProgress - 0.89) /
+            0.1,
         );
 
         heroCanvas.style.setProperty(
@@ -151,7 +148,6 @@ export function HomeAboutIntro() {
           const timelineClock = { value: 0 };
           const timeline = gsap.timeline({ paused: true });
 
-          /* ABOUT ENTER */
           timeline.to(
             ["[data-about-label]", "[data-about-heading]"],
             { y: 0, duration: 0.17, ease: "none" },
@@ -207,7 +203,6 @@ export function HomeAboutIntro() {
             0.17,
           );
 
-          /* ABOUT COPY TRAVELS OUT */
           timeline.to(
             "[data-about-heading]",
             { y: "-48svh", duration: 0.25, ease: "none" },
@@ -234,7 +229,6 @@ export function HomeAboutIntro() {
             0.33,
           );
 
-          /* FOCUS PHRASE + MODEL REJOIN */
           timeline.to(
             "[data-focus-label]",
             { y: 0, autoAlpha: 1, duration: 0.1, ease: "none" },
@@ -247,11 +241,6 @@ export function HomeAboutIntro() {
             0.42,
           );
 
-          /*
-           * The marquee reaches center at local 0.62. That is almost the
-           * exact physical moment the model has finished reassembling and
-           * the first white stripe begins appearing from the bottom.
-           */
           timeline.to(
             "[data-focus-stage]",
             { y: "-34svh", duration: 0.18, ease: "none" },
@@ -283,12 +272,6 @@ export function HomeAboutIntro() {
             0.55,
           );
 
-          /*
-           * Hold the centered phrase while the initial stripe gaps develop.
-           * V3 waited until 0.85 and then moved 54svh in only 0.13 progress,
-           * which read as a sudden jump. Start earlier and spread a smaller
-           * vertical move over almost twice as much scroll.
-           */
           timeline.to({}, { duration: 0.15 }, 0.62);
 
           timeline.to(
