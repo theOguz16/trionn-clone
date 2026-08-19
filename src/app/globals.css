@@ -170,3 +170,76 @@ html[data-page-theme="light"]
 #site-navigation {
   mix-blend-mode: normal;
 }
+
+/*
+ * Header/menu control calibration.
+ *
+ * Trionn renders the CTA/menu labels as compact UI copy rather than as
+ * mono labels. Keep the existing double-layer character motion, but use
+ * the display face and tighter pill metrics so the controls sit like the
+ * reference instead of reading as oversized badges.
+ */
+[data-hero-nav-vibrate] a[aria-label="Let's talk"],
+[data-hero-nav-vibrate] button[aria-label="Open menu"],
+#site-navigation a[aria-label="Let's talk"],
+#site-navigation button[aria-label="Close menu"] {
+  font-family:
+    var(--font-trionn-display),
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  font-kerning: normal;
+}
+
+[data-hero-nav-vibrate] a[aria-label="Let's talk"],
+#site-navigation a[aria-label="Let's talk"] {
+  height: 30px !important;
+  padding-inline: 15px !important;
+  font-size: 10.5px !important;
+  letter-spacing: -0.012em !important;
+  text-transform: lowercase !important;
+}
+
+[data-hero-nav-vibrate] button[aria-label="Open menu"],
+#site-navigation button[aria-label="Close menu"] {
+  height: 30px !important;
+  padding-inline: 11px !important;
+  gap: 6px !important;
+  font-size: 9.25px !important;
+  letter-spacing: 0.012em !important;
+}
+
+/*
+ * Story CTA is intentionally much more present than the utility pills.
+ * Its visible label is fully uppercase while retaining the same
+ * character-by-character rewrite animation implemented in SiteHeader.
+ */
+#site-navigation a[href="/trionn-story"] {
+  min-width: 322px !important;
+  height: 46px !important;
+  padding-inline: 16px !important;
+  font-family:
+    var(--font-trionn-display),
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif !important;
+  font-size: 16.5px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.028em !important;
+  text-transform: uppercase !important;
+}
+
+#site-navigation a[href="/trionn-story"] > span:first-child {
+  margin-right: 9px !important;
+  font-size: 12px !important;
+}
+
+#site-navigation a[href="/trionn-story"] > span:last-child {
+  padding-left: 14px !important;
+  font-size: 13px !important;
+}
