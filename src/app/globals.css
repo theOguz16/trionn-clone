@@ -83,6 +83,49 @@ canvas {
 }
 
 /*
+ * Display calibration
+ *
+ * Familjen has wider, more characterful forms than the
+ * former Arial fallback. These values keep the visual
+ * density close to the reference without changing any
+ * motion timing or layout choreography.
+ */
+h1[data-hero-vibrate] {
+  font-weight: 400;
+  line-height: 0.91;
+  letter-spacing: -0.058em;
+  font-kerning: normal;
+}
+
+[data-about-heading] > h2 {
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.052em;
+  font-kerning: normal;
+}
+
+[data-keyfacts-header] > h2 {
+  font-weight: 400;
+  line-height: 0.96;
+  letter-spacing: -0.052em;
+  font-kerning: normal;
+}
+
+#site-navigation nav a {
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.042em;
+  font-kerning: normal;
+}
+
+[data-cta-label],
+[data-about-label],
+[data-focus-label],
+[data-outcome] {
+  font-kerning: normal;
+}
+
+/*
  * DARK AREA
  */
 
