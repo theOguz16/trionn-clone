@@ -111,12 +111,12 @@ h1[data-hero-vibrate] {
 }
 
 /*
- * The original DOM guide ellipses remain as a subtle rear-depth layer.
- * WebGL now owns the interactive continuous curves, so this legacy layer
- * must not visually double their weight.
+ * The WebGL guide-line system is now the single source of truth for the
+ * hero curves. Hide the old DOM ellipse layer so it cannot double the
+ * geometry or appear to pass in front of the model.
  */
-svg.pointer-events-none.absolute.inset-0.z-0.h-full.w-full.opacity-0 ellipse {
-  opacity: 0.16 !important;
+svg[viewBox="-500 -350 2600 1750"] {
+  display: none !important;
 }
 
 html:not([data-page-theme="light"])
