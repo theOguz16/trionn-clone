@@ -314,7 +314,7 @@ export function HomeStripeWipe() {
         pointer-events-none
         relative
         z-[45]
-        -mt-[145svh]
+        -mt-[234svh]
         h-[280svh]
         bg-transparent
       "
