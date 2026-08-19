@@ -23,8 +23,8 @@ import {
   scrollManager,
 } from "@/runtime/scroll/ScrollManager";
 
-const UI_FONT =
-  '"Helvetica Neue", Helvetica, Arial, sans-serif';
+const MONO_UI_FONT =
+  'var(--font-trionn-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
 
 const navigationItems = [
   {
@@ -492,10 +492,6 @@ function playTextMotion(
     return;
   }
 
-  /*
-   * Story + E/P rewrite:
-   * disappear first, then rebuild left-to-right with a slower bounce.
-   */
   gsap.set(
     incomingChars,
     {
@@ -630,11 +626,6 @@ export function SiteHeader() {
         },
       );
 
-      /*
-       * Start from a Menu-pill-sized capsule in the card's top-right.
-       * The card then unfolds downward/leftward instead of appearing as
-       * a generic clipped rectangle.
-       */
       gsap.set(
         panel,
         {
@@ -901,6 +892,11 @@ export function SiteHeader() {
       );
     };
 
+  const pillTextStyle = {
+    fontFamily:
+      MONO_UI_FONT,
+  };
+
   return (
     <header
       ref={rootRef}
@@ -908,7 +904,7 @@ export function SiteHeader() {
     >
       <div
         data-hero-nav-vibrate
-        className="relative z-[40] flex h-[76px] items-center justify-between px-[16px] md:px-[28px]"
+        className="relative z-[40] flex h-[72px] items-center justify-between px-[18px] md:px-[32px]"
       >
         <TransitionLink
           href="/"
@@ -920,11 +916,7 @@ export function SiteHeader() {
 
         <div
           ref={closedControlsRef}
-          style={{
-            fontFamily:
-              UI_FONT,
-          }}
-          className="pointer-events-auto ml-auto flex items-center gap-[8px]"
+          className="pointer-events-auto ml-auto flex items-center gap-[7px]"
         >
           <SoundButton
             soundOn={soundOn}
@@ -934,6 +926,7 @@ export function SiteHeader() {
           <TransitionLink
             href="/contact"
             aria-label="Let's talk"
+            style={pillTextStyle}
             onMouseEnter={(
               event,
             ) => {
@@ -941,10 +934,10 @@ export function SiteHeader() {
                 event.currentTarget,
               );
             }}
-            className="group hidden h-[34px] items-center justify-center overflow-hidden rounded-full bg-[#f5f5f2] px-[17px] text-[11px] font-normal leading-none tracking-[-0.015em] !text-[#111] focus:outline-none md:flex"
+            className="group hidden h-[31px] items-center justify-center overflow-hidden rounded-full bg-[#f5f5f2] px-[15px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] !text-[#111] focus:outline-none md:flex"
           >
             <MotionText
-              text="let's talk"
+              text="LET'S TALK"
               variant="pill"
             />
           </TransitionLink>
@@ -954,6 +947,7 @@ export function SiteHeader() {
             aria-expanded={isOpen}
             aria-controls="site-navigation"
             aria-label="Open menu"
+            style={pillTextStyle}
             onMouseEnter={(
               event,
             ) => {
@@ -964,13 +958,13 @@ export function SiteHeader() {
             onClick={() => {
               setIsOpen(true);
             }}
-            className="group flex h-[34px] items-center gap-[8px] rounded-full border border-white/55 bg-transparent px-[13px] text-[10.5px] font-normal leading-none tracking-[-0.01em] text-[#eeeeeb] transition-[background-color,border-color] duration-300 hover:border-white/80 hover:bg-white/[0.035] focus:outline-none"
+            className="group flex h-[31px] items-center gap-[6px] rounded-full border border-white/60 bg-transparent px-[12px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] text-[#eeeeeb] transition-[background-color,border-color] duration-300 hover:border-white/85 hover:bg-white/[0.035] focus:outline-none"
           >
             <MotionText
-              text="Menu"
+              text="MENU"
               variant="pill"
             />
-            <span className="flex w-[10px] flex-col gap-[3px]">
+            <span className="flex w-[8px] flex-col gap-[2.5px]">
               <span className="h-px w-full bg-current" />
               <span className="h-px w-full bg-current" />
             </span>
@@ -994,15 +988,11 @@ export function SiteHeader() {
 
         <aside
           ref={panelRef}
-          style={{
-            fontFamily:
-              UI_FONT,
-          }}
           className="absolute bottom-[10px] right-[10px] top-[10px] w-[calc(100vw-20px)] overflow-hidden rounded-[10px] border border-black/[0.05] bg-[#f3f2ee] text-[#151515] shadow-[0_18px_70px_rgba(0,0,0,0.18)] sm:w-[min(468px,calc(100vw-20px))]"
         >
           <div
             data-menu-controls
-            className="absolute right-[16px] top-[16px] z-10 flex items-center gap-[8px]"
+            className="absolute right-[17px] top-[17px] z-10 flex items-center gap-[7px]"
           >
             <SoundButton
               light
@@ -1013,6 +1003,7 @@ export function SiteHeader() {
             <TransitionLink
               href="/contact"
               aria-label="Let's talk"
+              style={pillTextStyle}
               onClick={closeMenu}
               onMouseEnter={(
                 event,
@@ -1021,10 +1012,10 @@ export function SiteHeader() {
                   event.currentTarget,
                 );
               }}
-              className="group hidden h-[34px] items-center overflow-hidden rounded-full bg-[#0c0c0c] px-[17px] text-[11px] font-normal leading-none tracking-[-0.015em] !text-white sm:flex"
+              className="group hidden h-[31px] items-center overflow-hidden rounded-full bg-[#0c0c0c] px-[15px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] !text-white sm:flex"
             >
               <MotionText
-                text="let's talk"
+                text="LET'S TALK"
                 variant="pill"
               />
             </TransitionLink>
@@ -1032,6 +1023,7 @@ export function SiteHeader() {
             <button
               type="button"
               aria-label="Close menu"
+              style={pillTextStyle}
               onMouseEnter={(
                 event,
               ) => {
@@ -1040,15 +1032,15 @@ export function SiteHeader() {
                 );
               }}
               onClick={closeMenu}
-              className="group flex h-[34px] items-center gap-[8px] rounded-full border border-black/55 px-[13px] text-[10.5px] font-normal leading-none tracking-[-0.01em] text-[#111] transition-[background-color,border-color] duration-300 hover:border-black/80 hover:bg-black/[0.025] focus:outline-none"
+              className="group flex h-[31px] items-center gap-[6px] rounded-full border border-black/70 px-[12px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] text-[#111] transition-[background-color,border-color] duration-300 hover:border-black/90 hover:bg-black/[0.025] focus:outline-none"
             >
               <MotionText
-                text="Menu"
+                text="MENU"
                 variant="pill"
               />
-              <span className="relative block h-[10px] w-[10px]">
-                <span className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-current" />
-                <span className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-current" />
+              <span className="relative block h-[9px] w-[9px]">
+                <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-current" />
+                <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-current" />
               </span>
             </button>
           </div>
@@ -1139,16 +1131,16 @@ export function SiteHeader() {
                   event.currentTarget,
                 );
               }}
-              className="group mt-[26px] flex h-[42px] w-fit min-w-[274px] items-center rounded-full border border-black/[0.32] px-[14px] text-[13px] font-normal leading-none tracking-[-0.018em] transition-[border-color,background-color] duration-300 hover:border-black/55 hover:bg-black/[0.02]"
+              className="group mt-[27px] flex h-[46px] w-fit min-w-[308px] items-center rounded-full border border-black/[0.34] px-[16px] text-[15.5px] font-normal leading-none tracking-[-0.025em] transition-[border-color,background-color] duration-300 hover:border-black/58 hover:bg-black/[0.02]"
             >
-              <span className="mr-[7px] shrink-0 text-[11px]">
+              <span className="mr-[9px] shrink-0 text-[12.5px]">
                 ✦
               </span>
               <MotionText
                 text="The TRIONN name Story"
                 variant="rewrite"
               />
-              <span className="ml-auto pl-[12px] text-[12px]">
+              <span className="ml-auto pl-[14px] text-[13px]">
                 ↗
               </span>
             </TransitionLink>
