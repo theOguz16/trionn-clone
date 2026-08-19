@@ -31,42 +31,83 @@ const DIGITS = Array.from(
   (_, index) => index,
 );
 
-type CardStart = {
+type CardPose = {
   z: number;
   y: number;
   rotateX: number;
+  rotateZ: number;
   opacity: number;
   blur: number;
 };
 
-const CARD_STARTS: CardStart[] = [
+/*
+ * The reference does not bring three flat cards straight toward camera.
+ * They arrive as three planes at very different depths and inclinations:
+ * left is already close, center is deeper, right is furthest and most
+ * foreshortened. The angle also survives longer than the Z movement.
+ */
+const CARD_STARTS: CardPose[] = [
   {
-    z: -115,
-    y: 22,
-    rotateX: -3.5,
+    z: -150,
+    y: 28,
+    rotateX: -15,
+    rotateZ: -0.8,
     opacity: 0.64,
     blur: 1.9,
   },
   {
-    z: -220,
-    y: 34,
-    rotateX: -6,
+    z: -305,
+    y: 45,
+    rotateX: -31,
+    rotateZ: 0,
     opacity: 0.42,
     blur: 3.1,
   },
   {
-    z: -320,
-    y: 46,
-    rotateX: -8.5,
+    z: -470,
+    y: 64,
+    rotateX: -47,
+    rotateZ: 0.8,
     opacity: 0.24,
     blur: 4.3,
   },
 ];
 
+/*
+ * Even after settling the cards keep a slight physical attitude instead
+ * of snapping to a perfectly flat 0deg plane.
+ */
+const CARD_ENDS: CardPose[] = [
+  {
+    z: 0,
+    y: 0,
+    rotateX: -3.8,
+    rotateZ: -0.25,
+    opacity: 1,
+    blur: 0,
+  },
+  {
+    z: 0,
+    y: 0,
+    rotateX: -2,
+    rotateZ: 0,
+    opacity: 1,
+    blur: 0,
+  },
+  {
+    z: 0,
+    y: 0,
+    rotateX: -4.4,
+    rotateZ: 0.25,
+    opacity: 1,
+    blur: 0,
+  },
+];
+
 const CARD_WINDOWS = [
-  [0.16, 0.54],
-  [0.21, 0.62],
-  [0.26, 0.7],
+  [0.14, 0.62],
+  [0.2, 0.72],
+  [0.26, 0.82],
 ] as const;
 
 function clamp01(value: number) {
@@ -92,6 +133,14 @@ function mapRange(
     (value - start) /
       Math.max(0.0001, end - start),
   );
+}
+
+function lerp(
+  from: number,
+  to: number,
+  progress: number,
+) {
+  return from + (to - from) * progress;
 }
 
 function setTheme(
@@ -244,42 +293,73 @@ export function HomeKeyFacts() {
         const shell = cardShells[index];
         const surface = cardSurfaces[index];
         const start = CARD_STARTS[index];
+        const end = CARD_ENDS[index];
         const [windowStart, windowEnd] =
           CARD_WINDOWS[index];
-        const local = smootherStep(
-          mapRange(
-            progress,
-            windowStart,
-            windowEnd,
-          ),
+        const rawLocal = mapRange(
+          progress,
+          windowStart,
+          windowEnd,
         );
 
+        /*
+         * Depth resolves first. Angle resolves later. This is the important
+         * reference behaviour: a card can already feel close to camera while
+         * still visibly lying back in perspective.
+         */
+        const depthProgress =
+          smootherStep(rawLocal);
+        const angleProgress =
+          smoothStep(
+            mapRange(rawLocal, 0.18, 1),
+          );
         const settle = smoothStep(
-          mapRange(local, 0.72, 1),
+          mapRange(rawLocal, 0.78, 1),
         );
-        const z =
-          start.z * (1 - local) +
-          12 * settle * (1 - settle);
-        const y =
-          start.y * (1 - local);
-        const rotateX =
-          start.rotateX * (1 - local);
-        const opacity =
-          start.opacity +
-          (1 - start.opacity) * local;
-        const blur =
-          start.blur * (1 - local);
 
+        const z =
+          lerp(start.z, end.z, depthProgress) +
+          14 * settle * (1 - settle);
+        const y =
+          lerp(start.y, end.y, depthProgress);
+        const rotateX =
+          lerp(
+            start.rotateX,
+            end.rotateX,
+            angleProgress,
+          );
+        const rotateZ =
+          lerp(
+            start.rotateZ,
+            end.rotateZ,
+            angleProgress,
+          );
+        const opacity =
+          lerp(
+            start.opacity,
+            end.opacity,
+            depthProgress,
+          );
+        const blur =
+          lerp(
+            start.blur,
+            end.blur,
+            depthProgress,
+          );
+
+        shell.style.transformOrigin =
+          "50% 100%";
         shell.style.transform = [
           `translate3d(0, ${y}px, ${z}px)`,
           `rotateX(${rotateX}deg)`,
+          `rotateZ(${rotateZ}deg)`,
         ].join(" ");
         shell.style.opacity = `${opacity}`;
         surface.style.filter = `blur(${blur}px)`;
 
         const counterProgress =
           smootherStep(
-            mapRange(local, 0.48, 0.94),
+            mapRange(rawLocal, 0.5, 0.94),
           );
 
         counters[index].style.opacity =
@@ -314,7 +394,7 @@ export function HomeKeyFacts() {
 
       const updatePartners = (progress: number) => {
         const p = smootherStep(
-          mapRange(progress, 0.72, 0.93),
+          mapRange(progress, 0.8, 0.97),
         );
 
         partners.style.opacity = `${p}`;
@@ -351,7 +431,7 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top 94%",
-        end: "bottom 72%",
+        end: "bottom 68%",
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           update(self.progress);
@@ -406,7 +486,7 @@ export function HomeKeyFacts() {
 
         <div
           data-facts-grid
-          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-end gap-[18px] [perspective:1650px] [perspective-origin:50%_108%] md:grid-cols-3"
+          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-end gap-[18px] [perspective:1450px] [perspective-origin:50%_128%] md:grid-cols-3"
         >
           <div
             data-card-shell
