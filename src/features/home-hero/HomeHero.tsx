@@ -91,20 +91,6 @@ function getCookieServerSnapshot() {
   return false;
 }
 
-/*
- * These are NOT short paths.
- *
- * Each ellipse is much larger than
- * the viewport. We only see a small
- * arc of it, so the line appears to
- * continue beyond both edges of the
- * screen.
- *
- * The WebGL canvas is rendered above
- * this SVG, which means the lines
- * visibly continue behind the model.
- */
-
 function PersistentGuideLines({
   lineRef,
 }: {
@@ -419,6 +405,32 @@ function smoothStep(
       3 -
       2 *
         t
+    )
+  );
+}
+
+function smootherStep(
+  value:
+    number,
+) {
+  const t =
+    gsap.utils.clamp(
+      0,
+      1,
+      value,
+    );
+
+  return (
+    t *
+    t *
+    t *
+    (
+      t *
+        (
+          t * 6 -
+          15
+        ) +
+      10
     )
   );
 }
@@ -974,21 +986,21 @@ export function HomeHero() {
 
           /*
            * 0.00 → 0.19
-           * first-screen explosion
+           * first-screen blast-like explosion
            *
-           * 0.19 → 0.50
-           * About:
+           * 0.19 → 0.58
+           * About copy:
            * FULLY EXPLODED
            *
-           * 0.50 → 0.62
-           * Focus transition:
-           * panels join again
+           * 0.58 → 0.76
+           * after the main About statement begins clearing:
+           * panels slowly rejoin while Focused Vision / marquee arrive
            *
-           * 0.62 → 0.88
-           * fully assembled
+           * 0.76 → 0.78
+           * brief fully assembled beat
            *
-           * 0.88 → 1
-           * complete WebGL fade
+           * 0.78 → 0.90
+           * fallback WebGL fade as the stripe wipe takes over
            */
 
           let sceneProgress =
@@ -1005,21 +1017,21 @@ export function HomeHero() {
               );
           } else if (
             raw <=
-            0.5
+            0.58
           ) {
             sceneProgress =
               1;
           } else if (
             raw <=
-            0.62
+            0.76
           ) {
             const join =
-              smoothStep(
+              smootherStep(
                 (
                   raw -
-                  0.5
+                  0.58
                 ) /
-                  0.12,
+                  0.18,
               );
 
             sceneProgress =
@@ -1033,10 +1045,6 @@ export function HomeHero() {
           scene.setScrollProgress(
             sceneProgress,
           );
-
-          /*
-           * Hero copy leaves early.
-           */
 
           if (foreground) {
             const fade =
@@ -1060,11 +1068,6 @@ export function HomeHero() {
               },
             );
           }
-
-          /*
-           * Experience card survives into
-           * the first part of About.
-           */
 
           if (stats) {
             const statsFade =
@@ -1092,15 +1095,6 @@ export function HomeHero() {
               },
             );
           }
-
-          /*
-           * Huge ellipse guide lines:
-           *
-           * visible through hero and
-           * early exploded About,
-           * then disappear while About
-           * copy becomes dominant.
-           */
 
           if (
             persistentLines
@@ -1150,13 +1144,6 @@ export function HomeHero() {
             );
           }
 
-          /*
-           * After the symbol has joined
-           * completely, the whole WebGL
-           * scene disappears while the
-           * stripe transition begins.
-           */
-
           const canvasFade =
             gsap.utils.clamp(
               0,
@@ -1164,7 +1151,7 @@ export function HomeHero() {
 
               (
                 raw -
-                0.88
+                0.78
               ) /
                 0.12,
             );
