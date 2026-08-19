@@ -115,7 +115,7 @@ h1[data-hero-vibrate] {
  * WebGL now owns the interactive continuous curves, so this legacy layer
  * must not visually double their weight.
  */
-[data-hero-guide-lines] ellipse {
+svg.pointer-events-none.absolute.inset-0.z-0.h-full.w-full.opacity-0 ellipse {
   opacity: 0.16 !important;
 }
 
