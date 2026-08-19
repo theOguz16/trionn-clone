@@ -17,6 +17,14 @@ type WeldUpdateResult = {
   burstStarted: boolean;
 };
 
+type GuideDefinition = {
+  rx: number;
+  ry: number;
+  rotation: number;
+  anchorAngle: number;
+  halfSpan: number;
+};
+
 function clamp01(value: number) {
   return Math.max(0, Math.min(1, value));
 }
@@ -162,66 +170,78 @@ export class HeroWeldLines {
     const h = this.height;
     const fallback = { x: w * 0.57, y: h * 0.55 };
 
-    const anchorCenter = this.hasExternalAnchors
-      ? {
-          x:
-            (this.anchors[0].x + this.anchors[1].x + this.anchors[2].x) /
-            3,
-          y:
-            (this.anchors[0].y + this.anchors[1].y + this.anchors[2].y) /
-            3,
-        }
-      : fallback;
-
     /*
-     * Each visible guide is one continuous, oversized ellipse.
-     * The center is biased around the projected model so every curve
-     * crosses the model region while continuing well beyond the viewport.
-     * This removes the old anchor -> edge dead-end geometry.
+     * Each guide is one long elliptical arc.
+     *
+     * Crucially, the midpoint of each arc is pinned to the projected
+     * model anchor. The arc then continues in both directions beyond
+     * the viewport. Because HeroScene renders this base layer before
+     * the model, the model naturally occludes the middle of each line:
+     *
+     * line -> behind model -> line
+     *
+     * This preserves one continuous geometric path while giving the
+     * correct depth read.
      */
-    const definitions = [
+    const definitions: GuideDefinition[] = [
       {
-        cx: anchorCenter.x - w * 0.29,
-        cy: anchorCenter.y + h * 0.34,
-        rx: w * 1.12,
-        ry: h * 0.49,
+        rx: w * 1.15,
+        ry: h * 0.5,
         rotation: -0.23,
-        phase: 2.72,
+        anchorAngle: 1.55,
+        halfSpan: 1.68,
       },
       {
-        cx: anchorCenter.x - w * 0.18,
-        cy: anchorCenter.y + h * 0.24,
-        rx: w * 1.03,
-        ry: h * 0.63,
+        rx: w * 1.05,
+        ry: h * 0.64,
         rotation: -0.42,
-        phase: 3.48,
+        anchorAngle: 1.65,
+        halfSpan: 1.72,
       },
       {
-        cx: anchorCenter.x - w * 0.22,
-        cy: anchorCenter.y + h * 0.3,
         rx: w * 1.22,
-        ry: h * 0.75,
+        ry: h * 0.76,
         rotation: 0.25,
-        phase: 2.98,
+        anchorAngle: 1.45,
+        halfSpan: 1.68,
       },
     ];
 
     for (let pathIndex = 0; pathIndex < 3; pathIndex += 1) {
       const definition = definitions[pathIndex];
       const samples = this.samples[pathIndex];
+      const anchor = this.hasExternalAnchors
+        ? this.anchors[pathIndex]
+        : fallback;
+
       const cosR = Math.cos(definition.rotation);
       const sinR = Math.sin(definition.rotation);
 
+      const anchorLocalX =
+        Math.cos(definition.anchorAngle) * definition.rx;
+      const anchorLocalY =
+        Math.sin(definition.anchorAngle) * definition.ry;
+
+      const centerX =
+        anchor.x -
+        (anchorLocalX * cosR - anchorLocalY * sinR);
+      const centerY =
+        anchor.y -
+        (anchorLocalX * sinR + anchorLocalY * cosR);
+
       for (let index = 0; index < samples.length; index += 1) {
         const normalized = index / (samples.length - 1);
-        const angle = definition.phase + normalized * Math.PI * 2;
+        const centered = normalized * 2 - 1;
+        const angle =
+          definition.anchorAngle + centered * definition.halfSpan;
+
         const localX = Math.cos(angle) * definition.rx;
         const localY = Math.sin(angle) * definition.ry;
 
         samples[index].x =
-          definition.cx + localX * cosR - localY * sinR;
+          centerX + localX * cosR - localY * sinR;
         samples[index].y =
-          definition.cy + localX * sinR + localY * cosR;
+          centerY + localX * sinR + localY * cosR;
       }
     }
   }
@@ -243,14 +263,28 @@ export class HeroWeldLines {
     samples: ScreenPoint[],
     progress: number,
   ) {
-    const lastIndex = Math.max(
-      1,
-      Math.floor((samples.length - 1) * clamp01(progress)),
+    const normalized = clamp01(progress);
+    const middleIndex = Math.floor((samples.length - 1) / 2);
+    const leftCount = Math.floor(middleIndex * normalized);
+    const rightCount = Math.floor(
+      (samples.length - 1 - middleIndex) * normalized,
+    );
+    const startIndex = Math.max(0, middleIndex - leftCount);
+    const endIndex = Math.min(
+      samples.length - 1,
+      middleIndex + rightCount,
     );
 
-    this.context.moveTo(samples[0].x, samples[0].y);
+    if (endIndex <= startIndex) {
+      return;
+    }
 
-    for (let index = 1; index <= lastIndex; index += 1) {
+    this.context.moveTo(
+      samples[startIndex].x,
+      samples[startIndex].y,
+    );
+
+    for (let index = startIndex + 1; index <= endIndex; index += 1) {
       this.context.lineTo(samples[index].x, samples[index].y);
     }
   }
@@ -287,12 +321,12 @@ export class HeroWeldLines {
     this.context.clearRect(0, 0, this.width, this.height);
 
     /*
-     * Intentionally restrained: the guides should read as structure,
-     * not as a bright foreground graphic.
+     * Restrained base guides. The model should dominate; these should
+     * only become assertive when the user creates weld sparks.
      */
-    this.drawPathLayer(2.4, 0.075, scrollProgress);
-    this.drawPathLayer(1.05, 0.16, scrollProgress);
-    this.drawPathLayer(0.55, 0.3, scrollProgress);
+    this.drawPathLayer(2.2, 0.055, scrollProgress);
+    this.drawPathLayer(0.95, 0.13, scrollProgress);
+    this.drawPathLayer(0.5, 0.25, scrollProgress);
 
     this.texture.needsUpdate = true;
     this.canvasDirty = false;
