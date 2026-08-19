@@ -140,11 +140,7 @@ export function HomeAboutIntro() {
 
           timeline.to(
             ["[data-about-label]", "[data-about-heading]"],
-            {
-              y: 0,
-              duration: 0.17,
-              ease: "none",
-            },
+            { y: 0, duration: 0.17, ease: "none" },
             0,
           );
 
@@ -153,10 +149,7 @@ export function HomeAboutIntro() {
             {
               color: "#bebebb",
               duration: 0.1,
-              stagger: {
-                each: 0.0018,
-                from: "start",
-              },
+              stagger: { each: 0.0018, from: "start" },
               ease: "none",
             },
             0.045,
@@ -164,29 +157,17 @@ export function HomeAboutIntro() {
 
           timeline.to(
             "[data-about-rule-wrap]",
-            {
-              autoAlpha: 1,
-              duration: 0.06,
-              ease: "none",
-            },
+            { autoAlpha: 1, duration: 0.06, ease: "none" },
             0.125,
           );
           timeline.to(
             "[data-about-rule-line]",
-            {
-              scaleX: 1,
-              duration: 0.145,
-              ease: "none",
-            },
+            { scaleX: 1, duration: 0.145, ease: "none" },
             0.125,
           );
           timeline.to(
             "[data-about-rule-plus]",
-            {
-              autoAlpha: 1,
-              duration: 0.075,
-              ease: "none",
-            },
+            { autoAlpha: 1, duration: 0.075, ease: "none" },
             0.155,
           );
           timeline.to(
@@ -214,92 +195,49 @@ export function HomeAboutIntro() {
 
           timeline.to(
             "[data-about-heading]",
-            {
-              y: "-48svh",
-              duration: 0.25,
-              ease: "none",
-            },
+            { y: "-48svh", duration: 0.25, ease: "none" },
             0.31,
           );
           timeline.to(
             "[data-about-label]",
-            {
-              y: "-36svh",
-              duration: 0.25,
-              ease: "none",
-            },
+            { y: "-36svh", duration: 0.25, ease: "none" },
             0.31,
           );
           timeline.to(
             "[data-about-rule-wrap]",
-            {
-              y: "-38svh",
-              duration: 0.27,
-              ease: "none",
-            },
+            { y: "-38svh", duration: 0.27, ease: "none" },
             0.33,
           );
           timeline.to(
             "[data-about-left]",
-            {
-              y: "-39svh",
-              duration: 0.28,
-              ease: "none",
-            },
+            { y: "-39svh", duration: 0.28, ease: "none" },
             0.33,
           );
           timeline.to(
             "[data-about-right]",
-            {
-              y: "-39svh",
-              duration: 0.28,
-              ease: "none",
-            },
+            { y: "-39svh", duration: 0.28, ease: "none" },
             0.33,
           );
 
           timeline.to(
             "[data-focus-label]",
-            {
-              y: 0,
-              autoAlpha: 1,
-              duration: 0.1,
-              ease: "none",
-            },
+            { y: 0, autoAlpha: 1, duration: 0.1, ease: "none" },
             0.39,
           );
 
-          /*
-           * Marquee enters across the exact window where HeroScene starts
-           * reassembling. Its center position is reached by ~0.62 local.
-           */
           timeline.to(
             "[data-focus-marquee]",
-            {
-              autoAlpha: 1,
-              duration: 0.055,
-              ease: "none",
-            },
+            { autoAlpha: 1, duration: 0.055, ease: "none" },
             0.42,
           );
-
           timeline.to(
             "[data-focus-stage]",
-            {
-              y: "-34svh",
-              duration: 0.18,
-              ease: "none",
-            },
+            { y: "-34svh", duration: 0.18, ease: "none" },
             0.44,
           );
-
           timeline.to(
             marquee,
-            {
-              x: "-42vw",
-              duration: 0.18,
-              ease: "none",
-            },
+            { x: "-42vw", duration: 0.18, ease: "none" },
             0.44,
           );
 
@@ -309,14 +247,9 @@ export function HomeAboutIntro() {
               "[data-about-heading]",
               "[data-about-rule-wrap]",
             ],
-            {
-              autoAlpha: 0,
-              duration: 0.035,
-              ease: "none",
-            },
+            { autoAlpha: 0, duration: 0.035, ease: "none" },
             0.56,
           );
-
           timeline.to(
             ["[data-about-left]", "[data-about-right]"],
             {
@@ -328,71 +261,37 @@ export function HomeAboutIntro() {
             0.55,
           );
 
-          /*
-           * Keep the phrase bright and centered until the stripe section
-           * actually starts overlapping the viewport. This removes the
-           * long empty black beat from V2.
-           */
-          timeline.to(
-            {},
-            {
-              duration: 0.2,
-            },
-            0.62,
-          );
+          timeline.to({}, { duration: 0.23 }, 0.62);
 
-          /*
-           * Exit now belongs to the wipe handoff: the phrase travels up
-           * while the first light stripes start covering the dark scene.
-           */
           timeline.to(
             "[data-focus-stage]",
-            {
-              y: "-88svh",
-              duration: 0.15,
-              ease: "none",
-            },
-            0.82,
+            { y: "-88svh", duration: 0.13, ease: "none" },
+            0.85,
           );
-
           timeline.to(
             marquee,
-            {
-              x: "-57vw",
-              duration: 0.15,
-              ease: "none",
-            },
-            0.82,
+            { x: "-57vw", duration: 0.13, ease: "none" },
+            0.85,
           );
-
           timeline.to(
             "[data-focus-marquee]",
-            {
-              autoAlpha: 0,
-              duration: 0.07,
-              ease: "none",
-            },
-            0.92,
+            { autoAlpha: 0, duration: 0.08, ease: "none" },
+            0.9,
           );
-
           timeline.to(
             "[data-focus-label]",
             {
               y: "-24svh",
               autoAlpha: 0,
-              duration: 0.12,
+              duration: 0.13,
               ease: "none",
             },
-            0.82,
+            0.85,
           );
 
           timeline.to(
             timelineClock,
-            {
-              value: 1,
-              duration: 0.01,
-              ease: "none",
-            },
+            { value: 1, duration: 0.01, ease: "none" },
             0.99,
           );
 
@@ -459,9 +358,7 @@ export function HomeAboutIntro() {
         }
       };
     },
-    {
-      scope: sectionRef,
-    },
+    { scope: sectionRef },
   );
 
   return (
@@ -499,10 +396,7 @@ export function HomeAboutIntro() {
           data-about-rule-wrap
           className="absolute left-[10.2vw] right-[2.1vw] top-[46.8svh] z-[25]"
         >
-          <div
-            data-about-rule-line
-            className="h-px w-full bg-white/[0.18]"
-          />
+          <div data-about-rule-line className="h-px w-full bg-white/[0.18]" />
           <span
             data-about-rule-plus
             className="absolute left-[63.2%] top-[-9px] text-[15px] font-light leading-none text-white/55"
@@ -536,7 +430,6 @@ export function HomeAboutIntro() {
             purposeful, and meaningful
             to people.
           </p>
-
           <div className="pointer-events-auto mt-[64px]">
             <AboutCta />
           </div>
