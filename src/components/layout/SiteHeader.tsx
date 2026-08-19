@@ -28,17 +28,14 @@ const navigationItems = [
     label: "Work",
     href: "/work",
   },
-
   {
     label: "Services",
     href: "/services",
   },
-
   {
     label: "About",
     href: "/about",
   },
-
   {
     label: "Contact",
     href: "/contact",
@@ -51,19 +48,16 @@ const socialItems = [
     href:
       "https://www.linkedin.com/company/trionn/",
   },
-
   {
     label: "Facebook",
     href:
       "https://www.facebook.com/trionndesign/",
   },
-
   {
     label: "Dribbble",
     href:
       "https://dribbble.com/trionn",
   },
-
   {
     label: "Instagram",
     href:
@@ -87,7 +81,6 @@ function BrandMark() {
           strokeLinecap="square"
           strokeLinejoin="miter"
         />
-
         <path
           d="M6.2 15.5H13.1L10.9 11.7"
           stroke="currentColor"
@@ -95,7 +88,6 @@ function BrandMark() {
           strokeLinecap="square"
           strokeLinejoin="miter"
         />
-
         <path
           d="M13 5.7L19.2 15.5H14.8"
           stroke="currentColor"
@@ -103,7 +95,6 @@ function BrandMark() {
           strokeLinecap="square"
           strokeLinejoin="miter"
         />
-
         <path
           d="M2 11.4H5.2"
           stroke="currentColor"
@@ -142,43 +133,40 @@ function SoundButton({
       }
       aria-pressed={soundOn}
       className={[
-        "flex h-[28px] w-[28px] items-center justify-center rounded-full focus:outline-none",
-
+        "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full transition-transform duration-300 ease-out hover:scale-[1.045] focus:outline-none",
         light
-          ? "bg-black/[0.065] text-black/55"
-          : "bg-white/[0.07] text-white/75",
+          ? "bg-black/[0.065] text-black/60"
+          : "bg-white/[0.075] text-white/80",
       ].join(" ")}
     >
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
-        className="h-[11px] w-[11px]"
+        className="h-[14px] w-[14px]"
         fill="none"
       >
         <path
-          d="M4 8H7L10.4 5.2V14.8L7 12H4V8Z"
+          d="M3.7 8H6.8L10.5 5V15L6.8 12H3.7V8Z"
           fill="currentColor"
         />
-
         <path
           d="M12.4 7.1C13.8 8.5 13.8 11.5 12.4 12.9"
           stroke="currentColor"
-          strokeWidth="1.2"
+          strokeWidth="1.25"
           strokeLinecap="round"
         />
-
         {soundOn ? (
           <path
             d="M14.4 5.5C16.8 7.8 16.8 12.2 14.4 14.5"
             stroke="currentColor"
-            strokeWidth="1.2"
+            strokeWidth="1.25"
             strokeLinecap="round"
           />
         ) : (
           <path
-            d="M5 4L16 16"
+            d="M4.8 4.2L15.8 15.8"
             stroke="currentColor"
-            strokeWidth="1.2"
+            strokeWidth="1.25"
             strokeLinecap="round"
           />
         )}
@@ -187,41 +175,13 @@ function SoundButton({
   );
 }
 
-function SwapText({
+function SlideSwapText({
   text,
 }: {
   text: string;
 }) {
-  const renderChars =
-    (
-      layer:
-        "a" | "b",
-    ) =>
-      text
-        .split("")
-        .map(
-          (
-            char,
-            index,
-          ) => (
-            <span
-              key={`${layer}-${char}-${index}`}
-              data-swap-char
-              className="inline-block"
-            >
-              {char === " "
-                ? "\u00a0"
-                : char}
-            </span>
-          ),
-        );
-
   return (
-    <span
-      data-swap-track
-      data-swap-active="a"
-      className="relative inline-grid overflow-hidden"
-    >
+    <span className="relative inline-grid overflow-hidden align-top">
       <span
         aria-hidden="true"
         className="invisible whitespace-nowrap"
@@ -231,269 +191,18 @@ function SwapText({
 
       <span
         aria-hidden="true"
-        data-swap-layer="a"
-        className="absolute inset-0 flex whitespace-nowrap"
+        className="absolute inset-0 whitespace-nowrap transition-transform duration-[430ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-[115%]"
       >
-        {renderChars(
-          "a",
-        )}
+        {text}
       </span>
 
       <span
         aria-hidden="true"
-        data-swap-layer="b"
-        className="absolute inset-0 flex whitespace-nowrap opacity-0"
+        className="absolute inset-0 translate-y-[115%] whitespace-nowrap transition-transform duration-[430ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0"
       >
-        {renderChars(
-          "b",
-        )}
+        {text}
       </span>
     </span>
-  );
-}
-
-function playSwapAnimation(
-  root:
-    HTMLElement,
-) {
-  const track =
-    root.querySelector<HTMLElement>(
-      "[data-swap-track]",
-    );
-
-  if (!track) {
-    return;
-  }
-
-  const activeKey =
-    track.dataset
-      .swapActive ===
-    "b"
-      ? "b"
-      : "a";
-
-  const incomingKey =
-    activeKey === "a"
-      ? "b"
-      : "a";
-
-  const outgoing =
-    track.querySelector<HTMLElement>(
-      `[data-swap-layer="${activeKey}"]`,
-    );
-
-  const incoming =
-    track.querySelector<HTMLElement>(
-      `[data-swap-layer="${incomingKey}"]`,
-    );
-
-  if (
-    !outgoing ||
-    !incoming
-  ) {
-    return;
-  }
-
-  const outgoingChars =
-    Array.from(
-      outgoing.querySelectorAll<HTMLElement>(
-        "[data-swap-char]",
-      ),
-    );
-
-  const incomingChars =
-    Array.from(
-      incoming.querySelectorAll<HTMLElement>(
-        "[data-swap-char]",
-      ),
-    );
-
-  const allChars = [
-    ...outgoingChars,
-    ...incomingChars,
-  ];
-
-  gsap.killTweensOf(
-    allChars,
-  );
-
-  gsap.killTweensOf(
-    [
-      outgoing,
-      incoming,
-    ],
-  );
-
-  gsap.set(
-    outgoing,
-    {
-      autoAlpha:
-        1,
-    },
-  );
-
-  gsap.set(
-    outgoingChars,
-    {
-      x:
-        0,
-
-      y:
-        0,
-
-      autoAlpha:
-        1,
-
-      filter:
-        "blur(0px)",
-    },
-  );
-
-  gsap.set(
-    incoming,
-    {
-      autoAlpha:
-        1,
-    },
-  );
-
-  gsap.set(
-    incomingChars,
-    {
-      x:
-        -13,
-
-      y: (
-        index,
-      ) =>
-        index %
-          2 ===
-        0
-          ? 3
-          : -3,
-
-      autoAlpha:
-        0,
-
-      filter:
-        "blur(2px)",
-    },
-  );
-
-  const timeline =
-    gsap.timeline({
-      onComplete:
-        () => {
-          gsap.set(
-            outgoing,
-            {
-              autoAlpha:
-                0,
-            },
-          );
-
-          gsap.set(
-            incomingChars,
-            {
-              x:
-                0,
-
-              y:
-                0,
-
-              autoAlpha:
-                1,
-
-              filter:
-                "blur(0px)",
-            },
-          );
-
-          track.dataset
-            .swapActive =
-            incomingKey;
-        },
-    });
-
-  /*
-   * First copy:
-   * wave -> blur -> disappear.
-   */
-  timeline.to(
-    outgoingChars,
-    {
-      x:
-        9,
-
-      y: (
-        index,
-      ) =>
-        Math.sin(
-          index *
-            1.18,
-        ) *
-        4,
-
-      autoAlpha:
-        0,
-
-      filter:
-        "blur(3px)",
-
-      duration:
-        0.3,
-
-      stagger: {
-        each:
-          0.015,
-
-        from:
-          "start",
-      },
-
-      ease:
-        "power2.in",
-    },
-
-    0,
-  );
-
-  /*
-   * Second copy:
-   * rewrites from the left with
-   * a tiny spring/bounce.
-   */
-  timeline.to(
-    incomingChars,
-    {
-      x:
-        0,
-
-      y:
-        0,
-
-      autoAlpha:
-        1,
-
-      filter:
-        "blur(0px)",
-
-      duration:
-        0.4,
-
-      stagger: {
-        each:
-          0.018,
-
-        from:
-          "start",
-      },
-
-      ease:
-        "back.out(1.65)",
-    },
-
-    0.13,
   );
 }
 
@@ -521,38 +230,31 @@ export function SiteHeader() {
   const timelineRef =
     useRef<ReturnType<
       typeof gsap.timeline
-    > | null>(
-      null,
-    );
+    > | null>(null);
 
   const [
     isOpen,
     setIsOpen,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     soundOn,
     setSoundOn,
-  ] =
-    useState(true);
+  ] = useState(true);
 
   const [
     hoveredMenuIndex,
     setHoveredMenuIndex,
-  ] =
-    useState<
-      number | null
-    >(null);
+  ] = useState<number | null>(
+    null,
+  );
 
   useGSAP(
     () => {
       const layer =
         layerRef.current;
-
       const panel =
         panelRef.current;
-
       const backdrop =
         backdropRef.current;
 
@@ -567,9 +269,7 @@ export function SiteHeader() {
       gsap.set(
         layer,
         {
-          autoAlpha:
-            0,
-
+          autoAlpha: 0,
           pointerEvents:
             "none",
         },
@@ -578,93 +278,80 @@ export function SiteHeader() {
       gsap.set(
         backdrop,
         {
-          autoAlpha:
-            0,
+          autoAlpha: 0,
         },
       );
 
       /*
-       * The card does not physically
-       * slide across the viewport.
-       * Its background is revealed
-       * in place.
+       * The reference reads like the right-hand card unfolds from the
+       * header controls. A compact top-right clip gives us that origin
+       * without physically sliding the whole panel across the page.
        */
       gsap.set(
         panel,
         {
           clipPath:
-            "inset(0 0 100% 92% round 6px)",
-
+            "inset(0 0 92% 74% round 18px)",
+          x: 8,
+          scale: 0.985,
+          transformOrigin:
+            "100% 0%",
           willChange:
-            "clip-path",
+            "clip-path, transform",
         },
       );
 
       gsap.set(
         "[data-menu-controls]",
         {
-          autoAlpha:
-            0,
-
-          y:
-            -3,
-
-          filter:
-            "blur(3px)",
+          autoAlpha: 0,
+          y: -5,
         },
       );
 
       gsap.set(
-        "[data-menu-item]",
+        "[data-menu-nav-item]",
         {
-          autoAlpha:
-            0,
+          autoAlpha: 0,
+          y: 18,
+        },
+      );
 
-          y:
-            8,
-
-          filter:
-            "blur(4px)",
+      gsap.set(
+        "[data-menu-secondary]",
+        {
+          autoAlpha: 0,
+          y: 12,
         },
       );
 
       const timeline =
         gsap.timeline({
-          paused:
-            true,
-
+          paused: true,
           defaults: {
             overwrite:
               "auto",
           },
-
-          onStart:
-            () => {
-              gsap.set(
-                layer,
-                {
-                  autoAlpha:
-                    1,
-
-                  pointerEvents:
-                    "auto",
-                },
-              );
-            },
-
+          onStart: () => {
+            gsap.set(
+              layer,
+              {
+                autoAlpha: 1,
+                pointerEvents:
+                  "auto",
+              },
+            );
+          },
           onReverseComplete:
             () => {
               gsap.set(
                 layer,
                 {
-                  autoAlpha:
-                    0,
-
+                  autoAlpha: 0,
                   pointerEvents:
                     "none",
                 },
               );
-
               setHoveredMenuIndex(
                 null,
               );
@@ -675,93 +362,72 @@ export function SiteHeader() {
         .to(
           backdrop,
           {
-            autoAlpha:
-              1,
-
-            duration:
-              0.3,
-
+            autoAlpha: 1,
+            duration: 0.28,
             ease:
               "power2.out",
           },
-
           0,
         )
-
         .to(
           panel,
           {
             clipPath:
-              "inset(0 0 0% 0% round 6px)",
-
-            duration:
-              0.7,
-
+              "inset(0 0 0% 0% round 10px)",
+            x: 0,
+            scale: 1,
+            duration: 0.82,
             ease:
-              "power4.inOut",
+              "expo.inOut",
           },
-
           0,
         )
-
         .to(
           "[data-menu-controls]",
           {
-            autoAlpha:
-              1,
-
-            y:
-              0,
-
-            filter:
-              "blur(0px)",
-
-            duration:
-              0.36,
-
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.38,
             ease:
               "power3.out",
           },
-
-          0.25,
+          0.22,
         )
-
         .to(
-          "[data-menu-item]",
+          "[data-menu-nav-item]",
           {
-            autoAlpha:
-              1,
-
-            y:
-              0,
-
-            filter:
-              "blur(0px)",
-
-            duration:
-              0.4,
-
-            stagger:
-              0.04,
-
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.52,
+            stagger: 0.055,
+            ease:
+              "expo.out",
+          },
+          0.29,
+        )
+        .to(
+          "[data-menu-secondary]",
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.46,
+            stagger: 0.05,
             ease:
               "power3.out",
           },
-
-          0.34,
+          0.4,
         );
 
+      timeline.progress(0).pause();
       timelineRef.current =
         timeline;
 
       return () => {
         timeline.kill();
-
         timelineRef.current =
           null;
       };
     },
-
     {
       scope:
         rootRef,
@@ -779,13 +445,10 @@ export function SiteHeader() {
 
       if (isOpen) {
         timeline.play();
-
-        return;
+      } else {
+        timeline.reverse();
       }
-
-      timeline.reverse();
     },
-
     [
       isOpen,
     ],
@@ -799,23 +462,19 @@ export function SiteHeader() {
 
       const html =
         document.documentElement;
-
       const previousOverflow =
         html.style.overflow;
 
       html.style.overflow =
         "hidden";
-
       scrollManager.stop();
 
       return () => {
         html.style.overflow =
           previousOverflow;
-
         scrollManager.start();
       };
     },
-
     [
       isOpen,
     ],
@@ -836,9 +495,7 @@ export function SiteHeader() {
             event.key ===
             "Escape"
           ) {
-            setIsOpen(
-              false,
-            );
+            setIsOpen(false);
           }
         };
 
@@ -854,35 +511,27 @@ export function SiteHeader() {
         );
       };
     },
-
     [
       isOpen,
     ],
   );
 
-  const closeMenu =
-    () => {
-      setIsOpen(
-        false,
-      );
-    };
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
 
   const toggleSound =
     async () => {
       const next =
         !soundOn;
 
-      setSoundOn(
-        next,
-      );
+      setSoundOn(next);
 
       if (next) {
         await audioManager.unlock();
-
         audioManager.setMuted(
           false,
         );
-
         return;
       }
 
@@ -897,16 +546,13 @@ export function SiteHeader() {
       className="pointer-events-none fixed inset-x-0 top-0 z-[300]"
     >
       {/* CLOSED HEADER */}
-
       <div
         data-hero-nav-vibrate
-        className="relative z-[40] flex h-[72px] items-center justify-between px-[18px] md:px-[32px]"
+        className="relative z-[40] flex h-[76px] items-center justify-between px-[16px] md:px-[28px]"
       >
         <TransitionLink
           href="/"
-          onClick={
-            closeMenu
-          }
+          onClick={closeMenu}
           className="pointer-events-auto text-[#eeeeeb]"
         >
           <BrandMark />
@@ -914,50 +560,37 @@ export function SiteHeader() {
 
         <div
           className={[
-            "pointer-events-auto ml-auto flex items-center gap-[7px] transition-opacity duration-200",
-
+            "pointer-events-auto ml-auto flex items-center gap-[8px] transition-opacity duration-200",
             isOpen
               ? "pointer-events-none opacity-0"
               : "opacity-100",
           ].join(" ")}
         >
           <SoundButton
-            soundOn={
-              soundOn
-            }
-            onClick={
-              toggleSound
-            }
+            soundOn={soundOn}
+            onClick={toggleSound}
           />
 
           <TransitionLink
             href="/contact"
-            className="hidden h-[31px] items-center justify-center rounded-full bg-[#f5f5f2] px-[16px] text-[11.5px] font-normal uppercase tracking-[-0.005em] !text-[#111] focus:outline-none md:flex"
+            className="hidden h-[34px] items-center justify-center rounded-full bg-[#f5f5f2] px-[17px] text-[10px] font-normal uppercase tracking-[0.015em] !text-[#111] transition-transform duration-300 ease-out hover:scale-[1.025] focus:outline-none md:flex"
           >
             Let&apos;s talk
           </TransitionLink>
 
           <button
             type="button"
-            aria-expanded={
-              isOpen
-            }
+            aria-expanded={isOpen}
             aria-controls="site-navigation"
             aria-label="Open menu"
             onClick={() => {
-              setIsOpen(
-                true,
-              );
+              setIsOpen(true);
             }}
-            className="flex h-[31px] items-center gap-[6px] rounded-full border border-white/60 bg-transparent px-[12px] text-[7.5px] font-normal uppercase tracking-[0.035em] text-[#eeeeeb] focus:outline-none"
+            className="flex h-[34px] items-center gap-[8px] rounded-full border border-white/55 bg-transparent px-[13px] text-[9px] font-normal uppercase tracking-[0.06em] text-[#eeeeeb] transition-[background-color,border-color] duration-300 hover:border-white/85 hover:bg-white/[0.045] focus:outline-none"
           >
-            <span>
-              Menu
-            </span>
-
-            <span className="flex w-[8px] flex-col gap-[2.5px]">
+            <span>Menu</span>
+            <span className="flex w-[10px] flex-col gap-[3px]">
               <span className="h-px w-full bg-current" />
-
               <span className="h-px w-full bg-current" />
             </span>
           </button>
@@ -965,80 +598,59 @@ export function SiteHeader() {
       </div>
 
       {/* OPEN MENU */}
-
       <div
         id="site-navigation"
         ref={layerRef}
-        aria-hidden={
-          !isOpen
-        }
+        aria-hidden={!isOpen}
         className="pointer-events-none fixed inset-0 z-[30] opacity-0"
       >
         <button
           ref={backdropRef}
           type="button"
           aria-label="Close navigation"
-          onClick={
-            closeMenu
-          }
-          className="absolute inset-0 cursor-default bg-black/[0.1] focus:outline-none"
+          onClick={closeMenu}
+          className="absolute inset-0 cursor-default bg-black/20 backdrop-blur-[1px] focus:outline-none"
         />
 
         <aside
           ref={panelRef}
-          className="absolute bottom-3 right-3 top-3 w-[calc(100vw-24px)] overflow-hidden rounded-[6px] bg-[#fafafa] text-[#151515] shadow-[0_10px_45px_rgba(0,0,0,0.16)] md:w-[356px]"
+          className="absolute bottom-[10px] right-[10px] top-[10px] w-[calc(100vw-20px)] overflow-hidden rounded-[10px] border border-black/[0.055] bg-[#f3f2ee] text-[#151515] shadow-[0_18px_70px_rgba(0,0,0,0.18)] sm:w-[min(468px,calc(100vw-20px))]"
         >
           {/* PANEL CONTROLS */}
-
           <div
             data-menu-controls
-            className="absolute right-[17px] top-[17px] z-10 flex items-center gap-[7px]"
+            className="absolute right-[16px] top-[16px] z-10 flex items-center gap-[8px]"
           >
             <SoundButton
               light
-              soundOn={
-                soundOn
-              }
-              onClick={
-                toggleSound
-              }
+              soundOn={soundOn}
+              onClick={toggleSound}
             />
 
-            <a
+            <TransitionLink
               href="/contact"
-              style={{
-                color:
-                  "#ffffff",
-
-                WebkitTextFillColor:
-                  "#ffffff",
-              }}
-              className="flex h-[31px] items-center rounded-full bg-[#090909] px-[16px] text-[11.5px] font-normal uppercase tracking-[-0.005em]"
+              onClick={closeMenu}
+              className="hidden h-[34px] items-center rounded-full bg-[#0c0c0c] px-[17px] text-[10px] font-normal uppercase tracking-[0.015em] !text-white transition-transform duration-300 ease-out hover:scale-[1.025] sm:flex"
             >
               Let&apos;s talk
-            </a>
+            </TransitionLink>
 
             <button
               type="button"
               aria-label="Close menu"
-              onClick={
-                closeMenu
-              }
-              className="flex h-[31px] items-center gap-[6px] rounded-full border border-black/75 px-[12px] text-[7.5px] font-normal uppercase tracking-[0.035em] text-[#111] focus:outline-none"
+              onClick={closeMenu}
+              className="flex h-[34px] items-center gap-[8px] rounded-full border border-black/55 px-[13px] text-[9px] font-normal uppercase tracking-[0.06em] text-[#111] transition-[background-color,border-color] duration-300 hover:border-black/80 hover:bg-black/[0.035] focus:outline-none"
             >
-              <span>
-                Menu
-              </span>
-
-              <span className="text-[11px] leading-none">
-                ×
+              <span>Menu</span>
+              <span className="relative block h-[10px] w-[10px]">
+                <span className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-current" />
+                <span className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-current" />
               </span>
             </button>
           </div>
 
-          <div className="flex h-full flex-col px-[27px] pb-[29px] pt-[222px]">
+          <div className="flex h-full flex-col px-[24px] pb-[26px] pt-[142px] sm:px-[32px] sm:pb-[31px] sm:pt-[154px]">
             {/* MAIN NAV */}
-
             <nav
               aria-label="Main navigation"
               onMouseLeave={() => {
@@ -1047,7 +659,7 @@ export function SiteHeader() {
                 );
               }}
             >
-              <ul className="space-y-[4px]">
+              <ul className="space-y-[1px]">
                 {navigationItems.map(
                   (
                     item,
@@ -1056,7 +668,6 @@ export function SiteHeader() {
                     const hovered =
                       hoveredMenuIndex ===
                       index;
-
                     const dimmed =
                       hoveredMenuIndex !==
                         null &&
@@ -1064,10 +675,8 @@ export function SiteHeader() {
 
                     return (
                       <li
-                        key={
-                          item.label
-                        }
-                        data-menu-item
+                        key={item.label}
+                        data-menu-nav-item
                         onMouseEnter={() => {
                           setHoveredMenuIndex(
                             index,
@@ -1075,36 +684,30 @@ export function SiteHeader() {
                         }}
                       >
                         <TransitionLink
-                          href={
-                            item.href
-                          }
-                          onClick={
-                            closeMenu
-                          }
+                          href={item.href}
+                          onClick={closeMenu}
                           style={{
                             opacity:
                               dimmed
-                                ? 0.25
+                                ? 0.24
                                 : 1,
                           }}
-                          className="flex w-full items-center justify-between text-[29px] font-normal leading-[1.12] tracking-[-0.052em] text-[#171717] transition-opacity duration-300"
+                          className="group flex w-full items-center justify-between py-[1px] text-[clamp(36px,4.4vw,46px)] font-normal leading-[0.98] tracking-[-0.055em] text-[#171717] transition-[opacity,transform] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
                         >
-                          <span>
-                            {
-                              item.label
-                            }
+                          <span className="transition-transform duration-[430ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[10px]">
+                            {item.label}
                           </span>
 
                           <span
+                            aria-hidden="true"
                             className={[
-                              "text-[11px] transition-[opacity,transform] duration-250",
-
+                              "mr-[2px] text-[15px] leading-none transition-[opacity,transform] duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
                               hovered
                                 ? "translate-x-0 opacity-100"
-                                : "-translate-x-[5px] opacity-0",
+                                : "-translate-x-[10px] opacity-0",
                             ].join(" ")}
                           >
-                            →
+                            ↗
                           </span>
                         </TransitionLink>
                       </li>
@@ -1115,95 +718,60 @@ export function SiteHeader() {
             </nav>
 
             {/* NAME STORY */}
-
             <TransitionLink
-              data-menu-item
+              data-menu-secondary
               href="/trionn-story"
               aria-label="The TRIONN name Story"
-              onClick={
-                closeMenu
-              }
-              onMouseEnter={
-                (
-                  event,
-                ) => {
-                  playSwapAnimation(
-                    event.currentTarget,
-                  );
-                }
-              }
-              className="group relative mt-[21px] flex h-[35px] w-[214px] items-center overflow-hidden rounded-full border border-black/[0.32] px-[12px] text-[10px] font-normal uppercase tracking-[-0.01em]"
+              onClick={closeMenu}
+              className="group mt-[26px] flex h-[42px] w-fit min-w-[274px] items-center rounded-full border border-black/[0.32] px-[14px] text-[13px] font-normal uppercase tracking-[-0.015em] transition-[border-color,background-color] duration-300 hover:border-black/55 hover:bg-black/[0.025]"
             >
-              <span className="mr-[5px] shrink-0">
+              <span className="mr-[7px] shrink-0 text-[11px]">
                 ✦
               </span>
-
-              <SwapText
+              <SlideSwapText
                 text="THE TRIONN NAME STORY"
               />
-
-              <span className="absolute right-[11px] translate-x-[7px] text-[10px] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                →
+              <span className="ml-auto pl-[12px] text-[12px] transition-transform duration-[430ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[2px]">
+                ↗
               </span>
             </TransitionLink>
 
             {/* LOWER INFO */}
-
-            <div className="mb-[19px] mt-auto">
+            <div className="mt-auto">
               <div
-                data-menu-item
+                data-menu-secondary
               >
-                <p className="mb-[12px] text-[10px] font-normal uppercase tracking-[-0.005em] text-black/35">
+                <p className="mb-[13px] text-[10px] font-normal uppercase tracking-[0.025em] text-black/38">
                   Business enquiry
                 </p>
 
-                <div className="space-y-[7px] text-[13px] leading-none text-black/72">
+                <div className="space-y-[9px] text-[15px] leading-none tracking-[-0.02em] text-black/74">
                   <p className="flex items-center">
-                    <span className="mr-[14px] w-[12px] text-[12px] text-black/35">
+                    <span className="mr-[14px] w-[18px] shrink-0 text-[13px] text-black/38">
                       E.
                     </span>
-
                     <a
                       href="mailto:hello@trionn.com"
                       aria-label="hello@trionn.com"
-                      onMouseEnter={
-                        (
-                          event,
-                        ) => {
-                          playSwapAnimation(
-                            event.currentTarget,
-                          );
-                        }
-                      }
-                      className="transition-opacity duration-200"
+                      className="group inline-flex overflow-hidden"
                     >
-                      <SwapText
+                      <SlideSwapText
                         text="hello@trionn.com"
                       />
                     </a>
                   </p>
 
                   <p className="flex items-center">
-                    <span className="mr-[14px] w-[12px] text-[12px] text-black/35">
+                    <span className="mr-[14px] w-[18px] shrink-0 text-[13px] text-black/38">
                       P.
                     </span>
-
                     <a
                       href="tel:+919824182099"
                       aria-label="+91 9824182099"
-                      onMouseEnter={
-                        (
-                          event,
-                        ) => {
-                          playSwapAnimation(
-                            event.currentTarget,
-                          );
-                        }
-                      }
-                      className="transition-opacity duration-200"
+                      className="group inline-flex overflow-hidden"
                     >
-                      <SwapText
-                        text="+91 9824182099"
+                      <SlideSwapText
+                        text="+91 98241 82099"
                       />
                     </a>
                   </p>
@@ -1211,32 +779,26 @@ export function SiteHeader() {
               </div>
 
               <div
-                data-menu-item
-                className="mt-[44px]"
+                data-menu-secondary
+                className="mt-[42px]"
               >
-                <p className="mb-[11px] text-[9px] font-normal uppercase tracking-[-0.005em] text-black/34">
+                <p className="mb-[12px] text-[9.5px] font-normal uppercase tracking-[0.025em] text-black/36">
                   Social
                 </p>
 
-                <div className="grid grid-cols-2 gap-x-[32px] gap-y-[5px] text-[12px] leading-none text-black/70">
+                <div className="grid grid-cols-2 gap-x-[38px] gap-y-[8px] text-[13px] leading-none text-black/68">
                   {socialItems.map(
-                    (
-                      item,
-                    ) => (
+                    (item) => (
                       <a
-                        key={
-                          item.label
-                        }
-                        href={
-                          item.href
-                        }
+                        key={item.label}
+                        href={item.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-fit transition-opacity duration-250 hover:opacity-40"
+                        className="group w-fit overflow-hidden"
                       >
-                        {
-                          item.label
-                        }
+                        <SlideSwapText
+                          text={item.label}
+                        />
                       </a>
                     ),
                   )}
