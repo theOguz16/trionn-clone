@@ -62,13 +62,6 @@ canvas {
   color: #090909;
 }
 
-/*
- * Typography roles
- *
- * The site intentionally has two strong voices:
- * Familjen Grotesk for display/body copy and
- * Martian Mono for compact UI, captions and CTAs.
- */
 .font-mono {
   font-family:
     var(--font-trionn-mono),
@@ -82,14 +75,6 @@ canvas {
     "wdth" 100;
 }
 
-/*
- * Display calibration
- *
- * Familjen has wider, more characterful forms than the
- * former Arial fallback. These values keep the visual
- * density close to the reference without changing any
- * motion timing or layout choreography.
- */
 h1[data-hero-vibrate] {
   font-weight: 400;
   line-height: 0.91;
@@ -126,21 +111,18 @@ h1[data-hero-vibrate] {
 }
 
 /*
- * DARK AREA
+ * The original DOM guide ellipses remain as a subtle rear-depth layer.
+ * WebGL now owns the interactive continuous curves, so this legacy layer
+ * must not visually double their weight.
  */
+[data-hero-guide-lines] ellipse {
+  opacity: 0.16 !important;
+}
 
 html:not([data-page-theme="light"])
   [data-hero-nav-vibrate] {
   mix-blend-mode: difference;
 }
-
-/*
- * LIGHT AREA
- *
- * StripeWipe / KeyFacts explicitly
- * switch the root theme instead of
- * relying on blend-mode guessing.
- */
 
 html[data-page-theme="light"]
   [data-hero-nav-vibrate] {
