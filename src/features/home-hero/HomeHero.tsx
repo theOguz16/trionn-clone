@@ -224,74 +224,36 @@ function animateCtaIn(
         2,
     );
 
-  gsap.killTweensOf(
-    chars,
-  );
+  gsap.killTweensOf(chars);
 
-  gsap.to(
-    chars,
-    {
-      x:
-        shift,
-
-      duration:
-        0.48,
-
-      stagger: {
-        each:
-          0.014,
-
-        from:
-          "start",
-      },
-
-      ease:
-        "power3.out",
-
-      overwrite:
-        true,
+  gsap.to(chars, {
+    x: shift,
+    duration: 0.48,
+    stagger: {
+      each: 0.014,
+      from: "start",
     },
-  );
+    ease: "power3.out",
+    overwrite: true,
+  });
 
   if (leftArrow) {
-    gsap.to(
-      leftArrow,
-      {
-        x:
-          0,
-
-        autoAlpha:
-          1,
-
-        duration:
-          0.28,
-
-        delay:
-          0.04,
-
-        ease:
-          "power2.out",
-      },
-    );
+    gsap.to(leftArrow, {
+      x: 0,
+      autoAlpha: 1,
+      duration: 0.28,
+      delay: 0.04,
+      ease: "power2.out",
+    });
   }
 
   if (rightArrow) {
-    gsap.to(
-      rightArrow,
-      {
-        x:
-          9,
-
-        autoAlpha:
-          0,
-
-        duration:
-          0.24,
-
-        ease:
-          "power2.out",
-      },
-    );
+    gsap.to(rightArrow, {
+      x: 9,
+      autoAlpha: 0,
+      duration: 0.24,
+      ease: "power2.out",
+    });
   }
 }
 
@@ -316,80 +278,41 @@ function animateCtaOut(
       "[data-cta-arrow-right]",
     );
 
-  gsap.killTweensOf(
-    chars,
-  );
+  gsap.killTweensOf(chars);
 
-  gsap.to(
-    chars,
-    {
-      x:
-        0,
-
-      duration:
-        0.42,
-
-      stagger: {
-        each:
-          0.011,
-
-        from:
-          "end",
-      },
-
-      ease:
-        "power3.out",
-
-      overwrite:
-        true,
+  gsap.to(chars, {
+    x: 0,
+    duration: 0.42,
+    stagger: {
+      each: 0.011,
+      from: "end",
     },
-  );
+    ease: "power3.out",
+    overwrite: true,
+  });
 
   if (leftArrow) {
-    gsap.to(
-      leftArrow,
-      {
-        x:
-          -9,
-
-        autoAlpha:
-          0,
-
-        duration:
-          0.24,
-
-        ease:
-          "power2.out",
-      },
-    );
+    gsap.to(leftArrow, {
+      x: -9,
+      autoAlpha: 0,
+      duration: 0.24,
+      ease: "power2.out",
+    });
   }
 
   if (rightArrow) {
-    gsap.to(
-      rightArrow,
-      {
-        x:
-          0,
-
-        autoAlpha:
-          1,
-
-        duration:
-          0.28,
-
-        delay:
-          0.06,
-
-        ease:
-          "power2.out",
-      },
-    );
+    gsap.to(rightArrow, {
+      x: 0,
+      autoAlpha: 1,
+      duration: 0.28,
+      delay: 0.06,
+      ease: "power2.out",
+    });
   }
 }
 
 function smoothStep(
-  value:
-    number,
+  value: number,
 ) {
   const t =
     gsap.utils.clamp(
@@ -399,19 +322,13 @@ function smoothStep(
     );
 
   return (
-    t *
-    t *
-    (
-      3 -
-      2 *
-        t
-    )
+    t * t *
+    (3 - 2 * t)
   );
 }
 
 function smootherStep(
-  value:
-    number,
+  value: number,
 ) {
   const t =
     gsap.utils.clamp(
@@ -421,55 +338,26 @@ function smootherStep(
     );
 
   return (
-    t *
-    t *
-    t *
-    (
-      t *
-        (
-          t * 6 -
-          15
-        ) +
-      10
-    )
+    t * t * t *
+    (t * (t * 6 - 15) + 10)
   );
 }
 
 export function HomeHero() {
   const sectionRef =
-    useRef<HTMLElement>(
-      null,
-    );
-
+    useRef<HTMLElement>(null);
   const visualRef =
-    useRef<HTMLDivElement>(
-      null,
-    );
-
+    useRef<HTMLDivElement>(null);
   const foregroundRef =
-    useRef<HTMLDivElement>(
-      null,
-    );
-
+    useRef<HTMLDivElement>(null);
   const statsRef =
-    useRef<HTMLDivElement>(
-      null,
-    );
-
+    useRef<HTMLDivElement>(null);
   const canvasRef =
-    useRef<HTMLCanvasElement>(
-      null,
-    );
-
+    useRef<HTMLCanvasElement>(null);
   const linesRef =
-    useRef<SVGSVGElement>(
-      null,
-    );
-
+    useRef<SVGSVGElement>(null);
   const wordsRef =
-    useRef<HTMLSpanElement>(
-      null,
-    );
+    useRef<HTMLSpanElement>(null);
 
   const cookieVisible =
     useSyncExternalStore(
@@ -478,23 +366,20 @@ export function HomeHero() {
       getCookieServerSnapshot,
     );
 
-  const chooseCookies =
-    (
-      choice:
-        | "accept"
-        | "decline",
-    ) => {
-      window.localStorage.setItem(
-        COOKIE_KEY,
-        choice,
-      );
+  const chooseCookies = (
+    choice: "accept" | "decline",
+  ) => {
+    window.localStorage.setItem(
+      COOKIE_KEY,
+      choice,
+    );
 
-      window.dispatchEvent(
-        new Event(
-          COOKIE_CHANGE_EVENT,
-        ),
-      );
-    };
+    window.dispatchEvent(
+      new Event(
+        COOKIE_CHANGE_EVENT,
+      ),
+    );
+  };
 
   useGSAP(
     () => {
@@ -513,840 +398,525 @@ export function HomeHero() {
         );
 
       if (
-        wordElements.length <
-        2
+        wordElements.length < 2
       ) {
         return;
       }
 
       const splits =
         wordElements.map(
-          (
-            element,
-          ) =>
+          (element) =>
             new SplitText(
               element,
-              {
-                type:
-                  "chars",
-              },
+              { type: "chars" },
             ),
         );
 
-      gsap.set(
-        wordElements,
-        {
-          autoAlpha:
-            0,
-        },
-      );
+      gsap.set(wordElements, {
+        autoAlpha: 0,
+      });
 
-      splits.forEach(
-        (
-          split,
-        ) => {
-          gsap.set(
-            split.chars,
-            {
-              autoAlpha:
-                0,
+      splits.forEach((split) => {
+        gsap.set(split.chars, {
+          autoAlpha: 0,
+          filter: "blur(12px)",
+          willChange: "filter, opacity",
+        });
+      });
 
-              filter:
-                "blur(12px)",
+      gsap.set(wordElements[0], {
+        autoAlpha: 1,
+      });
 
-              willChange:
-                "filter, opacity",
-            },
-          );
-        },
-      );
-
-      gsap.set(
-        wordElements[0],
-        {
-          autoAlpha:
-            1,
-        },
-      );
-
-      gsap.set(
-        splits[0].chars,
-        {
-          autoAlpha:
-            1,
-
-          filter:
-            "blur(0px)",
-        },
-      );
+      gsap.set(splits[0].chars, {
+        autoAlpha: 1,
+        filter: "blur(0px)",
+      });
 
       const timeline =
         gsap.timeline({
-          repeat:
-            -1,
-
-          delay:
-            3.2,
+          repeat: -1,
+          delay: 3.2,
         });
 
       for (
         let index = 0;
-        index <
-        wordElements.length;
+        index < wordElements.length;
         index += 1
       ) {
         const currentElement =
-          wordElements[
-            index
-          ];
-
+          wordElements[index];
         const currentSplit =
-          splits[
-            index
-          ];
-
+          splits[index];
         const nextIndex =
-          (
-            index +
-            1
-          ) %
+          (index + 1) %
           wordElements.length;
-
         const nextElement =
-          wordElements[
-            nextIndex
-          ];
-
+          wordElements[nextIndex];
         const nextSplit =
-          splits[
-            nextIndex
-          ];
+          splits[nextIndex];
 
         timeline
-          .to(
-            {},
-            {
-              duration:
-                2.25,
+          .to({}, { duration: 2.25 })
+          .to(currentSplit.chars, {
+            autoAlpha: 0,
+            filter: "blur(12px)",
+            duration: 0.52,
+            stagger: {
+              each: 0.035,
+              from: "random",
             },
-          )
-
-          .to(
-            currentSplit.chars,
-            {
-              autoAlpha:
-                0,
-
-              filter:
-                "blur(12px)",
-
-              duration:
-                0.52,
-
-              stagger: {
-                each:
-                  0.035,
-
-                from:
-                  "random",
-              },
-
-              ease:
-                "power2.in",
-            },
-          )
-
-          .set(
-            nextElement,
-            {
-              autoAlpha:
-                1,
-            },
-
-            "<",
-          )
-
+            ease: "power2.in",
+          })
+          .set(nextElement, {
+            autoAlpha: 1,
+          }, "<")
           .fromTo(
             nextSplit.chars,
             {
-              autoAlpha:
-                0,
-
-              filter:
-                "blur(12px)",
+              autoAlpha: 0,
+              filter: "blur(12px)",
             },
-
             {
-              autoAlpha:
-                1,
-
-              filter:
-                "blur(0px)",
-
-              duration:
-                0.72,
-
+              autoAlpha: 1,
+              filter: "blur(0px)",
+              duration: 0.72,
               stagger: {
-                each:
-                  0.05,
-
-                from:
-                  "random",
+                each: 0.05,
+                from: "random",
               },
-
-              ease:
-                "power2.out",
+              ease: "power2.out",
             },
-
             "-=0.31",
           )
-
-          .set(
-            currentElement,
-            {
-              autoAlpha:
-                0,
-            },
-          );
+          .set(currentElement, {
+            autoAlpha: 0,
+          });
       }
 
       return () => {
         timeline.kill();
-
-        splits.forEach(
-          (
-            split,
-          ) => {
-            split.revert();
-          },
-        );
+        splits.forEach((split) => {
+          split.revert();
+        });
       };
     },
-
-    {
-      scope:
-        sectionRef,
-    },
+    { scope: sectionRef },
   );
 
-  useEffect(
-    () => {
-      const section =
-        sectionRef.current;
+  useEffect(() => {
+    const section =
+      sectionRef.current;
+    const visual =
+      visualRef.current;
+    const foreground =
+      foregroundRef.current;
+    const stats =
+      statsRef.current;
+    const canvas =
+      canvasRef.current;
+    const persistentLines =
+      linesRef.current;
 
-      const visual =
-        visualRef.current;
+    if (
+      !section ||
+      !visual ||
+      !canvas
+    ) {
+      return;
+    }
 
-      const foreground =
-        foregroundRef.current;
-
-      const stats =
-        statsRef.current;
-
-      const canvas =
-        canvasRef.current;
-
-      const persistentLines =
-        linesRef.current;
-
-      if (
-        !section ||
-        !visual ||
-        !canvas
-      ) {
-        return;
-      }
-
-      const vibrateElements =
-        Array.from(
-          visual.querySelectorAll<HTMLElement>(
-            "[data-hero-vibrate]",
-          ),
-        );
-
-      const navElements =
-        Array.from(
-          document.querySelectorAll<HTMLElement>(
-            "[data-hero-nav-vibrate]",
-          ),
-        );
-
-      vibrateElements.push(
-        ...navElements,
+    const vibrateElements =
+      Array.from(
+        visual.querySelectorAll<HTMLElement>(
+          "[data-hero-vibrate]",
+        ),
       );
 
-      let vibrationActive =
-        false;
+    const navElements =
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "[data-hero-nav-vibrate]",
+        ),
+      );
 
-      const applyVibration =
-        (
-          amount:
-            number,
+    vibrateElements.push(
+      ...navElements,
+    );
 
-          phase:
-            number,
-        ) => {
-          if (
-            amount >
-            0.001
-          ) {
-            vibrationActive =
-              true;
+    let vibrationActive = false;
 
-            const x =
-              (
-                Math.sin(
-                  phase,
-                ) *
-                  3.7 +
-                Math.sin(
-                  phase *
-                    2.17,
-                ) *
-                  0.9
-              ) *
-              amount;
+    const applyVibration = (
+      amount: number,
+      phase: number,
+    ) => {
+      if (amount > 0.001) {
+        vibrationActive = true;
 
-            const y =
-              (
-                Math.cos(
-                  phase *
-                    1.31,
-                ) *
-                  2.6 +
-                Math.sin(
-                  phase *
-                    1.73,
-                ) *
-                  0.55
-              ) *
-              amount;
-
-            gsap.killTweensOf(
-              vibrateElements,
-            );
-
-            gsap.set(
-              vibrateElements,
-              {
-                x,
-                y,
-
-                force3D:
-                  true,
-              },
-            );
-
-            return;
-          }
-
-          if (
-            !vibrationActive
-          ) {
-            return;
-          }
-
-          vibrationActive =
-            false;
-
-          gsap.to(
-            vibrateElements,
-            {
-              x:
-                0,
-
-              y:
-                0,
-
-              duration:
-                0.7,
-
-              ease:
-                "power3.out",
-
-              clearProps:
-                "transform",
-            },
-          );
-        };
-
-      const scene =
-        new HeroScene(
-          canvas,
-          {
-            onHoverPanel:
-              () => {
-                audioManager.pluck({
-                  frequency:
-                    520,
-
-                  strength:
-                    0.035,
-
-                  duration:
-                    0.08,
-                });
-              },
-
-            onWeldSpark:
-              () => {
-                audioManager.pluck({
-                  frequency:
-                    980 +
-                    Math.random() *
-                      220,
-
-                  strength:
-                    0.06,
-
-                  duration:
-                    0.07,
-                });
-              },
-
-            onChargeStart:
-              () => {
-                void audioManager.startCharge();
-              },
-
-            onChargeProgress:
-              (
-                progress,
-              ) => {
-                audioManager.updateCharge(
-                  progress,
-                );
-              },
-
-            onBlast:
-              () => {
-                audioManager.stopCharge();
-
-                audioManager.playBlast();
-              },
-
-            onReturnStart:
-              () => {
-                audioManager.stopCharge();
-              },
-
-            onVibrate:
-              (
-                amount,
-                phase,
-              ) => {
-                applyVibration(
-                  amount,
-                  phase,
-                );
-              },
-          },
-        );
-
-      const unregister =
-        canvasManager.register(
-          scene,
-          true,
-        );
-
-      const observer =
-        new IntersectionObserver(
+        const x =
           (
-            [
-              entry,
-            ],
-          ) => {
-            canvasManager.setActive(
-              scene.id,
-              entry.isIntersecting,
-            );
-          },
+            Math.sin(phase) * 3.7 +
+            Math.sin(phase * 2.17) * 0.9
+          ) * amount;
 
-          {
-            rootMargin:
-              "20% 0px",
-          },
-        );
-
-      observer.observe(
-        section,
-      );
-
-      const applyProgress =
-        (
-          rawProgress:
-            number,
-        ) => {
-          const raw =
-            gsap.utils.clamp(
-              0,
-              1,
-              rawProgress,
-            );
-
-          /*
-           * 0.00 → 0.19
-           * first-screen blast-like explosion
-           *
-           * 0.19 → 0.58
-           * About copy:
-           * FULLY EXPLODED
-           *
-           * 0.58 → 0.76
-           * after the main About statement begins clearing:
-           * panels slowly rejoin while Focused Vision / marquee arrive
-           *
-           * 0.76 → 0.78
-           * brief fully assembled beat
-           *
-           * 0.78 → 0.90
-           * fallback WebGL fade as the stripe wipe takes over
-           */
-
-          let sceneProgress =
-            0;
-
-          if (
-            raw <=
-            0.19
-          ) {
-            sceneProgress =
-              smoothStep(
-                raw /
-                  0.19,
-              );
-          } else if (
-            raw <=
-            0.58
-          ) {
-            sceneProgress =
-              1;
-          } else if (
-            raw <=
-            0.76
-          ) {
-            const join =
-              smootherStep(
-                (
-                  raw -
-                  0.58
-                ) /
-                  0.18,
-              );
-
-            sceneProgress =
-              1 -
-              join;
-          } else {
-            sceneProgress =
-              0;
-          }
-
-          scene.setScrollProgress(
-            sceneProgress,
-          );
-
-          if (foreground) {
-            const fade =
-              gsap.utils.clamp(
-                0,
-                1,
-
-                (
-                  raw -
-                  0.035
-                ) /
-                  0.07,
-              );
-
-            gsap.set(
-              foreground,
-              {
-                autoAlpha:
-                  1 -
-                  fade,
-              },
-            );
-          }
-
-          if (stats) {
-            const statsFade =
-              gsap.utils.clamp(
-                0,
-                1,
-
-                (
-                  raw -
-                  0.28
-                ) /
-                  0.13,
-              );
-
-            gsap.set(
-              stats,
-              {
-                autoAlpha:
-                  1 -
-                  statsFade,
-
-                y:
-                  -12 *
-                  statsFade,
-              },
-            );
-          }
-
-          if (
-            persistentLines
-          ) {
-            const lineIn =
-              gsap.utils.clamp(
-                0,
-                1,
-
-                (
-                  raw -
-                  0.045
-                ) /
-                  0.08,
-              );
-
-            const lineOut =
-              gsap.utils.clamp(
-                0,
-                1,
-
-                (
-                  raw -
-                  0.31
-                ) /
-                  0.17,
-              );
-
-            gsap.set(
-              persistentLines,
-              {
-                autoAlpha:
-                  lineIn *
-                  (
-                    1 -
-                    lineOut
-                  ),
-
-                x:
-                  -24 *
-                  raw,
-
-                y:
-                  -10 *
-                  raw,
-              },
-            );
-          }
-
-          const canvasFade =
-            gsap.utils.clamp(
-              0,
-              1,
-
-              (
-                raw -
-                0.78
-              ) /
-                0.12,
-            );
-
-          gsap.set(
-            canvas,
-            {
-              autoAlpha:
-                1 -
-                canvasFade,
-            },
-          );
-        };
-
-      const trigger =
-        ScrollTrigger.create({
-          trigger:
-            section,
-
-          start:
-            "top top",
-
-          end:
-            "bottom bottom",
-
-          onUpdate:
-            (
-              self,
-            ) => {
-              applyProgress(
-                self.progress,
-              );
-            },
-        });
-
-      applyProgress(
-        trigger.progress,
-      );
-
-      const handlePointerMove =
-        (
-          event:
-            PointerEvent,
-        ) => {
-          const bounds =
-            visual.getBoundingClientRect();
-
-          const pixelX =
-            event.clientX -
-            bounds.left;
-
-          const pixelY =
-            event.clientY -
-            bounds.top;
-
-          const x =
-            (
-              pixelX /
-              bounds.width
-            ) *
-              2 -
-            1;
-
-          const y =
-            -(
-              (
-                pixelY /
-                bounds.height
-              ) *
-                2 -
-              1
-            );
-
-          scene.setPointer(
-            x,
-            y,
-            pixelX,
-            pixelY,
-          );
-        };
-
-      const handlePointerLeave =
-        () => {
-          scene.resetPointer();
-
-          audioManager.stopCharge();
-        };
-
-      const handlePointerDown =
-        (
-          event:
-            PointerEvent,
-        ) => {
-          if (
-            !event.isPrimary
-          ) {
-            return;
-          }
-
-          void audioManager.unlock();
-
-          scene.startHold();
-        };
-
-      const handlePointerUp =
-        (
-          event:
-            PointerEvent,
-        ) => {
-          if (
-            !event.isPrimary
-          ) {
-            return;
-          }
-
-          scene.endHold();
-
-          audioManager.stopCharge();
-        };
-
-      visual.addEventListener(
-        "pointermove",
-        handlePointerMove,
-      );
-
-      visual.addEventListener(
-        "pointerleave",
-        handlePointerLeave,
-      );
-
-      visual.addEventListener(
-        "pointerdown",
-        handlePointerDown,
-      );
-
-      window.addEventListener(
-        "pointerup",
-        handlePointerUp,
-      );
-
-      window.addEventListener(
-        "pointercancel",
-        handlePointerUp,
-      );
-
-      return () => {
-        observer.disconnect();
-
-        trigger.kill();
-
-        audioManager.stopCharge();
+        const y =
+          (
+            Math.cos(phase * 1.31) * 2.6 +
+            Math.sin(phase * 1.73) * 0.55
+          ) * amount;
 
         gsap.killTweensOf(
           vibrateElements,
         );
 
+        gsap.set(vibrateElements, {
+          x,
+          y,
+          force3D: true,
+        });
+        return;
+      }
+
+      if (!vibrationActive) {
+        return;
+      }
+
+      vibrationActive = false;
+
+      gsap.to(vibrateElements, {
+        x: 0,
+        y: 0,
+        duration: 0.7,
+        ease: "power3.out",
+        clearProps: "transform",
+      });
+    };
+
+    const scene =
+      new HeroScene(
+        canvas,
+        {
+          onHoverPanel: () => {
+            audioManager.pluck({
+              frequency: 520,
+              strength: 0.035,
+              duration: 0.08,
+            });
+          },
+          onWeldSpark: () => {
+            audioManager.pluck({
+              frequency:
+                980 +
+                Math.random() * 220,
+              strength: 0.06,
+              duration: 0.07,
+            });
+          },
+          onChargeStart: () => {
+            void audioManager.startCharge();
+          },
+          onChargeProgress: (
+            progress,
+          ) => {
+            audioManager.updateCharge(
+              progress,
+            );
+          },
+          onBlast: () => {
+            audioManager.stopCharge();
+            audioManager.playBlast();
+          },
+          onReturnStart: () => {
+            audioManager.stopCharge();
+          },
+          onVibrate: (
+            amount,
+            phase,
+          ) => {
+            applyVibration(
+              amount,
+              phase,
+            );
+          },
+        },
+      );
+
+    const unregister =
+      canvasManager.register(
+        scene,
+        true,
+      );
+
+    const observer =
+      new IntersectionObserver(
+        ([entry]) => {
+          canvasManager.setActive(
+            scene.id,
+            entry.isIntersecting,
+          );
+        },
+        {
+          rootMargin: "20% 0px",
+        },
+      );
+
+    observer.observe(section);
+
+    const applyProgress = (
+      rawProgress: number,
+    ) => {
+      const raw =
+        gsap.utils.clamp(
+          0,
+          1,
+          rawProgress,
+        );
+
+      /*
+       * 0.00 → 0.19  blast-like explosion
+       * 0.19 → 0.54  fully exploded through the main About statement
+       * 0.54 → 0.69  visible, gradual rejoin
+       * 0.69 → 0.80  fully assembled hold — the user should clearly see
+       *              the completed symbol before it disappears
+       * 0.80 → 0.91  fade into the stripe wipe
+       */
+      let sceneProgress = 0;
+
+      if (raw <= 0.19) {
+        sceneProgress =
+          smoothStep(
+            raw / 0.19,
+          );
+      } else if (raw <= 0.54) {
+        sceneProgress = 1;
+      } else if (raw <= 0.69) {
+        const join =
+          smootherStep(
+            (raw - 0.54) /
+              0.15,
+          );
+
+        /*
+         * HeroScene historically maps every scroll value >= .58 to the
+         * same fully exploded model. Starting this leg at .58 is therefore
+         * visually identical to 1, but makes the WHOLE 0.54→0.69 window
+         * participate in the return instead of wasting its first half.
+         */
+        sceneProgress =
+          0.58 *
+          (1 - join);
+      } else {
+        sceneProgress = 0;
+      }
+
+      scene.setScrollProgress(
+        sceneProgress,
+      );
+
+      if (foreground) {
+        const fade =
+          gsap.utils.clamp(
+            0,
+            1,
+            (raw - 0.035) /
+              0.07,
+          );
+
+        gsap.set(foreground, {
+          autoAlpha: 1 - fade,
+        });
+      }
+
+      if (stats) {
+        const statsFade =
+          gsap.utils.clamp(
+            0,
+            1,
+            (raw - 0.28) /
+              0.13,
+          );
+
+        gsap.set(stats, {
+          autoAlpha:
+            1 - statsFade,
+          y: -12 * statsFade,
+        });
+      }
+
+      if (persistentLines) {
+        const lineIn =
+          gsap.utils.clamp(
+            0,
+            1,
+            (raw - 0.045) /
+              0.08,
+          );
+
+        const lineOut =
+          gsap.utils.clamp(
+            0,
+            1,
+            (raw - 0.31) /
+              0.17,
+          );
+
         gsap.set(
-          vibrateElements,
+          persistentLines,
           {
-            clearProps:
-              "transform",
+            autoAlpha:
+              lineIn *
+              (1 - lineOut),
+            x: -24 * raw,
+            y: -10 * raw,
           },
         );
+      }
 
-        visual.removeEventListener(
-          "pointermove",
-          handlePointerMove,
+      const canvasFade =
+        gsap.utils.clamp(
+          0,
+          1,
+          (raw - 0.80) /
+            0.11,
         );
 
-        visual.removeEventListener(
-          "pointerleave",
-          handlePointerLeave,
+      gsap.set(canvas, {
+        autoAlpha:
+          1 - canvasFade,
+      });
+    };
+
+    const trigger =
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (self) => {
+          applyProgress(
+            self.progress,
+          );
+        },
+      });
+
+    applyProgress(
+      trigger.progress,
+    );
+
+    const handlePointerMove = (
+      event: PointerEvent,
+    ) => {
+      const bounds =
+        visual.getBoundingClientRect();
+
+      const pixelX =
+        event.clientX -
+        bounds.left;
+      const pixelY =
+        event.clientY -
+        bounds.top;
+
+      const x =
+        (pixelX /
+          bounds.width) * 2 - 1;
+      const y =
+        -(
+          (pixelY /
+            bounds.height) * 2 - 1
         );
 
-        visual.removeEventListener(
-          "pointerdown",
-          handlePointerDown,
-        );
+      scene.setPointer(
+        x,
+        y,
+        pixelX,
+        pixelY,
+      );
+    };
 
-        window.removeEventListener(
-          "pointerup",
-          handlePointerUp,
-        );
+    const handlePointerLeave = () => {
+      scene.resetPointer();
+      audioManager.stopCharge();
+    };
 
-        window.removeEventListener(
-          "pointercancel",
-          handlePointerUp,
-        );
+    const handlePointerDown = (
+      event: PointerEvent,
+    ) => {
+      if (!event.isPrimary) {
+        return;
+      }
 
-        unregister();
-      };
-    },
+      void audioManager.unlock();
+      scene.startHold();
+    };
 
-    [],
-  );
+    const handlePointerUp = (
+      event: PointerEvent,
+    ) => {
+      if (!event.isPrimary) {
+        return;
+      }
+
+      scene.endHold();
+      audioManager.stopCharge();
+    };
+
+    visual.addEventListener(
+      "pointermove",
+      handlePointerMove,
+    );
+    visual.addEventListener(
+      "pointerleave",
+      handlePointerLeave,
+    );
+    visual.addEventListener(
+      "pointerdown",
+      handlePointerDown,
+    );
+    window.addEventListener(
+      "pointerup",
+      handlePointerUp,
+    );
+    window.addEventListener(
+      "pointercancel",
+      handlePointerUp,
+    );
+
+    return () => {
+      observer.disconnect();
+      trigger.kill();
+      audioManager.stopCharge();
+
+      gsap.killTweensOf(
+        vibrateElements,
+      );
+      gsap.set(
+        vibrateElements,
+        { clearProps: "transform" },
+      );
+
+      visual.removeEventListener(
+        "pointermove",
+        handlePointerMove,
+      );
+      visual.removeEventListener(
+        "pointerleave",
+        handlePointerLeave,
+      );
+      visual.removeEventListener(
+        "pointerdown",
+        handlePointerDown,
+      );
+      window.removeEventListener(
+        "pointerup",
+        handlePointerUp,
+      );
+      window.removeEventListener(
+        "pointercancel",
+        handlePointerUp,
+      );
+
+      unregister();
+    };
+  }, []);
 
   return (
     <section
@@ -1358,9 +928,7 @@ export function HomeHero() {
         className="sticky top-0 h-[100svh] select-none overflow-hidden bg-[#090909]"
       >
         <PersistentGuideLines
-          lineRef={
-            linesRef
-          }
+          lineRef={linesRef}
         />
 
         <canvas
@@ -1402,27 +970,18 @@ export function HomeHero() {
                   className="relative inline-block min-w-[5.8em]"
                 >
                   {HERO_WORDS.map(
-                    (
-                      word,
-                      index,
-                    ) => (
+                    (word, index) => (
                       <span
                         key={word}
                         data-hero-word
                         className={[
                           "absolute left-0 top-0",
-
-                          index ===
-                          0
+                          index === 0
                             ? ""
                             : "opacity-0",
-                        ].join(
-                          " ",
-                        )}
+                        ].join(" ")}
                       >
-                        {
-                          word
-                        }
+                        {word}
                       </span>
                     ),
                   )}
@@ -1440,24 +999,16 @@ export function HomeHero() {
             >
               <TransitionLink
                 href="/contact"
-                onMouseEnter={
-                  (
-                    event,
-                  ) => {
-                    animateCtaIn(
-                      event.currentTarget,
-                    );
-                  }
-                }
-                onMouseLeave={
-                  (
-                    event,
-                  ) => {
-                    animateCtaOut(
-                      event.currentTarget,
-                    );
-                  }
-                }
+                onMouseEnter={(event) => {
+                  animateCtaIn(
+                    event.currentTarget,
+                  );
+                }}
+                onMouseLeave={(event) => {
+                  animateCtaOut(
+                    event.currentTarget,
+                  );
+                }}
                 className="relative flex h-[34px] w-[220px] items-start overflow-hidden border-b border-[#bebeba]/70 pt-[2px] font-mono text-[11px] font-normal uppercase tracking-[-0.025em] text-[#c9c9c5]"
               >
                 <span
@@ -1466,11 +1017,9 @@ export function HomeHero() {
                 >
                   →
                 </span>
-
                 <AnimatedCtaText
                   text="Discuss your project"
                 />
-
                 <span
                   data-cta-arrow-right
                   className="absolute right-0 top-[2px]"
@@ -1483,24 +1032,16 @@ export function HomeHero() {
                 href="https://calendly.com/hello-trionn/30min"
                 target="_blank"
                 rel="noreferrer"
-                onMouseEnter={
-                  (
-                    event,
-                  ) => {
-                    animateCtaIn(
-                      event.currentTarget,
-                    );
-                  }
-                }
-                onMouseLeave={
-                  (
-                    event,
-                  ) => {
-                    animateCtaOut(
-                      event.currentTarget,
-                    );
-                  }
-                }
+                onMouseEnter={(event) => {
+                  animateCtaIn(
+                    event.currentTarget,
+                  );
+                }}
+                onMouseLeave={(event) => {
+                  animateCtaOut(
+                    event.currentTarget,
+                  );
+                }}
                 className="relative flex h-[34px] w-[220px] items-start overflow-hidden border-b border-[#bebeba]/70 pt-[2px] font-mono text-[11px] font-normal uppercase tracking-[-0.025em] text-[#c9c9c5]"
               >
                 <span
@@ -1509,11 +1050,9 @@ export function HomeHero() {
                 >
                   →
                 </span>
-
                 <AnimatedCtaText
                   text="Book a 30-minute call"
                 />
-
                 <span
                   data-cta-arrow-right
                   className="absolute right-0 top-[2px]"
@@ -1538,19 +1077,12 @@ export function HomeHero() {
             className="absolute bottom-[27px] left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-mono text-[12px] font-normal uppercase leading-[1.3] tracking-[-0.025em] text-[#ccccca]"
           >
             <p className="flex items-center justify-center gap-[7px]">
-              <span>
-                Hold to
-              </span>
-
+              <span>Hold to</span>
               <span className="text-[15px] leading-none text-[#ff5a19]">
                 ✹
               </span>
-
-              <span>
-                Blast
-              </span>
+              <span>Blast</span>
             </p>
-
             <p>
               Dare{" "}
               <span className="text-[#ffd126]">
@@ -1582,7 +1114,6 @@ export function HomeHero() {
                   stroke="currentColor"
                   strokeWidth="1"
                 />
-
                 <ellipse
                   cx="14"
                   cy="9"
@@ -1591,19 +1122,16 @@ export function HomeHero() {
                   stroke="currentColor"
                   strokeWidth="1"
                 />
-
                 <path
                   d="M3 9H25"
                   stroke="currentColor"
                   strokeWidth="1"
                 />
               </svg>
-
               <span className="text-[7px] uppercase tracking-[0.05em]">
                 Est. 2012
               </span>
             </div>
-
             <div className="flex min-h-[62px] items-center px-[11px] text-[8px] uppercase leading-[1.35] tracking-[0.04em]">
               <span>
                 14+ years shaping
@@ -1627,7 +1155,6 @@ export function HomeHero() {
               We use cookies to enhance
               your experience.
             </span>
-
             <div className="flex items-center gap-[9px] text-white/85">
               <button
                 type="button"
@@ -1640,7 +1167,6 @@ export function HomeHero() {
               >
                 Decline
               </button>
-
               <button
                 type="button"
                 onClick={() => {
