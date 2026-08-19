@@ -172,74 +172,117 @@ html[data-page-theme="light"]
 }
 
 /*
- * Header/menu control calibration.
+ * Header/menu controls.
  *
- * Trionn renders the CTA/menu labels as compact UI copy rather than as
- * mono labels. Keep the existing double-layer character motion, but use
- * the display face and tighter pill metrics so the controls sit like the
- * reference instead of reading as oversized badges.
+ * The live Trionn CTA uses content-driven sizing rather than a fixed
+ * height: pt-1.5 (6px), pb-2 (8px), px-4 (16px), full radius and a
+ * one-pixel border. Keep that geometry here while preserving our
+ * character-layer hover implementation.
  */
 [data-hero-nav-vibrate] a[aria-label="Let's talk"],
 [data-hero-nav-vibrate] button[aria-label="Open menu"],
 #site-navigation a[aria-label="Let's talk"],
 #site-navigation button[aria-label="Close menu"] {
+  height: auto !important;
+  padding-top: 6px !important;
+  padding-bottom: 8px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  border-radius: 9999px !important;
   font-family:
     var(--font-trionn-display),
     "Helvetica Neue",
     Helvetica,
     Arial,
     sans-serif !important;
+  font-size: 11px !important;
   font-weight: 400 !important;
   line-height: 1 !important;
-  font-kerning: normal;
-}
-
-[data-hero-nav-vibrate] a[aria-label="Let's talk"],
-#site-navigation a[aria-label="Let's talk"] {
-  height: 30px !important;
-  padding-inline: 15px !important;
-  font-size: 10.5px !important;
   letter-spacing: -0.012em !important;
-  text-transform: lowercase !important;
+  text-transform: uppercase !important;
+  font-kerning: normal;
+  transition-property:
+    color,
+    background-color,
+    border-color,
+    opacity,
+    transform !important;
+  transition-duration: 300ms !important;
 }
 
-[data-hero-nav-vibrate] button[aria-label="Open menu"],
+[data-hero-nav-vibrate] a[aria-label="Let's talk"] {
+  overflow: visible !important;
+  background: #ffffff !important;
+  border: 1px solid #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+[data-hero-nav-vibrate] a[aria-label="Let's talk"]:hover {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+[data-hero-nav-vibrate] button[aria-label="Open menu"] {
+  gap: 7px !important;
+  border-width: 1px !important;
+}
+
+#site-navigation a[aria-label="Let's talk"] {
+  overflow: visible !important;
+}
+
 #site-navigation button[aria-label="Close menu"] {
-  height: 30px !important;
-  padding-inline: 11px !important;
-  gap: 6px !important;
-  font-size: 9.25px !important;
-  letter-spacing: 0.012em !important;
+  gap: 7px !important;
 }
 
 /*
- * Story CTA is intentionally much more present than the utility pills.
- * Its visible label is fully uppercase while retaining the same
- * character-by-character rewrite animation implemented in SiteHeader.
+ * The source site's nav-link wrapper is overflow-visible. The previous
+ * hidden track clipped the last glyph of STORY during/after rewrites.
+ */
+#site-navigation a[href="/trionn-story"] [data-motion-track],
+[data-hero-nav-vibrate] a[aria-label="Let's talk"] [data-motion-track],
+[data-hero-nav-vibrate] button[aria-label="Open menu"] [data-motion-track],
+#site-navigation a[aria-label="Let's talk"] [data-motion-track],
+#site-navigation button[aria-label="Close menu"] [data-motion-track] {
+  overflow: visible !important;
+}
+
+/*
+ * Story CTA: fully uppercase, larger and with enough breathing room for
+ * the character-by-character rewrite so the final Y remains visible.
  */
 #site-navigation a[href="/trionn-story"] {
-  min-width: 322px !important;
-  height: 46px !important;
-  padding-inline: 16px !important;
+  min-width: 338px !important;
+  height: auto !important;
+  padding-top: 10px !important;
+  padding-bottom: 11px !important;
+  padding-left: 17px !important;
+  padding-right: 17px !important;
+  overflow: visible !important;
   font-family:
     var(--font-trionn-display),
     "Helvetica Neue",
     Helvetica,
     Arial,
     sans-serif !important;
-  font-size: 16.5px !important;
+  font-size: 17.5px !important;
   font-weight: 400 !important;
-  line-height: 1 !important;
-  letter-spacing: -0.028em !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.026em !important;
   text-transform: uppercase !important;
 }
 
+#site-navigation a[href="/trionn-story"] [data-motion-track] {
+  padding-right: 2px;
+}
+
 #site-navigation a[href="/trionn-story"] > span:first-child {
-  margin-right: 9px !important;
+  margin-right: 10px !important;
   font-size: 12px !important;
 }
 
 #site-navigation a[href="/trionn-story"] > span:last-child {
-  padding-left: 14px !important;
+  padding-left: 15px !important;
   font-size: 13px !important;
 }
