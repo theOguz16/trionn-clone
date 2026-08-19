@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-trionn-display);
+  --font-mono: var(--font-trionn-mono);
+}
+
 :root {
   --background: #090909;
   --foreground: #ffffff;
+  --font-trionn-body: var(--font-trionn-display);
 }
 
 * {
@@ -24,10 +30,15 @@ body {
   color: var(--foreground);
   overflow-x: hidden;
   font-family:
+    var(--font-trionn-body),
     Arial,
     Helvetica,
     sans-serif;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -49,6 +60,26 @@ canvas {
 ::selection {
   background: #ffffff;
   color: #090909;
+}
+
+/*
+ * Typography roles
+ *
+ * The site intentionally has two strong voices:
+ * Familjen Grotesk for display/body copy and
+ * Martian Mono for compact UI, captions and CTAs.
+ */
+.font-mono {
+  font-family:
+    var(--font-trionn-mono),
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-variation-settings:
+    "wdth" 100;
 }
 
 /*
