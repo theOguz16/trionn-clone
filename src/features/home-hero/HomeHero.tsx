@@ -675,10 +675,9 @@ export function HomeHero() {
       /*
        * 0.00 → 0.19  blast-like explosion
        * 0.19 → 0.54  fully exploded through the main About statement
-       * 0.54 → 0.69  visible, gradual rejoin
-       * 0.69 → 0.80  fully assembled hold — the user should clearly see
-       *              the completed symbol before it disappears
-       * 0.80 → 0.91  fade into the stripe wipe
+       * 0.54 → 0.78  slow, readable rejoin
+       * 0.78 → 0.84  fully assembled hold
+       * 0.84 → 0.92  fade into the stripe wipe
        */
       let sceneProgress = 0;
 
@@ -689,19 +688,13 @@ export function HomeHero() {
           );
       } else if (raw <= 0.54) {
         sceneProgress = 1;
-      } else if (raw <= 0.69) {
+      } else if (raw <= 0.78) {
         const join =
           smootherStep(
             (raw - 0.54) /
-              0.15,
+              0.24,
           );
 
-        /*
-         * HeroScene historically maps every scroll value >= .58 to the
-         * same fully exploded model. Starting this leg at .58 is therefore
-         * visually identical to 1, but makes the WHOLE 0.54→0.69 window
-         * participate in the return instead of wasting its first half.
-         */
         sceneProgress =
           0.58 *
           (1 - join);
@@ -776,8 +769,8 @@ export function HomeHero() {
         gsap.utils.clamp(
           0,
           1,
-          (raw - 0.80) /
-            0.11,
+          (raw - 0.84) /
+            0.08,
         );
 
       gsap.set(canvas, {
