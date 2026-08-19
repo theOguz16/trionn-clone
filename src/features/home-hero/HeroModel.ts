@@ -415,9 +415,9 @@ export class HeroModel {
         );
 
         /*
-         * Scroll direction:
-         * clean radial separation,
-         * flattened in Z.
+         * Radial direction keeps a coherent relationship to the assembled
+         * symbol. The actual scroll narrative now blends this with the same
+         * seeded blast direction used by Hold-to-Blast.
          */
         const radial =
           center
@@ -462,9 +462,9 @@ export class HeroModel {
           );
 
         /*
-         * Blast keeps some radial
-         * organisation but becomes
-         * much more explosive.
+         * Hold-to-Blast direction: radial enough to read as the object
+         * exploding from its core, random enough for every panel to break
+         * apart independently.
          */
         const blastDir =
           radial
@@ -546,11 +546,6 @@ export class HeroModel {
           state,
         );
 
-        /*
-         * Ignore likely helper/
-         * wire meshes for raycast
-         * when possible.
-         */
         if (
           !/edge|wire|outline/i.test(
             mesh.name,
@@ -574,10 +569,6 @@ export class HeroModel {
               state.mesh,
           );
 
-    /*
-     * Three anchors around the
-     * assembled model.
-     */
     const halfX =
       normalisedSize.x *
       0.5;
@@ -634,10 +625,6 @@ export class HeroModel {
       ),
     ];
 
-    /*
-     * Source scene is no longer
-     * needed after flattening.
-     */
     sourceMeshes.forEach(
       (
         mesh,
@@ -730,8 +717,7 @@ export class HeroModel {
     ) {
       const {
         mesh,
-      } =
-        state;
+      } = state;
 
       state.flash *=
         Math.pow(
@@ -741,12 +727,14 @@ export class HeroModel {
         );
 
       /*
-       * Scroll:
-       * staggered but compact.
+       * Narrative scroll explosion.
+       *
+       * Use the same per-panel delay profile as Hold-to-Blast so every
+       * actual mesh participates, but shape the progress with smoothstep so
+       * reversing scroll naturally pulls every piece back into place.
        */
       const scrollStart =
-        state.delay *
-        1.25;
+        state.delay;
 
       const scrollLocal =
         THREE.MathUtils.clamp(
@@ -772,11 +760,6 @@ export class HeroModel {
             scrollLocal
         );
 
-      /*
-       * Hold blast:
-       * original-style stronger
-       * stagger and full distance.
-       */
       const blastLocal =
         THREE.MathUtils.clamp(
           (
@@ -792,10 +775,25 @@ export class HeroModel {
           1,
         );
 
-      const scrollDistance =
+      /*
+       * The previous narrative scroll only moved panels ~1.12 units and
+       * mostly along a flat radial direction. That read as a diagrammatic
+       * separation rather than an explosion.
+       *
+       * Drive scroll through the SAME blastDir used by Hold-to-Blast. A
+       * small radial term keeps the silhouette coherent, while 4.45 units
+       * gives a genuine all-parts blast without throwing the temporary GLB
+       * so far away that the About composition becomes unreadable.
+       */
+      const narrativeDistance =
         scrollAmt *
         state.scrollScale *
-        1.12;
+        4.45;
+
+      const narrativeRadialDistance =
+        scrollAmt *
+        state.scrollScale *
+        0.34;
 
       const blastDistance =
         blastLocal *
@@ -842,8 +840,12 @@ export class HeroModel {
           state.basePosition,
         )
         .addScaledVector(
+          state.blastDir,
+          narrativeDistance,
+        )
+        .addScaledVector(
           state.scrollDir,
-          scrollDistance,
+          narrativeRadialDistance,
         )
         .addScaledVector(
           state.blastDir,
@@ -860,15 +862,15 @@ export class HeroModel {
         driftZ;
 
       /*
-       * Scroll gets tiny controlled
-       * rotation; blast gets the
-       * dramatic rotation.
+       * Narrative scroll now inherits most of the dramatic Hold-to-Blast
+       * rotation as well. Because the same scrollAmt is reversible, the
+       * rotations unwind cleanly during the About rejoin.
        */
       const spinAmount =
         scrollAmt *
           state.spinSpeed *
           Math.PI *
-          0.16 +
+          0.78 +
         blastLocal *
           state.spinSpeed *
           Math.PI;
