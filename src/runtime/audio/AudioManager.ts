@@ -7,8 +7,10 @@ export type PluckOptions = {
 class AudioManager {
   private context: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private compressor: DynamicsCompressorNode | null = null;
   private analyser: AnalyserNode | null = null;
   private frequencyData: Uint8Array<ArrayBuffer> | null = null;
+  private noiseBuffer: AudioBuffer | null = null;
 
   private chargeOscillator: OscillatorNode | null = null;
   private chargeGain: GainNode | null = null;
@@ -27,18 +29,34 @@ class AudioManager {
 
     const context = new AudioContext();
     const masterGain = context.createGain();
+    const compressor = context.createDynamicsCompressor();
     const analyser = context.createAnalyser();
 
-    masterGain.gain.value = this.muted ? 0 : 0.65;
+    /*
+     * Keep the hero effects compact and controlled. The compressor is
+     * deliberately gentle: it only catches weld/explosion peaks when
+     * several procedural layers overlap.
+     */
+    masterGain.gain.value = this.muted ? 0 : 0.52;
+
+    compressor.threshold.value = -14;
+    compressor.knee.value = 16;
+    compressor.ratio.value = 3;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.15;
+
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.8;
 
-    masterGain.connect(analyser);
+    masterGain.connect(compressor);
+    compressor.connect(analyser);
     analyser.connect(context.destination);
 
     this.context = context;
     this.masterGain = masterGain;
+    this.compressor = compressor;
     this.analyser = analyser;
+    this.noiseBuffer = null;
     this.frequencyData = new Uint8Array(
       new ArrayBuffer(analyser.frequencyBinCount),
     );
@@ -46,26 +64,26 @@ class AudioManager {
     return context;
   }
 
-  private createNoiseBuffer(
-    context: AudioContext,
-    duration: number,
-  ) {
-    const frameCount = Math.max(
-      1,
-      Math.ceil(context.sampleRate * duration),
-    );
-    const buffer = context.createBuffer(
-      1,
-      frameCount,
-      context.sampleRate,
-    );
+  private getNoiseBuffer(context: AudioContext) {
+    if (this.noiseBuffer) {
+      return this.noiseBuffer;
+    }
+
+    const duration = 2.4;
+    const frameCount = Math.ceil(context.sampleRate * duration);
+    const buffer = context.createBuffer(1, frameCount, context.sampleRate);
     const data = buffer.getChannelData(0);
 
     for (let index = 0; index < frameCount; index += 1) {
       data[index] = Math.random() * 2 - 1;
     }
 
+    this.noiseBuffer = buffer;
     return buffer;
+  }
+
+  private randomNoiseOffset(buffer: AudioBuffer, duration: number) {
+    return Math.random() * Math.max(0, buffer.duration - duration - 0.02);
   }
 
   async unlock() {
@@ -96,15 +114,20 @@ class AudioManager {
     const gain = context.createGain();
     const now = context.currentTime;
 
+    /*
+     * Charge should feel like vibration/pressure rather than a musical
+     * rising note. Low triangle tone + a slowly opening low-pass keeps it
+     * physical and leaves space for the later blast.
+     */
     oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(72, now);
+    oscillator.frequency.setValueAtTime(58, now);
 
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(360, now);
-    filter.Q.setValueAtTime(1.6, now);
+    filter.frequency.setValueAtTime(245, now);
+    filter.Q.setValueAtTime(0.85, now);
 
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.018, now + 0.035);
+    gain.gain.exponentialRampToValueAtTime(0.012, now + 0.035);
 
     oscillator.connect(filter);
     filter.connect(gain);
@@ -127,22 +150,23 @@ class AudioManager {
     }
 
     const normalized = Math.max(0, Math.min(progress, 1));
+    const shaped = normalized * normalized;
     const now = this.context.currentTime;
 
     this.chargeOscillator.frequency.setTargetAtTime(
-      72 + normalized * 118,
-      now,
-      0.025,
-    );
-    this.chargeFilter.frequency.setTargetAtTime(
-      360 + normalized * 880,
+      58 + shaped * 76,
       now,
       0.035,
     );
-    this.chargeGain.gain.setTargetAtTime(
-      0.018 + normalized * 0.047,
+    this.chargeFilter.frequency.setTargetAtTime(
+      245 + shaped * 720,
       now,
-      0.025,
+      0.045,
+    );
+    this.chargeGain.gain.setTargetAtTime(
+      0.012 + shaped * 0.032,
+      now,
+      0.03,
     );
   }
 
@@ -166,12 +190,12 @@ class AudioManager {
     this.whooshFilter = null;
 
     gain.gain.cancelScheduledValues(now);
-    gain.gain.setTargetAtTime(0.0001, now, 0.055);
+    gain.gain.setTargetAtTime(0.0001, now, 0.045);
 
     try {
-      source.stop(now + 0.28);
+      source.stop(now + 0.22);
     } catch {
-      // Source may already be stopping.
+      // The source may already be stopping after a rapid release.
     }
 
     source.onended = () => {
@@ -203,8 +227,8 @@ class AudioManager {
     this.chargeFilter = null;
 
     gain.gain.cancelScheduledValues(now);
-    gain.gain.setTargetAtTime(0.0001, now, 0.025);
-    oscillator.stop(now + 0.15);
+    gain.gain.setTargetAtTime(0.0001, now, 0.022);
+    oscillator.stop(now + 0.12);
 
     oscillator.onended = () => {
       oscillator.disconnect();
@@ -225,36 +249,62 @@ class AudioManager {
     const context = this.context;
     const now = context.currentTime;
 
+    /* Low body: short pressure hit, not a long bass note. */
     const lowOscillator = context.createOscillator();
     const lowGain = context.createGain();
     lowOscillator.type = "sine";
-    lowOscillator.frequency.setValueAtTime(112, now);
-    lowOscillator.frequency.exponentialRampToValueAtTime(38, now + 0.42);
-    lowGain.gain.setValueAtTime(0.29, now);
-    lowGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
+    lowOscillator.frequency.setValueAtTime(94, now);
+    lowOscillator.frequency.exponentialRampToValueAtTime(38, now + 0.22);
+    lowGain.gain.setValueAtTime(0.17, now);
+    lowGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.27);
     lowOscillator.connect(lowGain);
     lowGain.connect(this.masterGain);
     lowOscillator.start(now);
-    lowOscillator.stop(now + 0.5);
+    lowOscillator.stop(now + 0.29);
 
+    /* Mid snap gives the break-apart moment definition on small speakers. */
+    const snapOscillator = context.createOscillator();
+    const snapGain = context.createGain();
+    snapOscillator.type = "triangle";
+    snapOscillator.frequency.setValueAtTime(210, now);
+    snapOscillator.frequency.exponentialRampToValueAtTime(72, now + 0.11);
+    snapGain.gain.setValueAtTime(0.055, now);
+    snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
+    snapOscillator.connect(snapGain);
+    snapGain.connect(this.masterGain);
+    snapOscillator.start(now);
+    snapOscillator.stop(now + 0.15);
+
+    /* Broadband transient keeps the impact tactile instead of tonal. */
     const noise = context.createBufferSource();
     const noiseFilter = context.createBiquadFilter();
     const noiseGain = context.createGain();
-    noise.buffer = this.createNoiseBuffer(context, 0.34);
+    const noiseBuffer = this.getNoiseBuffer(context);
+    const noiseDuration = 0.22;
+
+    noise.buffer = noiseBuffer;
     noiseFilter.type = "lowpass";
-    noiseFilter.frequency.setValueAtTime(1350, now);
-    noiseFilter.frequency.exponentialRampToValueAtTime(260, now + 0.3);
-    noiseGain.gain.setValueAtTime(0.12, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+    noiseFilter.frequency.setValueAtTime(2100, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(420, now + 0.18);
+    noiseFilter.Q.setValueAtTime(0.55, now);
+    noiseGain.gain.setValueAtTime(0.075, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseGain);
     noiseGain.connect(this.masterGain);
-    noise.start(now);
-    noise.stop(now + 0.35);
+    noise.start(
+      now,
+      this.randomNoiseOffset(noiseBuffer, noiseDuration),
+      noiseDuration,
+    );
 
     lowOscillator.onended = () => {
       lowOscillator.disconnect();
       lowGain.disconnect();
+    };
+    snapOscillator.onended = () => {
+      snapOscillator.disconnect();
+      snapGain.disconnect();
     };
     noise.onended = () => {
       noise.disconnect();
@@ -278,23 +328,29 @@ class AudioManager {
     const source = context.createBufferSource();
     const filter = context.createBiquadFilter();
     const gain = context.createGain();
+    const buffer = this.getNoiseBuffer(context);
     const now = context.currentTime;
 
-    source.buffer = this.createNoiseBuffer(context, 1.2);
+    source.buffer = buffer;
     source.loop = true;
+    source.loopStart = 0.15;
+    source.loopEnd = Math.min(buffer.duration - 0.1, 2.1);
 
     filter.type = "bandpass";
-    filter.frequency.setValueAtTime(520, now);
-    filter.Q.setValueAtTime(0.7, now);
-    filter.frequency.exponentialRampToValueAtTime(1180, now + 0.65);
+    filter.frequency.setValueAtTime(620, now);
+    filter.Q.setValueAtTime(0.52, now);
+    filter.frequency.exponentialRampToValueAtTime(1320, now + 0.72);
 
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.058, now + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.036, now + 0.14);
 
     source.connect(filter);
     filter.connect(gain);
     gain.connect(this.masterGain);
-    source.start(now);
+    source.start(
+      now + 0.025,
+      this.randomNoiseOffset(buffer, 0.9),
+    );
 
     this.whooshSource = source;
     this.whooshFilter = filter;
@@ -325,28 +381,54 @@ class AudioManager {
 
     const context = this.context;
     const now = context.currentTime;
+    const beepDuration = Math.min(0.07, Math.max(0.045, duration));
+    const baseFrequency = Math.min(680, Math.max(420, frequency));
+
     const oscillator = context.createOscillator();
     const envelope = context.createGain();
-
     oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(frequency, now);
+    oscillator.frequency.setValueAtTime(baseFrequency, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-      Math.max(120, frequency * 0.92),
-      now + duration,
+      baseFrequency * 0.955,
+      now + beepDuration,
     );
 
+    const overtone = context.createOscillator();
+    const overtoneGain = context.createGain();
+    overtone.type = "sine";
+    overtone.frequency.setValueAtTime(baseFrequency * 2.02, now);
+
+    const peak = Math.min(0.03, Math.max(0.012, strength * 0.72));
     envelope.gain.setValueAtTime(0.0001, now);
-    envelope.gain.exponentialRampToValueAtTime(strength, now + 0.006);
-    envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    envelope.gain.exponentialRampToValueAtTime(peak, now + 0.003);
+    envelope.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + beepDuration,
+    );
+
+    overtoneGain.gain.setValueAtTime(peak * 0.14, now);
+    overtoneGain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + beepDuration * 0.58,
+    );
 
     oscillator.connect(envelope);
     envelope.connect(this.masterGain);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(this.masterGain);
+
     oscillator.start(now);
-    oscillator.stop(now + duration + 0.02);
+    overtone.start(now);
+    oscillator.stop(now + beepDuration + 0.015);
+    overtone.stop(now + beepDuration + 0.015);
 
     oscillator.onended = () => {
       oscillator.disconnect();
       envelope.disconnect();
+    };
+    overtone.onended = () => {
+      overtone.disconnect();
+      overtoneGain.disconnect();
     };
   }
 
@@ -361,53 +443,80 @@ class AudioManager {
 
     const context = this.context;
     const now = context.currentTime;
+    const sparkDuration = Math.min(0.085, Math.max(0.055, duration));
+    const buffer = this.getNoiseBuffer(context);
 
+    /* Fast high-frequency crackle. */
     const noise = context.createBufferSource();
-    const filter = context.createBiquadFilter();
+    const highpass = context.createBiquadFilter();
+    const bandpass = context.createBiquadFilter();
     const envelope = context.createGain();
-    noise.buffer = this.createNoiseBuffer(context, duration + 0.04);
 
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(Math.max(900, frequency * 2.2), now);
-    filter.Q.setValueAtTime(4.2, now);
+    noise.buffer = buffer;
+    highpass.type = "highpass";
+    highpass.frequency.setValueAtTime(1450, now);
+    highpass.Q.setValueAtTime(0.35, now);
 
+    bandpass.type = "bandpass";
+    bandpass.frequency.setValueAtTime(
+      Math.min(3900, Math.max(2250, frequency * 2.55)),
+      now,
+    );
+    bandpass.Q.setValueAtTime(2.5, now);
+
+    const crackPeak = Math.min(0.07, Math.max(0.035, strength * 0.88));
     envelope.gain.setValueAtTime(0.0001, now);
+    envelope.gain.exponentialRampToValueAtTime(crackPeak, now + 0.0015);
     envelope.gain.exponentialRampToValueAtTime(
-      Math.min(0.12, strength * 1.25),
-      now + 0.002,
+      0.0001,
+      now + sparkDuration,
     );
-    envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
-    const metallic = context.createOscillator();
-    const metallicGain = context.createGain();
-    metallic.type = "square";
-    metallic.frequency.setValueAtTime(frequency * 1.35, now);
-    metallic.frequency.exponentialRampToValueAtTime(
-      frequency * 0.72,
-      now + duration,
-    );
-    metallicGain.gain.setValueAtTime(Math.min(0.028, strength * 0.36), now);
-    metallicGain.gain.exponentialRampToValueAtTime(0.0001, now + duration * 0.78);
-
-    noise.connect(filter);
-    filter.connect(envelope);
+    noise.connect(highpass);
+    highpass.connect(bandpass);
+    bandpass.connect(envelope);
     envelope.connect(this.masterGain);
-    metallic.connect(metallicGain);
-    metallicGain.connect(this.masterGain);
 
-    noise.start(now);
-    metallic.start(now);
-    noise.stop(now + duration + 0.04);
-    metallic.stop(now + duration + 0.02);
+    /* Tiny resonant ring: triangle avoids the harsh digital square buzz. */
+    const ring = context.createOscillator();
+    const ringGain = context.createGain();
+    ring.type = "triangle";
+    ring.frequency.setValueAtTime(
+      Math.min(3200, Math.max(1900, frequency * 1.9)),
+      now,
+    );
+    ring.frequency.exponentialRampToValueAtTime(
+      Math.max(1250, frequency * 1.25),
+      now + sparkDuration * 0.62,
+    );
+
+    const ringPeak = Math.min(0.012, strength * 0.13);
+    ringGain.gain.setValueAtTime(ringPeak, now);
+    ringGain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + sparkDuration * 0.68,
+    );
+
+    ring.connect(ringGain);
+    ringGain.connect(this.masterGain);
+
+    noise.start(
+      now,
+      this.randomNoiseOffset(buffer, sparkDuration + 0.02),
+      sparkDuration + 0.02,
+    );
+    ring.start(now);
+    ring.stop(now + sparkDuration + 0.015);
 
     noise.onended = () => {
       noise.disconnect();
-      filter.disconnect();
+      highpass.disconnect();
+      bandpass.disconnect();
       envelope.disconnect();
     };
-    metallic.onended = () => {
-      metallic.disconnect();
-      metallicGain.disconnect();
+    ring.onended = () => {
+      ring.disconnect();
+      ringGain.disconnect();
     };
   }
 
@@ -442,7 +551,7 @@ class AudioManager {
     const now = this.context.currentTime;
     this.masterGain.gain.cancelScheduledValues(now);
     this.masterGain.gain.setTargetAtTime(
-      muted ? 0 : 0.65,
+      muted ? 0 : 0.52,
       now,
       0.02,
     );
@@ -483,8 +592,10 @@ class AudioManager {
 
     this.context = null;
     this.masterGain = null;
+    this.compressor = null;
     this.analyser = null;
     this.frequencyData = null;
+    this.noiseBuffer = null;
   }
 }
 
