@@ -327,22 +327,6 @@ function smoothStep(
   );
 }
 
-function smootherStep(
-  value: number,
-) {
-  const t =
-    gsap.utils.clamp(
-      0,
-      1,
-      value,
-    );
-
-  return (
-    t * t * t *
-    (t * (t * 6 - 15) + 10)
-  );
-}
-
 export function HomeHero() {
   const sectionRef =
     useRef<HTMLElement>(null);
@@ -674,8 +658,10 @@ export function HomeHero() {
 
       /*
        * 0.00 → 0.19  blast-like explosion
-       * 0.19 → 0.54  fully exploded through the main About statement
-       * 0.54 → 0.78  slow, readable rejoin
+       * 0.19 → 0.52  fully exploded through almost all of the main About
+       *              statement
+       * 0.52 → 0.78  long, steady rejoin. Do NOT pre-ease this clock:
+       *              HeroScene + HeroModel already ease panel movement.
        * 0.78 → 0.84  fully assembled hold
        * 0.84 → 0.92  fade into the stripe wipe
        */
@@ -686,15 +672,22 @@ export function HomeHero() {
           smoothStep(
             raw / 0.19,
           );
-      } else if (raw <= 0.54) {
+      } else if (raw <= 0.52) {
         sceneProgress = 1;
       } else if (raw <= 0.78) {
         const join =
-          smootherStep(
-            (raw - 0.54) /
-              0.24,
+          gsap.utils.clamp(
+            0,
+            1,
+            (raw - 0.52) /
+              0.26,
           );
 
+        /*
+         * .58 is HeroScene's fully-exploded threshold. Feeding it down
+         * linearly spreads the return across the complete scroll window;
+         * HeroScene and each individual mesh still provide the soft ends.
+         */
         sceneProgress =
           0.58 *
           (1 - join);
