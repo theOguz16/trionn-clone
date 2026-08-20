@@ -34,7 +34,11 @@ function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
       href={href}
-      className="group flex w-[214px] items-center justify-between border-b border-black/55 pb-[8px] font-mono text-[10px] uppercase leading-none tracking-[-0.02em] text-[#424242]"
+      className="group flex w-[214px] items-center justify-between border-b pb-[8px] font-mono text-[10px] uppercase leading-none tracking-[-0.02em]"
+      style={{
+        color: "#444442",
+        borderColor: "rgba(50, 50, 48, 0.68)",
+      }}
     >
       <span>{children}</span>
       <span className="transition-transform duration-300 group-hover:translate-x-[5px]">
@@ -47,14 +51,14 @@ function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
 function IntroPanel() {
   return (
     <section className="relative h-[100svh] w-[50vw] flex-none bg-transparent">
-      <div className="absolute left-[2.1vw] top-[46.7%] -translate-y-1/2">
+      <div className="absolute left-[2.1vw] top-[53.2%] -translate-y-1/2">
         <h2 className="w-[43vw] text-[clamp(4.2rem,5vw,6rem)] font-normal leading-[0.88] tracking-[-0.068em] text-[#454545]">
           Selected work
           <br />
           &amp; explorations
         </h2>
 
-        <div className="mt-[48px]">
+        <div className="mt-[64px]">
           <ArrowLink href="/work">View all projects</ArrowLink>
         </div>
       </div>
@@ -65,10 +69,10 @@ function IntroPanel() {
 function ProjectPanel({ project }: { project: (typeof PROJECTS)[number] }) {
   return (
     <article className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.085] bg-transparent">
-      <div className="absolute left-[8.45%] right-[8.45%] top-[22.25svh]">
+      <div className="absolute left-[8.45%] right-[8.45%] top-[19.5svh]">
         <a
           href={project.href}
-          className="block h-[48.25svh] min-h-[390px] max-h-[585px] overflow-hidden rounded-[6px] bg-[#d8d8d6]"
+          className="block h-[50.15svh] min-h-[410px] max-h-[610px] overflow-hidden rounded-[6px] bg-[#d8d8d6]"
         >
           <img
             src={project.image}
@@ -77,13 +81,13 @@ function ProjectPanel({ project }: { project: (typeof PROJECTS)[number] }) {
           />
         </a>
 
-        <div className="mt-[20px] grid grid-cols-[1fr_auto] items-end gap-8">
+        <div className="mt-[16px] grid grid-cols-[1fr_auto] items-end gap-8">
           <div>
             <h3 className="text-[25px] font-normal leading-[0.96] tracking-[-0.055em] text-[#484848]">
               {project.title}
             </h3>
 
-            <p className="mt-[11px] max-w-[330px] text-[13px] font-normal leading-[1.25] tracking-[-0.027em] text-[#626262]">
+            <p className="mt-[11px] max-w-[285px] text-[13px] font-normal leading-[1.25] tracking-[-0.027em] text-[#626262]">
               {project.description}
             </p>
           </div>
@@ -100,7 +104,7 @@ function ProjectPanel({ project }: { project: (typeof PROJECTS)[number] }) {
 function CollectionPanel() {
   return (
     <section className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.085] bg-transparent">
-      <div className="absolute left-1/2 top-[51.2%] w-[82%] -translate-x-1/2 -translate-y-1/2 text-center">
+      <div className="absolute left-1/2 top-[57.4%] w-[82%] -translate-x-1/2 -translate-y-1/2 text-center">
         <h3 className="mx-auto max-w-[470px] text-[30px] font-normal leading-[0.96] tracking-[-0.055em] text-[#474747]">
           Discover our complete collection
           <br />
@@ -120,12 +124,15 @@ function CollectionPanel() {
 function ServicesContent() {
   return (
     <div className="relative h-[100svh] w-[100vw] bg-white text-[#202020]">
-      <p className="absolute left-1/2 top-[10.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
+      <p className="absolute left-1/2 top-[11.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
         Our services
       </p>
 
-      <div className="absolute left-1/2 top-[52.5%] w-[76vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase">
-        <div className="text-[clamp(5.8rem,8.25vw,9.1rem)] font-normal leading-[0.68] tracking-[-0.085em]">
+      <div className="absolute left-1/2 top-[50.6%] w-[76vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase">
+        <div
+          className="text-[clamp(5.8rem,8.25vw,9.1rem)] font-normal leading-[0.68] tracking-[-0.085em]"
+          style={{ transform: "scaleX(1.035)" }}
+        >
           <div>A.I.</div>
           <div>Design</div>
           <div>Development</div>
@@ -133,11 +140,11 @@ function ServicesContent() {
         </div>
       </div>
 
-      <p className="absolute bottom-[7.5svh] left-[11.3vw] text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
+      <p className="absolute bottom-[7.7svh] left-[42vw] text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
         ✦ Design with intent. Built to work.
       </p>
 
-      <div className="absolute bottom-[6.4svh] right-[2.1vw]">
+      <div className="absolute bottom-[7.7svh] right-[2.1vw]">
         <ArrowLink href="/services">View services</ArrowLink>
       </div>
     </div>
@@ -170,14 +177,6 @@ export function HomeSelectedWork() {
         willChange: "clip-path",
       });
 
-      /*
-       * The source sequence is not a row of arbitrary-width cards. Every
-       * stage before Services is exactly half a viewport wide. The track
-       * travels 200vw so the final collection panel occupies the left half,
-       * then the full-screen Services scene wipes over it from right to left.
-       * Keeping the services typography fixed to the viewport while only its
-       * clip edge moves is what produces the reference transition.
-       */
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: section,
@@ -219,13 +218,15 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[540svh]"
-      style={{
-        background:
-          "linear-gradient(180deg, #ffffff 0%, #d1d1d0 100%)",
-      }}
+      className="relative z-[52] h-[540svh] bg-[#d1d1d0]"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden">
+      <div
+        className="sticky top-0 h-[100svh] overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(180deg, #ffffff 0%, #d1d1d0 100%)",
+        }}
+      >
         <div
           ref={trackRef}
           className="absolute inset-y-0 left-0 flex w-max items-stretch"
