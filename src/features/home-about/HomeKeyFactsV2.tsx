@@ -9,23 +9,6 @@ import {
   useGSAP,
 } from "@/lib/gsap/client";
 
-const AWARD_LOGOS = [
-  "https://trionn.com/images/awwwards.svg",
-  "https://trionn.com/images/ccda.svg",
-  "https://trionn.com/images/thefwa.svg",
-  "https://trionn.com/images/csswinner.svg",
-  "https://trionn.com/images/adesignaward.svg",
-  "https://trionn.com/images/gsap.svg",
-];
-
-const PARTNER_LOGOS = [
-  "https://trionn.com/images/partner1.svg",
-  "https://trionn.com/images/partner2.svg",
-  "https://trionn.com/images/partner3.svg",
-  "https://trionn.com/images/partner4.svg",
-  "https://trionn.com/images/partner5.svg",
-];
-
 const DIGITS = Array.from(
   { length: 10 },
   (_, index) => index,
@@ -33,11 +16,8 @@ const DIGITS = Array.from(
 
 type CardPose = {
   z: number;
-  y: number;
   rotateX: number;
-  rotateZ: number;
   opacity: number;
-  blur: number;
 };
 
 type HingeSwing = {
@@ -46,98 +26,45 @@ type HingeSwing = {
   settle: number;
 };
 
-/*
- * One shared top anchor, three very different hanging depths.
- * The visual separation comes from Z + rotateX, never from Y.
- */
 const CARD_STARTS: CardPose[] = [
   {
-    z: -135,
-    y: 0,
-    rotateX: -18,
-    rotateZ: 0,
-    opacity: 0.68,
-    blur: 1.7,
+    z: -120,
+    rotateX: -17,
+    opacity: 0.7,
   },
   {
-    z: -330,
-    y: 0,
-    rotateX: -39,
-    rotateZ: 0,
-    opacity: 0.4,
-    blur: 3.25,
+    z: -300,
+    rotateX: -36,
+    opacity: 0.44,
   },
   {
-    z: -560,
-    y: 0,
-    rotateX: -61,
-    rotateZ: 0,
-    opacity: 0.2,
-    blur: 4.7,
+    z: -520,
+    rotateX: -56,
+    opacity: 0.24,
   },
 ];
 
-/*
- * Final reference frame is completely upright and aligned.
- */
-const CARD_ENDS: CardPose[] = [
-  {
-    z: 0,
-    y: 0,
-    rotateX: 0,
-    rotateZ: 0,
-    opacity: 1,
-    blur: 0,
-  },
-  {
-    z: 0,
-    y: 0,
-    rotateX: 0,
-    rotateZ: 0,
-    opacity: 1,
-    blur: 0,
-  },
-  {
-    z: 0,
-    y: 0,
-    rotateX: 0,
-    rotateZ: 0,
-    opacity: 1,
-    blur: 0,
-  },
-];
-
-/*
- * Wider stagger means that at one scroll position the left card can already
- * be almost upright while the center is still leaning and the right card is
- * still strongly foreshortened.
- */
 const CARD_WINDOWS = [
-  [0.1, 0.63],
-  [0.21, 0.79],
-  [0.32, 0.94],
+  [0.07, 0.7],
+  [0.17, 0.86],
+  [0.28, 0.99],
 ] as const;
 
-/*
- * The lower edge swings farther as we move left → right.
- * Positive rotateX carries the lower half briefly past the final vertical
- * plane, then it comes back and settles at exactly zero.
- */
 const HINGE_SWINGS: HingeSwing[] = [
   {
     forward: 5.5,
-    backward: -3.5,
-    settle: 1.4,
+    backward: -3.2,
+    settle: 1.2,
   },
   {
-    forward: 9,
-    backward: -5.8,
-    settle: 2.4,
+    forward: 8.5,
+    backward: -5.2,
+    settle: 2,
   },
   {
-    forward: 14,
-    backward: -8.5,
-    settle: 3.6,
+    forward: 12.5,
+    backward: -7.4,
+    settle: 3,
   },
 ];
 
@@ -198,49 +125,44 @@ function getHingeRotation(
   const swing = HINGE_SWINGS[index];
 
   /*
-   * A proper hanging-card settle rather than a tiny sine wobble:
-   *
-   * 0.00 → 0.52 : approach from the laid-back start pose
-   * 0.52 → 0.66 : pass vertical and swing slightly toward camera
-   * 0.66 → 0.80 : swing back behind vertical
-   * 0.80 → 0.91 : smaller second forward swing
-   * 0.91 → 1.00 : settle exactly upright
+   * Long glide first, then a damped clothesline settle.
+   * The top edge never moves; only the lower body swings through depth.
    */
-  if (progress <= 0.52) {
+  if (progress <= 0.58) {
     return segmentLerp(
       progress,
       0,
-      0.52,
+      0.58,
       start,
       0,
     );
   }
 
-  if (progress <= 0.66) {
+  if (progress <= 0.72) {
     return segmentLerp(
       progress,
-      0.52,
-      0.66,
+      0.58,
+      0.72,
       0,
       swing.forward,
     );
   }
 
-  if (progress <= 0.8) {
+  if (progress <= 0.84) {
     return segmentLerp(
       progress,
-      0.66,
-      0.8,
+      0.72,
+      0.84,
       swing.forward,
       swing.backward,
     );
   }
 
-  if (progress <= 0.91) {
+  if (progress <= 0.93) {
     return segmentLerp(
       progress,
-      0.8,
-      0.91,
+      0.84,
+      0.93,
       swing.backward,
       swing.settle,
     );
@@ -248,7 +170,7 @@ function getHingeRotation(
 
   return segmentLerp(
     progress,
-    0.91,
+    0.93,
     1,
     swing.settle,
     0,
@@ -263,16 +185,14 @@ function setTheme(
 
 function DigitReel({
   target,
-  className = "",
 }: {
   target: number;
-  className?: string;
 }) {
   return (
     <span
       data-counter-digit
       data-target={target}
-      className={`relative inline-block h-[1em] w-[0.58em] overflow-hidden align-[-0.06em] ${className}`}
+      className="relative inline-block h-[1em] w-[0.58em] overflow-hidden align-[-0.06em]"
       aria-hidden="true"
     >
       <span
@@ -336,6 +256,46 @@ function Counter20() {
   );
 }
 
+function PartnerWordmarks() {
+  return (
+    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#454545]">
+      <div className="flex h-[46px] items-center justify-center px-5">
+        <span className="text-[20px] font-semibold tracking-[-0.065em]">
+          credible
+        </span>
+      </div>
+
+      <div className="flex h-[46px] items-center justify-center px-5">
+        <span className="text-[18px] font-semibold tracking-[-0.035em]">
+          Yellowtail
+        </span>
+      </div>
+
+      <div className="flex h-[46px] items-center justify-center gap-[8px] px-5">
+        <span className="text-[23px] font-light leading-none">♮</span>
+        <span className="text-[10px] font-medium uppercase leading-[1.05] tracking-[0.08em]">
+          Luxury
+          <br />
+          Presence
+        </span>
+      </div>
+
+      <div className="flex h-[46px] items-center justify-center px-5">
+        <span className="-skew-x-[12deg] text-[20px] font-bold tracking-[-0.07em]">
+          technis
+        </span>
+      </div>
+
+      <div className="flex h-[46px] items-center justify-center gap-[7px] px-5">
+        <span className="flex h-[19px] w-[19px] items-center justify-center rounded-full border-[5px] border-[#4a4a4a]" />
+        <span className="text-[14px] font-semibold tracking-[0.03em]">
+          OCKTO
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function HomeKeyFacts() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -356,19 +316,9 @@ export function HomeKeyFacts() {
           "[data-card-shell]",
         ),
       );
-      const cardSurfaces = Array.from(
-        section.querySelectorAll<HTMLElement>(
-          "[data-card-surface]",
-        ),
-      );
       const counters = Array.from(
         section.querySelectorAll<HTMLElement>(
           "[data-counter]",
-        ),
-      );
-      const digitTracks = Array.from(
-        section.querySelectorAll<HTMLElement>(
-          "[data-counter-digit]",
         ),
       );
       const partners =
@@ -379,12 +329,48 @@ export function HomeKeyFacts() {
       if (
         !header ||
         cardShells.length !== 3 ||
-        cardSurfaces.length !== 3 ||
         counters.length !== 3 ||
         !partners
       ) {
         return;
       }
+
+      /*
+       * Cache digit-track references once. The previous version searched
+       * inside every counter on every ScrollTrigger update.
+       */
+      const counterTracks = counters.map((counter) =>
+        Array.from(
+          counter.querySelectorAll<HTMLElement>(
+            "[data-counter-digit]",
+          ),
+        )
+          .map((digit) => {
+            const track =
+              digit.querySelector<HTMLElement>(
+                "[data-digit-track]",
+              );
+
+            if (!track) {
+              return null;
+            }
+
+            return {
+              track,
+              target: Number(
+                digit.dataset.target ?? "0",
+              ),
+            };
+          })
+          .filter(
+            (
+              entry,
+            ): entry is {
+              track: HTMLElement;
+              target: number;
+            } => entry !== null,
+          ),
+      );
 
       const updateHeader = (progress: number) => {
         const p = smootherStep(
@@ -393,9 +379,7 @@ export function HomeKeyFacts() {
 
         header.style.opacity = `${p}`;
         header.style.transform =
-          `translate3d(0, ${28 * (1 - p)}px, 0)`;
-        header.style.filter =
-          `blur(${4 * (1 - p)}px)`;
+          `translate3d(0, ${24 * (1 - p)}px, 0)`;
       };
 
       const updateCard = (
@@ -403,9 +387,7 @@ export function HomeKeyFacts() {
         progress: number,
       ) => {
         const shell = cardShells[index];
-        const surface = cardSurfaces[index];
         const start = CARD_STARTS[index];
-        const end = CARD_ENDS[index];
         const [windowStart, windowEnd] =
           CARD_WINDOWS[index];
         const rawLocal = mapRange(
@@ -414,116 +396,92 @@ export function HomeKeyFacts() {
           windowEnd,
         );
 
-        const depthProgress =
-          smootherStep(rawLocal);
-        const settle = smoothStep(
-          mapRange(rawLocal, 0.78, 1),
-        );
-
-        const z =
-          lerp(start.z, end.z, depthProgress) +
-          15 * settle * (1 - settle);
-
         /*
-         * Top remains locked to the shared line. rotateX therefore moves
-         * only the lower body of the card through depth, creating the
-         * clothesline/hinge read the reference has.
+         * A wider window gives the cards a slower floating approach.
+         * Transform + opacity only: no large-surface blur filters while
+         * scrolling, which removes a sizeable GPU/compositing cost.
          */
+        const depthProgress =
+          smoothStep(rawLocal);
+        const settle = smoothStep(
+          mapRange(rawLocal, 0.8, 1),
+        );
+        const z =
+          lerp(start.z, 0, depthProgress) +
+          12 * settle * (1 - settle);
         const rotateX =
           getHingeRotation(
             index,
             rawLocal,
           );
-
         const opacity =
           lerp(
             start.opacity,
-            end.opacity,
-            depthProgress,
-          );
-        const blur =
-          lerp(
-            start.blur,
-            end.blur,
-            depthProgress,
+            1,
+            smootherStep(
+              mapRange(rawLocal, 0, 0.72),
+            ),
           );
 
-        shell.style.transformOrigin =
-          "50% 0%";
-        shell.style.transform = [
-          `translate3d(0, 0, ${z}px)`,
-          `rotateX(${rotateX}deg)`,
-        ].join(" ");
+        shell.style.transform =
+          `translate3d(0, 0, ${z}px) rotateX(${rotateX}deg)`;
         shell.style.opacity = `${opacity}`;
-        surface.style.filter = `blur(${blur}px)`;
 
         const counterProgress =
           smootherStep(
-            mapRange(rawLocal, 0.5, 0.94),
+            mapRange(rawLocal, 0.48, 0.9),
           );
 
         counters[index].style.opacity =
-          `${0.35 + counterProgress * 0.65}`;
+          `${0.42 + counterProgress * 0.58}`;
 
-        const tracks = Array.from(
-          counters[index].querySelectorAll<HTMLElement>(
-            "[data-counter-digit]",
-          ),
-        );
-
-        tracks.forEach((digit) => {
-          const target = Number(
-            digit.dataset.target ?? "0",
-          );
-          const track =
-            digit.querySelector<HTMLElement>(
-              "[data-digit-track]",
-            );
-
-          if (!track) {
-            return;
-          }
-
-          const position =
-            target * counterProgress;
-
-          track.style.transform =
-            `translate3d(0, ${-position}em, 0)`;
-        });
+        for (const entry of counterTracks[index]) {
+          entry.track.style.transform =
+            `translate3d(0, ${-(entry.target * counterProgress)}em, 0)`;
+        }
       };
 
       const updatePartners = (progress: number) => {
         const p = smootherStep(
-          mapRange(progress, 0.83, 0.99),
+          mapRange(progress, 0.82, 0.98),
         );
 
         partners.style.opacity = `${p}`;
         partners.style.transform =
-          `translate3d(0, ${24 * (1 - p)}px, 0)`;
-        partners.style.filter =
-          `blur(${2.5 * (1 - p)}px)`;
+          `translate3d(0, ${18 * (1 - p)}px, 0)`;
       };
 
       const update = (rawProgress: number) => {
         const progress = clamp01(rawProgress);
 
         updateHeader(progress);
-        cardShells.forEach((_, index) => {
+
+        for (
+          let index = 0;
+          index < cardShells.length;
+          index += 1
+        ) {
           updateCard(index, progress);
-        });
+        }
+
         updatePartners(progress);
       };
 
-      digitTracks.forEach((digit) => {
-        const track =
-          digit.querySelector<HTMLElement>(
-            "[data-digit-track]",
-          );
-        if (track) {
-          track.style.transform =
-            "translate3d(0, 0, 0)";
+      let rafId = 0;
+      let queuedProgress = 0;
+
+      const scheduleUpdate = (progress: number) => {
+        queuedProgress = progress;
+
+        if (rafId !== 0) {
+          return;
         }
-      });
+
+        rafId = window.requestAnimationFrame(() => {
+          rafId = 0;
+          update(queuedProgress);
+        });
+      };
 
       setTheme("light");
       update(0);
@@ -531,25 +489,25 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top 94%",
-        end: "bottom 60%",
+        end: "bottom 56%",
         invalidateOnRefresh: true,
         onUpdate: (self) => {
-          update(self.progress);
+          scheduleUpdate(self.progress);
         },
         onEnter: (self) => {
           setTheme("light");
-          update(self.progress);
+          scheduleUpdate(self.progress);
         },
         onEnterBack: (self) => {
           setTheme("light");
-          update(self.progress);
+          scheduleUpdate(self.progress);
         },
         onLeave: () => {
-          update(1);
+          scheduleUpdate(1);
           setTheme("light");
         },
         onLeaveBack: () => {
-          update(0);
+          scheduleUpdate(0);
           setTheme("dark");
         },
       });
@@ -558,6 +516,10 @@ export function HomeKeyFacts() {
 
       return () => {
         trigger.kill();
+
+        if (rafId !== 0) {
+          window.cancelAnimationFrame(rafId);
+        }
       };
     },
     { scope: sectionRef },
@@ -571,7 +533,7 @@ export function HomeKeyFacts() {
       <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[8svh] pt-[7svh] max-md:px-5">
         <div
           data-keyfacts-header
-          className="text-center opacity-0 will-change-[transform,opacity,filter]"
+          className="text-center opacity-0 will-change-[transform,opacity]"
         >
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
@@ -590,12 +552,9 @@ export function HomeKeyFacts() {
         >
           <div
             data-card-shell
-            className="relative z-[3] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
+            className="relative z-[3] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
           >
-            <article
-              data-card-surface
-              className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3] will-change-[filter]"
-            >
+            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
                 className="absolute inset-x-0 bottom-0 top-[56px] bg-cover bg-center"
                 style={{
@@ -609,19 +568,13 @@ export function HomeKeyFacts() {
                 Featured &amp; Awards
               </p>
 
-              <div className="absolute bottom-[83px] left-[31px] z-10 flex w-[155px] flex-wrap items-center gap-x-[8px] gap-y-[4px]">
-                {AWARD_LOGOS.map((src) => (
-                  <img
-                    key={src}
-                    src={src}
-                    alt=""
-                    className="h-[17px] max-w-[42px] object-contain brightness-0 invert opacity-80"
-                  />
-                ))}
+              <div className="absolute bottom-[91px] left-[31px] z-10 flex h-[22px] w-[18px] items-center justify-center bg-white text-[13px] font-semibold text-[#3f3f43]">
+                A
               </div>
 
               <p className="absolute bottom-[32px] left-[31px] z-10 max-w-[172px] text-[13px] leading-[1.18] text-white/70">
                 Featured on top design
+                <br />
                 platforms worldwide.
               </p>
 
@@ -633,12 +586,9 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[2] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
+            className="relative z-[2] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
           >
-            <article
-              data-card-surface
-              className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747] will-change-[filter]"
-            >
+            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
               <p className="absolute left-1/2 top-[34px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
                 Projects completed
               </p>
@@ -649,6 +599,7 @@ export function HomeKeyFacts() {
 
               <p className="absolute bottom-[32px] left-1/2 w-[225px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">
                 90% of our clients seek our
+                <br />
                 services for a second project.
               </p>
             </article>
@@ -656,12 +607,9 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[1] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
+            className="relative z-[1] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
           >
-            <article
-              data-card-surface
-              className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3] will-change-[filter]"
-            >
+            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
                 className="absolute left-[30px] right-[30px] top-[80px] h-[220px] bg-cover bg-center"
                 style={{
@@ -689,26 +637,13 @@ export function HomeKeyFacts() {
 
         <div
           data-partners
-          className="mx-auto mt-[8svh] max-w-[760px] opacity-0 will-change-[transform,opacity,filter]"
+          className="mx-auto mt-[8svh] max-w-[760px] opacity-0 will-change-[transform,opacity]"
         >
           <p className="text-center text-[11px] uppercase tracking-[-0.02em]">
             Our business partners
           </p>
 
-          <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08]">
-            {PARTNER_LOGOS.map((src) => (
-              <div
-                key={src}
-                className="flex h-[38px] items-center justify-center px-[18px]"
-              >
-                <img
-                  src={src}
-                  alt=""
-                  className="max-h-[24px] max-w-full object-contain opacity-80"
-                />
-              </div>
-            ))}
-          </div>
+          <PartnerWordmarks />
         </div>
       </div>
     </section>
