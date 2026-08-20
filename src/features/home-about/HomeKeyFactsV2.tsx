@@ -9,6 +9,15 @@ import { canvasManager } from "@/runtime/canvas/CanvasManager";
 
 const DIGITS = Array.from({ length: 10 }, (_, index) => index);
 
+const AWARDS = [
+  { src: "https://trionn.com/images/awwwards.svg", alt: "Awwwards" },
+  { src: "https://trionn.com/images/ccda.svg", alt: "CSS Design Awards" },
+  { src: "https://trionn.com/images/thefwa.svg", alt: "FWA" },
+  { src: "https://trionn.com/images/csswinner.svg", alt: "CSS Winner" },
+  { src: "https://trionn.com/images/adesignaward.svg", alt: "A' Design Award" },
+  { src: "https://trionn.com/images/gsap.svg", alt: "GSAP" },
+] as const;
+
 const PARTNERS = [
   { src: "https://trionn.com/images/partner1.svg", alt: "Credible", width: 88, height: 19 },
   { src: "https://trionn.com/images/partner2.svg", alt: "Yellowtail", width: 108, height: 18 },
@@ -43,6 +52,22 @@ function Counter15K() {
 
 function Counter20() {
   return <span data-counter className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]" aria-label="20 plus"><DigitReel target={2} /><DigitReel target={0} /><sup className="ml-[3px] text-[15px] leading-none">+</sup></span>;
+}
+
+function AwardWordmarks() {
+  return (
+    <div className="absolute left-[31px] right-[31px] top-[83px] z-10 grid grid-cols-3 items-center gap-x-[18px] gap-y-[22px]">
+      {AWARDS.map((award) => (
+        <div key={award.src} className="flex h-[29px] items-center justify-center">
+          <img
+            src={award.src}
+            alt={award.alt}
+            className="block max-h-[27px] max-w-full object-contain brightness-0 invert opacity-80"
+          />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function PartnerWordmarks() {
@@ -136,9 +161,10 @@ export function HomeKeyFacts() {
           <div data-card-shell className="relative z-[30] origin-top">
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
               <div className="absolute inset-x-0 bottom-0 top-[55px] bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1760719438551-6c5408b122e9?auto=format&fit=crop&q=82&w=900')" }} />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/25" />
+              <div className="absolute inset-0 bg-black/16" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/35" />
               <p className="absolute left-[31px] top-[33px] z-10 text-[12px] uppercase tracking-[-0.025em]">Featured &amp; Awards</p>
-              <img src="https://trionn.com/images/thefwa.svg" alt="FWA" className="absolute bottom-[78px] left-[31px] z-10 h-[22px] w-[58px] object-contain brightness-0 invert" />
+              <AwardWordmarks />
               <p className="absolute bottom-[30px] left-[31px] z-10 max-w-[176px] text-[13px] leading-[1.18] text-white/70">Featured on top design<br />platforms worldwide.</p>
               <div className="absolute bottom-[22px] right-[27px] z-10"><Counter50 /></div>
             </article>
