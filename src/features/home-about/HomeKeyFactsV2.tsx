@@ -206,33 +206,32 @@ export function HomeKeyFacts() {
       );
 
       /*
-       * Trionn does not read like three symmetric X-axis flips. The cards are
-       * pinned along one horizontal top line while the lower edge swings
-       * toward the centre. rotationX creates the depth; skewX creates that
-       * clothesline-like lateral sweep without another expensive 3D scene.
+       * A calmer Trionn-style cascade: all cards share one top line, the
+       * perspective is softer, lateral sway is restrained, and the stagger
+       * is close enough that the three planes still read as one composition.
        */
       gsap.set(cards, {
         transformOrigin: "50% 0%",
-        transformPerspective: 1120,
+        transformPerspective: 1280,
         backfaceVisibility: "hidden",
       });
 
       gsap.set(cards[0], {
-        rotationX: -72,
-        skewX: 12,
-        autoAlpha: 0.28,
+        rotationX: -64,
+        skewX: 4,
+        autoAlpha: 0.46,
       });
 
       gsap.set(cards[1], {
-        rotationX: -80,
+        rotationX: -70,
         skewX: 0,
-        autoAlpha: 0.2,
+        autoAlpha: 0.4,
       });
 
       gsap.set(cards[2], {
-        rotationX: -84,
-        skewX: -28,
-        autoAlpha: 0.14,
+        rotationX: -74,
+        skewX: -6,
+        autoAlpha: 0.42,
       });
 
       tracks.flat().forEach(({ track }) => {
@@ -255,8 +254,8 @@ export function HomeKeyFacts() {
             rotationX: 0,
             skewX: 0,
             autoAlpha: 1,
-            duration: 0.58,
-            ease: "none",
+            duration: 0.68,
+            ease: "sine.inOut",
           },
           0.04,
         )
@@ -266,10 +265,10 @@ export function HomeKeyFacts() {
             rotationX: 0,
             skewX: 0,
             autoAlpha: 1,
-            duration: 0.58,
-            ease: "none",
+            duration: 0.7,
+            ease: "sine.inOut",
           },
-          0.2,
+          0.13,
         )
         .to(
           cards[2],
@@ -277,10 +276,10 @@ export function HomeKeyFacts() {
             rotationX: 0,
             skewX: 0,
             autoAlpha: 1,
-            duration: 0.58,
-            ease: "none",
+            duration: 0.7,
+            ease: "sine.inOut",
           },
-          0.31,
+          0.22,
         );
 
       tracks.forEach((counterTracks) => {
@@ -289,16 +288,15 @@ export function HomeKeyFacts() {
             track,
             {
               y: `${-target}em`,
-              duration: 0.18,
-              ease: "power2.out",
+              duration: 0.24,
+              ease: "sine.out",
             },
-            0.18,
+            0.28,
           );
         });
       });
 
-      /* Keep the timeline normalized to a true 0 → 1 clock. */
-      timeline.to({}, { duration: 0.11 }, 0.89);
+      timeline.to({}, { duration: 0.08 }, 0.92);
 
       const setProgress = (progress: number) => {
         timeline.progress(
@@ -309,8 +307,8 @@ export function HomeKeyFacts() {
 
       const trigger = ScrollTrigger.create({
         trigger: grid,
-        start: "top 85%",
-        end: "top 30%",
+        start: "top 88%",
+        end: "top 24%",
         invalidateOnRefresh: true,
 
         onEnter: (self) => {
@@ -434,7 +432,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[20] origin-top"
+            className="relative z-[10] origin-top"
           >
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#e6e4e2] text-[#474747]">
               <p className="absolute left-1/2 top-[33px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
@@ -455,7 +453,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[10] origin-top"
+            className="relative z-[20] origin-top"
           >
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
               <div
