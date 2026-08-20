@@ -195,6 +195,7 @@ export function HomeKeyFacts() {
         transformOrigin: "50% 0%",
         backfaceVisibility: "hidden",
         force3D: true,
+        willChange: "transform, opacity",
       });
 
       gsap.set(cards[0], {
@@ -223,12 +224,6 @@ export function HomeKeyFacts() {
         },
       });
 
-      /*
-       * Keep the three cards on clearly separated beats. The left card
-       * settles first, the center follows, and the right card keeps its
-       * fold for noticeably longer — matching the source site's cascade
-       * instead of reading as one synchronized transform.
-       */
       timeline
         .to(
           cards[0],
@@ -238,7 +233,7 @@ export function HomeKeyFacts() {
             duration: 0.48,
             ease: "sine.inOut",
           },
-          0.0,
+          0,
         )
         .to(
           cards[1],
@@ -277,27 +272,27 @@ export function HomeKeyFacts() {
 
       timeline.to({}, { duration: 0.12 }, 1.02);
 
-      const activateLightSection = () => {
-        setTheme("light");
-        canvasManager.setActive("home-hero", false);
+      const setKeyFactsActive = (active: boolean) => {
+        if (active) {
+          document.documentElement.dataset.keyfactsActive = "true";
+          return;
+        }
 
-        gsap.set(cards, {
-          willChange: "transform, opacity",
-        });
+        delete document.documentElement.dataset.keyfactsActive;
       };
 
-      /*
-       * Let ScrollTrigger drive the animation directly with a small scrub
-       * catch-up instead of assigning timeline.progress() on every scroll
-       * event. That removes the reverse-scroll stepping seen with trackpads
-       * while keeping the transform fully scroll-linked.
-       */
+      const activateLightSection = () => {
+        setKeyFactsActive(true);
+        setTheme("light");
+        canvasManager.setActive("home-hero", false);
+      };
+
       const trigger = ScrollTrigger.create({
         trigger: grid,
         start: "top 91%",
-        end: () => `+=${Math.round(window.innerHeight * 1.28)}`,
+        end: () => `+=${Math.round(window.innerHeight * 0.56)}`,
         animation: timeline,
-        scrub: 0.38,
+        scrub: true,
         invalidateOnRefresh: true,
 
         onEnter: () => {
@@ -309,25 +304,17 @@ export function HomeKeyFacts() {
         },
 
         onLeave: () => {
-          gsap.set(cards, {
-            willChange: "auto",
-          });
+          setKeyFactsActive(true);
           setTheme("light");
         },
 
         onLeaveBack: () => {
-          gsap.set(cards, {
-            willChange: "auto",
-          });
-          /*
-           * Do not force the root back to dark here. HomeStripeWipe owns
-           * that hand-off while scrolling upward; competing theme changes
-           * at the boundary were causing a visible hitch.
-           */
+          setKeyFactsActive(false);
         },
       });
 
       return () => {
+        setKeyFactsActive(false);
         trigger.kill();
         timeline.kill();
       };
@@ -338,9 +325,9 @@ export function HomeKeyFacts() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[50] -mt-[48svh] min-h-[154svh] bg-[#dedddb] text-[#414141]"
+      className="relative z-[50] -mt-[48svh] min-h-[100svh] bg-[#dedddb] text-[#414141]"
     >
-      <div className="min-h-[154svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[16svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
