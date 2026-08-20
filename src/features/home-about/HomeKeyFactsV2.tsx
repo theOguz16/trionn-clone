@@ -40,6 +40,12 @@ type CardPose = {
   blur: number;
 };
 
+type HingeSwing = {
+  forward: number;
+  backward: number;
+  settle: number;
+};
+
 /*
  * One shared top anchor, three very different hanging depths.
  * The visual separation comes from Z + rotateX, never from Y.
@@ -71,11 +77,14 @@ const CARD_STARTS: CardPose[] = [
   },
 ];
 
+/*
+ * Final reference frame is completely upright and aligned.
+ */
 const CARD_ENDS: CardPose[] = [
   {
     z: 0,
     y: 0,
-    rotateX: -3.2,
+    rotateX: 0,
     rotateZ: 0,
     opacity: 1,
     blur: 0,
@@ -83,7 +92,7 @@ const CARD_ENDS: CardPose[] = [
   {
     z: 0,
     y: 0,
-    rotateX: -3.8,
+    rotateX: 0,
     rotateZ: 0,
     opacity: 1,
     blur: 0,
@@ -91,7 +100,7 @@ const CARD_ENDS: CardPose[] = [
   {
     z: 0,
     y: 0,
-    rotateX: -4.8,
+    rotateX: 0,
     rotateZ: 0,
     opacity: 1,
     blur: 0,
@@ -101,19 +110,36 @@ const CARD_ENDS: CardPose[] = [
 /*
  * Wider stagger means that at one scroll position the left card can already
  * be almost upright while the center is still leaning and the right card is
- * still strongly foreshortened — matching the reference frame.
+ * still strongly foreshortened.
  */
 const CARD_WINDOWS = [
-  [0.11, 0.61],
-  [0.22, 0.76],
-  [0.33, 0.91],
+  [0.1, 0.63],
+  [0.21, 0.79],
+  [0.32, 0.94],
 ] as const;
 
-const SWING_AMPLITUDES = [
-  4.5,
-  7.5,
-  11.5,
-] as const;
+/*
+ * The lower edge swings farther as we move left → right.
+ * Positive rotateX carries the lower half briefly past the final vertical
+ * plane, then it comes back and settles at exactly zero.
+ */
+const HINGE_SWINGS: HingeSwing[] = [
+  {
+    forward: 5.5,
+    backward: -3.5,
+    settle: 1.4,
+  },
+  {
+    forward: 9,
+    backward: -5.8,
+    settle: 2.4,
+  },
+  {
+    forward: 14,
+    backward: -8.5,
+    settle: 3.6,
+  },
+];
 
 function clamp01(value: number) {
   return Math.max(0, Math.min(1, value));
@@ -146,6 +172,87 @@ function lerp(
   progress: number,
 ) {
   return from + (to - from) * progress;
+}
+
+function segmentLerp(
+  value: number,
+  start: number,
+  end: number,
+  from: number,
+  to: number,
+) {
+  return lerp(
+    from,
+    to,
+    smootherStep(
+      mapRange(value, start, end),
+    ),
+  );
+}
+
+function getHingeRotation(
+  index: number,
+  progress: number,
+) {
+  const start = CARD_STARTS[index].rotateX;
+  const swing = HINGE_SWINGS[index];
+
+  /*
+   * A proper hanging-card settle rather than a tiny sine wobble:
+   *
+   * 0.00 → 0.52 : approach from the laid-back start pose
+   * 0.52 → 0.66 : pass vertical and swing slightly toward camera
+   * 0.66 → 0.80 : swing back behind vertical
+   * 0.80 → 0.91 : smaller second forward swing
+   * 0.91 → 1.00 : settle exactly upright
+   */
+  if (progress <= 0.52) {
+    return segmentLerp(
+      progress,
+      0,
+      0.52,
+      start,
+      0,
+    );
+  }
+
+  if (progress <= 0.66) {
+    return segmentLerp(
+      progress,
+      0.52,
+      0.66,
+      0,
+      swing.forward,
+    );
+  }
+
+  if (progress <= 0.8) {
+    return segmentLerp(
+      progress,
+      0.66,
+      0.8,
+      swing.forward,
+      swing.backward,
+    );
+  }
+
+  if (progress <= 0.91) {
+    return segmentLerp(
+      progress,
+      0.8,
+      0.91,
+      swing.backward,
+      swing.settle,
+    );
+  }
+
+  return segmentLerp(
+    progress,
+    0.91,
+    1,
+    swing.settle,
+    0,
+  );
 }
 
 function setTheme(
@@ -309,10 +416,6 @@ export function HomeKeyFacts() {
 
         const depthProgress =
           smootherStep(rawLocal);
-        const angleProgress =
-          smoothStep(
-            mapRange(rawLocal, 0.12, 1),
-          );
         const settle = smoothStep(
           mapRange(rawLocal, 0.78, 1),
         );
@@ -322,29 +425,15 @@ export function HomeKeyFacts() {
           15 * settle * (1 - settle);
 
         /*
-         * Clothesline / hinged-card motion:
-         * - top edge is pinned (transform-origin top)
-         * - only rotateX moves the lower half through depth
-         * - one damped forward/back swing is scrubbed by scroll
-         * - right card has the largest swing, left the smallest
+         * Top remains locked to the shared line. rotateX therefore moves
+         * only the lower body of the card through depth, creating the
+         * clothesline/hinge read the reference has.
          */
-        const swingPhase =
-          mapRange(rawLocal, 0.08, 0.94);
-        const swingEnvelope =
-          (1 - smootherStep(swingPhase)) *
-          smoothStep(mapRange(swingPhase, 0, 0.18));
-        const hingeSwing =
-          Math.sin(swingPhase * Math.PI * 2) *
-          SWING_AMPLITUDES[index] *
-          swingEnvelope;
-
         const rotateX =
-          lerp(
-            start.rotateX,
-            end.rotateX,
-            angleProgress,
-          ) +
-          hingeSwing;
+          getHingeRotation(
+            index,
+            rawLocal,
+          );
 
         const opacity =
           lerp(
@@ -405,7 +494,7 @@ export function HomeKeyFacts() {
 
       const updatePartners = (progress: number) => {
         const p = smootherStep(
-          mapRange(progress, 0.82, 0.98),
+          mapRange(progress, 0.83, 0.99),
         );
 
         partners.style.opacity = `${p}`;
@@ -442,7 +531,7 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top 94%",
-        end: "bottom 64%",
+        end: "bottom 60%",
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           update(self.progress);
