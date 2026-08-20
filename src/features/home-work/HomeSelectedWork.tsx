@@ -30,8 +30,8 @@ const PROJECTS = [
   },
 ] as const;
 
-const GUIDE = "rgba(78, 78, 73, 0.18)";
-const PLUS_STROKE = "#85847e";
+const GUIDE = "rgba(72, 72, 68, 0.22)";
+const PLUS_STROKE = "#676761";
 
 function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -56,16 +56,24 @@ function TransitionPlus({ marker }: { marker: "entry" | "services" }) {
     <span
       data-transition-plus={marker}
       aria-hidden="true"
-      className="relative block h-[14px] w-[14px]"
+      className="block h-[20px] w-[20px]"
     >
-      <span
-        className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2"
-        style={{ backgroundColor: PLUS_STROKE }}
-      />
-      <span
-        className="absolute left-1/2 top-1/2 h-[11px] w-px -translate-x-1/2 -translate-y-1/2"
-        style={{ backgroundColor: PLUS_STROKE }}
-      />
+      <svg
+        viewBox="0 0 20 20"
+        width="20"
+        height="20"
+        className="block overflow-visible"
+        aria-hidden="true"
+      >
+        <path
+          d="M10 2.5V17.5M2.5 10H17.5"
+          fill="none"
+          stroke={PLUS_STROKE}
+          strokeWidth="1.45"
+          strokeLinecap="square"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
     </span>
   );
 }
@@ -418,11 +426,11 @@ export function HomeSelectedWork() {
           className="pointer-events-none absolute inset-x-0 top-0 z-[20] h-0"
         >
           <div
-            className="absolute left-[2.1vw] right-[calc(50%+10px)] top-0 h-px"
+            className="absolute left-[2.1vw] right-[calc(50%+14px)] top-0 h-px"
             style={{ backgroundColor: GUIDE }}
           />
           <div
-            className="absolute left-[calc(50%+10px)] right-[2.1vw] top-0 h-px"
+            className="absolute left-[calc(50%+14px)] right-[2.1vw] top-0 h-px"
             style={{ backgroundColor: GUIDE }}
           />
           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
