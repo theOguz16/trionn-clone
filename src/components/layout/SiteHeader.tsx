@@ -23,22 +23,22 @@ import {
   scrollManager,
 } from "@/runtime/scroll/ScrollManager";
 
+const MONO_UI_FONT =
+  'var(--font-trionn-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+
 const navigationItems = [
   {
     label: "Work",
     href: "/work",
   },
-
   {
     label: "Services",
     href: "/services",
   },
-
   {
     label: "About",
     href: "/about",
   },
-
   {
     label: "Contact",
     href: "/contact",
@@ -51,25 +51,27 @@ const socialItems = [
     href:
       "https://www.linkedin.com/company/trionn/",
   },
-
   {
     label: "Facebook",
     href:
       "https://www.facebook.com/trionndesign/",
   },
-
   {
     label: "Dribbble",
     href:
       "https://dribbble.com/trionn",
   },
-
   {
     label: "Instagram",
     href:
       "https://www.instagram.com/trionn/",
   },
 ];
+
+type MotionVariant =
+  | "rewrite"
+  | "wave"
+  | "pill";
 
 function BrandMark() {
   return (
@@ -87,7 +89,6 @@ function BrandMark() {
           strokeLinecap="square"
           strokeLinejoin="miter"
         />
-
         <path
           d="M6.2 15.5H13.1L10.9 11.7"
           stroke="currentColor"
@@ -95,7 +96,6 @@ function BrandMark() {
           strokeLinecap="square"
           strokeLinejoin="miter"
         />
-
         <path
           d="M13 5.7L19.2 15.5H14.8"
           stroke="currentColor"
@@ -103,7 +103,6 @@ function BrandMark() {
           strokeLinecap="square"
           strokeLinejoin="miter"
         />
-
         <path
           d="M2 11.4H5.2"
           stroke="currentColor"
@@ -142,43 +141,40 @@ function SoundButton({
       }
       aria-pressed={soundOn}
       className={[
-        "flex h-[28px] w-[28px] items-center justify-center rounded-full focus:outline-none",
-
+        "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full transition-transform duration-300 ease-out hover:scale-[1.04] focus:outline-none",
         light
-          ? "bg-black/[0.065] text-black/55"
-          : "bg-white/[0.07] text-white/75",
+          ? "bg-black/[0.065] text-black/60"
+          : "bg-white/[0.075] text-white/80",
       ].join(" ")}
     >
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
-        className="h-[11px] w-[11px]"
+        className="h-[14px] w-[14px]"
         fill="none"
       >
         <path
-          d="M4 8H7L10.4 5.2V14.8L7 12H4V8Z"
+          d="M3.7 8H6.8L10.5 5V15L6.8 12H3.7V8Z"
           fill="currentColor"
         />
-
         <path
           d="M12.4 7.1C13.8 8.5 13.8 11.5 12.4 12.9"
           stroke="currentColor"
-          strokeWidth="1.2"
+          strokeWidth="1.25"
           strokeLinecap="round"
         />
-
         {soundOn ? (
           <path
             d="M14.4 5.5C16.8 7.8 16.8 12.2 14.4 14.5"
             stroke="currentColor"
-            strokeWidth="1.2"
+            strokeWidth="1.25"
             strokeLinecap="round"
           />
         ) : (
           <path
-            d="M5 4L16 16"
+            d="M4.8 4.2L15.8 15.8"
             stroke="currentColor"
-            strokeWidth="1.2"
+            strokeWidth="1.25"
             strokeLinecap="round"
           />
         )}
@@ -187,40 +183,39 @@ function SoundButton({
   );
 }
 
-function SwapText({
+function MotionText({
   text,
+  variant,
 }: {
   text: string;
+  variant: MotionVariant;
 }) {
-  const renderChars =
-    (
-      layer:
-        "a" | "b",
-    ) =>
-      text
-        .split("")
-        .map(
-          (
-            char,
-            index,
-          ) => (
-            <span
-              key={`${layer}-${char}-${index}`}
-              data-swap-char
-              className="inline-block"
-            >
-              {char === " "
-                ? "\u00a0"
-                : char}
-            </span>
-          ),
-        );
+  const renderChars = (
+    layer: "a" | "b",
+  ) =>
+    text.split("").map(
+      (
+        char,
+        index,
+      ) => (
+        <span
+          key={`${layer}-${index}-${char}`}
+          data-motion-char
+          className="inline-block"
+        >
+          {char === " "
+            ? "\u00a0"
+            : char}
+        </span>
+      ),
+    );
 
   return (
     <span
-      data-swap-track
-      data-swap-active="a"
-      className="relative inline-grid overflow-hidden"
+      data-motion-track
+      data-motion-variant={variant}
+      data-motion-active="a"
+      className="relative inline-grid overflow-hidden align-top"
     >
       <span
         aria-hidden="true"
@@ -231,43 +226,43 @@ function SwapText({
 
       <span
         aria-hidden="true"
-        data-swap-layer="a"
+        data-motion-layer="a"
         className="absolute inset-0 flex whitespace-nowrap"
       >
-        {renderChars(
-          "a",
-        )}
+        {renderChars("a")}
       </span>
 
       <span
         aria-hidden="true"
-        data-swap-layer="b"
+        data-motion-layer="b"
         className="absolute inset-0 flex whitespace-nowrap opacity-0"
       >
-        {renderChars(
-          "b",
-        )}
+        {renderChars("b")}
       </span>
     </span>
   );
 }
 
-function playSwapAnimation(
-  root:
-    HTMLElement,
+function playTextMotion(
+  root: HTMLElement,
 ) {
   const track =
     root.querySelector<HTMLElement>(
-      "[data-swap-track]",
+      "[data-motion-track]",
     );
 
   if (!track) {
     return;
   }
 
+  const variant =
+    (track.dataset
+      .motionVariant ??
+      "rewrite") as MotionVariant;
+
   const activeKey =
     track.dataset
-      .swapActive ===
+      .motionActive ===
     "b"
       ? "b"
       : "a";
@@ -279,12 +274,12 @@ function playSwapAnimation(
 
   const outgoing =
     track.querySelector<HTMLElement>(
-      `[data-swap-layer="${activeKey}"]`,
+      `[data-motion-layer="${activeKey}"]`,
     );
 
   const incoming =
     track.querySelector<HTMLElement>(
-      `[data-swap-layer="${incomingKey}"]`,
+      `[data-motion-layer="${incomingKey}"]`,
     );
 
   if (
@@ -297,14 +292,14 @@ function playSwapAnimation(
   const outgoingChars =
     Array.from(
       outgoing.querySelectorAll<HTMLElement>(
-        "[data-swap-char]",
+        "[data-motion-char]",
       ),
     );
 
   const incomingChars =
     Array.from(
       incoming.querySelectorAll<HTMLElement>(
-        "[data-swap-char]",
+        "[data-motion-char]",
       ),
     );
 
@@ -316,185 +311,230 @@ function playSwapAnimation(
   gsap.killTweensOf(
     allChars,
   );
-
   gsap.killTweensOf(
-    [
-      outgoing,
-      incoming,
-    ],
+    [outgoing, incoming],
   );
 
   gsap.set(
     outgoing,
     {
-      autoAlpha:
-        1,
+      autoAlpha: 1,
     },
   );
-
   gsap.set(
     outgoingChars,
     {
-      x:
-        0,
-
-      y:
-        0,
-
-      autoAlpha:
-        1,
-
-      filter:
-        "blur(0px)",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      autoAlpha: 1,
     },
   );
-
   gsap.set(
     incoming,
     {
-      autoAlpha:
-        1,
-    },
-  );
-
-  gsap.set(
-    incomingChars,
-    {
-      x:
-        -13,
-
-      y: (
-        index,
-      ) =>
-        index %
-          2 ===
-        0
-          ? 3
-          : -3,
-
-      autoAlpha:
-        0,
-
-      filter:
-        "blur(2px)",
+      autoAlpha: 1,
     },
   );
 
   const timeline =
     gsap.timeline({
-      onComplete:
-        () => {
-          gsap.set(
-            outgoing,
-            {
-              autoAlpha:
-                0,
-            },
-          );
-
-          gsap.set(
-            incomingChars,
-            {
-              x:
-                0,
-
-              y:
-                0,
-
-              autoAlpha:
-                1,
-
-              filter:
-                "blur(0px)",
-            },
-          );
-
-          track.dataset
-            .swapActive =
-            incomingKey;
-        },
+      defaults: {
+        overwrite:
+          "auto",
+      },
+      onComplete: () => {
+        gsap.set(
+          outgoing,
+          {
+            autoAlpha: 0,
+          },
+        );
+        gsap.set(
+          incomingChars,
+          {
+            x: 0,
+            y: 0,
+            rotation: 0,
+            autoAlpha: 1,
+          },
+        );
+        track.dataset
+          .motionActive =
+          incomingKey;
+      },
     });
 
-  /*
-   * First copy:
-   * wave -> blur -> disappear.
-   */
-  timeline.to(
-    outgoingChars,
-    {
-      x:
-        9,
-
-      y: (
-        index,
-      ) =>
-        Math.sin(
-          index *
-            1.18,
-        ) *
-        4,
-
-      autoAlpha:
-        0,
-
-      filter:
-        "blur(3px)",
-
-      duration:
-        0.3,
-
-      stagger: {
-        each:
-          0.015,
-
-        from:
-          "start",
+  if (
+    variant ===
+    "wave"
+  ) {
+    gsap.set(
+      incomingChars,
+      {
+        x: -7,
+        y: (
+          index,
+        ) =>
+          13 +
+          Math.sin(
+            index * 1.22,
+          ) *
+            7,
+        rotation: (
+          index,
+        ) =>
+          Math.sin(
+            index * 0.92,
+          ) *
+          -4,
+        autoAlpha: 0,
       },
+    );
 
-      ease:
-        "power2.in",
-    },
+    timeline
+      .to(
+        outgoingChars,
+        {
+          x: 7,
+          y: (
+            index,
+          ) =>
+            Math.sin(
+              index * 1.22,
+            ) *
+            -8,
+          rotation: (
+            index,
+          ) =>
+            Math.sin(
+              index * 0.9,
+            ) *
+            4,
+          autoAlpha: 0,
+          duration: 0.25,
+          stagger: {
+            each: 0.018,
+            from: "start",
+          },
+          ease:
+            "power2.in",
+        },
+        0,
+      )
+      .to(
+        incomingChars,
+        {
+          x: 0,
+          y: 0,
+          rotation: 0,
+          autoAlpha: 1,
+          duration: 0.5,
+          stagger: {
+            each: 0.032,
+            from: "start",
+          },
+          ease:
+            "back.out(1.85)",
+        },
+        0.13,
+      );
 
-    0,
-  );
+    return;
+  }
 
-  /*
-   * Second copy:
-   * rewrites from the left with
-   * a tiny spring/bounce.
-   */
-  timeline.to(
+  if (
+    variant ===
+    "pill"
+  ) {
+    gsap.set(
+      incomingChars,
+      {
+        x: -5,
+        y: 8,
+        autoAlpha: 0,
+      },
+    );
+
+    timeline
+      .to(
+        outgoingChars,
+        {
+          y: -8,
+          autoAlpha: 0,
+          duration: 0.16,
+          stagger: {
+            each: 0.01,
+            from: "start",
+          },
+          ease:
+            "power2.in",
+        },
+        0,
+      )
+      .to(
+        incomingChars,
+        {
+          x: 0,
+          y: 0,
+          autoAlpha: 1,
+          duration: 0.34,
+          stagger: {
+            each: 0.024,
+            from: "start",
+          },
+          ease:
+            "back.out(1.65)",
+        },
+        0.09,
+      );
+
+    return;
+  }
+
+  gsap.set(
     incomingChars,
     {
-      x:
-        0,
-
-      y:
-        0,
-
-      autoAlpha:
-        1,
-
-      filter:
-        "blur(0px)",
-
-      duration:
-        0.4,
-
-      stagger: {
-        each:
-          0.018,
-
-        from:
-          "start",
-      },
-
-      ease:
-        "back.out(1.65)",
+      x: -10,
+      y: 12,
+      rotation: -3,
+      autoAlpha: 0,
     },
-
-    0.13,
   );
+
+  timeline
+    .to(
+      outgoingChars,
+      {
+        y: -10,
+        autoAlpha: 0,
+        duration: 0.17,
+        stagger: {
+          each: 0.006,
+          from: "start",
+        },
+        ease:
+          "power2.in",
+      },
+      0,
+    )
+    .to(
+      incomingChars,
+      {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        autoAlpha: 1,
+        duration: 0.46,
+        stagger: {
+          each: 0.038,
+          from: "start",
+        },
+        ease:
+          "back.out(2.05)",
+      },
+      0.14,
+    );
 }
 
 export function SiteHeader() {
@@ -502,64 +542,60 @@ export function SiteHeader() {
     useRef<HTMLElement>(
       null,
     );
-
   const layerRef =
     useRef<HTMLDivElement>(
       null,
     );
-
   const panelRef =
     useRef<HTMLElement>(
       null,
     );
-
   const backdropRef =
     useRef<HTMLButtonElement>(
       null,
     );
-
+  const closedControlsRef =
+    useRef<HTMLDivElement>(
+      null,
+    );
   const timelineRef =
     useRef<ReturnType<
       typeof gsap.timeline
-    > | null>(
-      null,
-    );
+    > | null>(null);
 
   const [
     isOpen,
     setIsOpen,
-  ] =
-    useState(false);
+  ] = useState(false);
 
   const [
     soundOn,
     setSoundOn,
-  ] =
-    useState(true);
+  ] = useState(true);
 
   const [
     hoveredMenuIndex,
     setHoveredMenuIndex,
-  ] =
-    useState<
-      number | null
-    >(null);
+  ] = useState<number | null>(
+    null,
+  );
 
   useGSAP(
     () => {
       const layer =
         layerRef.current;
-
       const panel =
         panelRef.current;
-
       const backdrop =
         backdropRef.current;
+      const closedControls =
+        closedControlsRef.current;
 
       if (
         !layer ||
         !panel ||
-        !backdrop
+        !backdrop ||
+        !closedControls
       ) {
         return;
       }
@@ -567,9 +603,7 @@ export function SiteHeader() {
       gsap.set(
         layer,
         {
-          autoAlpha:
-            0,
-
+          autoAlpha: 0,
           pointerEvents:
             "none",
         },
@@ -578,23 +612,27 @@ export function SiteHeader() {
       gsap.set(
         backdrop,
         {
-          autoAlpha:
-            0,
+          autoAlpha: 0,
         },
       );
 
-      /*
-       * The card does not physically
-       * slide across the viewport.
-       * Its background is revealed
-       * in place.
-       */
+      gsap.set(
+        closedControls,
+        {
+          autoAlpha: 1,
+          scale: 1,
+          transformOrigin:
+            "100% 50%",
+        },
+      );
+
       gsap.set(
         panel,
         {
           clipPath:
-            "inset(0 0 100% 92% round 6px)",
-
+            "inset(0 0 calc(100% - 38px) calc(100% - 96px) round 999px)",
+          transformOrigin:
+            "100% 0%",
           willChange:
             "clip-path",
         },
@@ -603,68 +641,68 @@ export function SiteHeader() {
       gsap.set(
         "[data-menu-controls]",
         {
-          autoAlpha:
-            0,
-
-          y:
-            -3,
-
-          filter:
-            "blur(3px)",
+          autoAlpha: 0,
+          y: -4,
         },
       );
 
       gsap.set(
-        "[data-menu-item]",
+        "[data-menu-nav-item]",
         {
-          autoAlpha:
-            0,
+          autoAlpha: 0,
+          y: 20,
+        },
+      );
 
-          y:
-            8,
-
-          filter:
-            "blur(4px)",
+      gsap.set(
+        "[data-menu-secondary]",
+        {
+          autoAlpha: 0,
+          y: 13,
         },
       );
 
       const timeline =
         gsap.timeline({
-          paused:
-            true,
-
+          paused: true,
           defaults: {
             overwrite:
               "auto",
           },
-
-          onStart:
-            () => {
-              gsap.set(
-                layer,
-                {
-                  autoAlpha:
-                    1,
-
-                  pointerEvents:
-                    "auto",
-                },
-              );
-            },
-
+          onStart: () => {
+            gsap.set(
+              layer,
+              {
+                autoAlpha: 1,
+                pointerEvents:
+                  "auto",
+              },
+            );
+            gsap.set(
+              closedControls,
+              {
+                pointerEvents:
+                  "none",
+              },
+            );
+          },
           onReverseComplete:
             () => {
               gsap.set(
                 layer,
                 {
-                  autoAlpha:
-                    0,
-
+                  autoAlpha: 0,
                   pointerEvents:
                     "none",
                 },
               );
-
+              gsap.set(
+                closedControls,
+                {
+                  pointerEvents:
+                    "auto",
+                },
+              );
               setHoveredMenuIndex(
                 null,
               );
@@ -673,95 +711,83 @@ export function SiteHeader() {
 
       timeline
         .to(
+          closedControls,
+          {
+            autoAlpha: 0,
+            scale: 0.94,
+            duration: 0.18,
+            ease:
+              "power2.in",
+          },
+          0,
+        )
+        .to(
           backdrop,
           {
-            autoAlpha:
-              1,
-
-            duration:
-              0.3,
-
+            autoAlpha: 1,
+            duration: 0.32,
             ease:
               "power2.out",
           },
-
-          0,
+          0.05,
         )
-
         .to(
           panel,
           {
             clipPath:
-              "inset(0 0 0% 0% round 6px)",
-
-            duration:
-              0.7,
-
+              "inset(0 0 0% 0% round 10px)",
+            duration: 0.88,
             ease:
               "power4.inOut",
           },
-
           0,
         )
-
         .to(
           "[data-menu-controls]",
           {
-            autoAlpha:
-              1,
-
-            y:
-              0,
-
-            filter:
-              "blur(0px)",
-
-            duration:
-              0.36,
-
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.34,
             ease:
               "power3.out",
           },
-
-          0.25,
+          0.28,
         )
-
         .to(
-          "[data-menu-item]",
+          "[data-menu-nav-item]",
           {
-            autoAlpha:
-              1,
-
-            y:
-              0,
-
-            filter:
-              "blur(0px)",
-
-            duration:
-              0.4,
-
-            stagger:
-              0.04,
-
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.48,
+            stagger: 0.045,
             ease:
               "power3.out",
           },
-
-          0.34,
+          0.36,
+        )
+        .to(
+          "[data-menu-secondary]",
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.42,
+            stagger: 0.045,
+            ease:
+              "power3.out",
+          },
+          0.46,
         );
 
+      timeline.progress(0).pause();
       timelineRef.current =
         timeline;
 
       return () => {
         timeline.kill();
-
         timelineRef.current =
           null;
       };
     },
-
     {
       scope:
         rootRef,
@@ -779,16 +805,11 @@ export function SiteHeader() {
 
       if (isOpen) {
         timeline.play();
-
-        return;
+      } else {
+        timeline.reverse();
       }
-
-      timeline.reverse();
     },
-
-    [
-      isOpen,
-    ],
+    [isOpen],
   );
 
   useEffect(
@@ -799,26 +820,20 @@ export function SiteHeader() {
 
       const html =
         document.documentElement;
-
       const previousOverflow =
         html.style.overflow;
 
       html.style.overflow =
         "hidden";
-
       scrollManager.stop();
 
       return () => {
         html.style.overflow =
           previousOverflow;
-
         scrollManager.start();
       };
     },
-
-    [
-      isOpen,
-    ],
+    [isOpen],
   );
 
   useEffect(
@@ -827,20 +842,16 @@ export function SiteHeader() {
         return;
       }
 
-      const handleKeyDown =
-        (
-          event:
-            KeyboardEvent,
-        ) => {
-          if (
-            event.key ===
-            "Escape"
-          ) {
-            setIsOpen(
-              false,
-            );
-          }
-        };
+      const handleKeyDown = (
+        event: KeyboardEvent,
+      ) => {
+        if (
+          event.key ===
+          "Escape"
+        ) {
+          setIsOpen(false);
+        }
+      };
 
       window.addEventListener(
         "keydown",
@@ -854,35 +865,25 @@ export function SiteHeader() {
         );
       };
     },
-
-    [
-      isOpen,
-    ],
+    [isOpen],
   );
 
-  const closeMenu =
-    () => {
-      setIsOpen(
-        false,
-      );
-    };
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
 
   const toggleSound =
     async () => {
       const next =
         !soundOn;
 
-      setSoundOn(
-        next,
-      );
+      setSoundOn(next);
 
       if (next) {
         await audioManager.unlock();
-
         audioManager.setMuted(
           false,
         );
-
         return;
       }
 
@@ -891,154 +892,160 @@ export function SiteHeader() {
       );
     };
 
+  const pillTextStyle = {
+    fontFamily:
+      MONO_UI_FONT,
+  };
+
   return (
     <header
       ref={rootRef}
       className="pointer-events-none fixed inset-x-0 top-0 z-[300]"
     >
-      {/* CLOSED HEADER */}
-
       <div
         data-hero-nav-vibrate
         className="relative z-[40] flex h-[72px] items-center justify-between px-[18px] md:px-[32px]"
       >
         <TransitionLink
           href="/"
-          onClick={
-            closeMenu
-          }
+          onClick={closeMenu}
           className="pointer-events-auto text-[#eeeeeb]"
         >
           <BrandMark />
         </TransitionLink>
 
         <div
-          className={[
-            "pointer-events-auto ml-auto flex items-center gap-[7px] transition-opacity duration-200",
-
-            isOpen
-              ? "pointer-events-none opacity-0"
-              : "opacity-100",
-          ].join(" ")}
+          ref={closedControlsRef}
+          className="pointer-events-auto ml-auto flex items-center gap-[7px]"
         >
           <SoundButton
-            soundOn={
-              soundOn
-            }
-            onClick={
-              toggleSound
-            }
+            soundOn={soundOn}
+            onClick={toggleSound}
           />
 
           <TransitionLink
             href="/contact"
-            className="hidden h-[31px] items-center justify-center rounded-full bg-[#f5f5f2] px-[16px] text-[11.5px] font-normal uppercase tracking-[-0.005em] !text-[#111] focus:outline-none md:flex"
+            aria-label="Let's talk"
+            style={pillTextStyle}
+            onMouseEnter={(
+              event,
+            ) => {
+              playTextMotion(
+                event.currentTarget,
+              );
+            }}
+            className="group hidden h-[31px] items-center justify-center overflow-hidden rounded-full bg-[#f5f5f2] px-[15px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] !text-[#111] focus:outline-none md:flex"
           >
-            Let&apos;s talk
+            <MotionText
+              text="LET'S TALK"
+              variant="pill"
+            />
           </TransitionLink>
 
           <button
             type="button"
-            aria-expanded={
-              isOpen
-            }
+            aria-expanded={isOpen}
             aria-controls="site-navigation"
             aria-label="Open menu"
-            onClick={() => {
-              setIsOpen(
-                true,
+            style={pillTextStyle}
+            onMouseEnter={(
+              event,
+            ) => {
+              playTextMotion(
+                event.currentTarget,
               );
             }}
-            className="flex h-[31px] items-center gap-[6px] rounded-full border border-white/60 bg-transparent px-[12px] text-[7.5px] font-normal uppercase tracking-[0.035em] text-[#eeeeeb] focus:outline-none"
+            onClick={() => {
+              setIsOpen(true);
+            }}
+            className="group flex h-[31px] items-center gap-[6px] rounded-full border border-white/60 bg-transparent px-[12px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] text-[#eeeeeb] transition-[background-color,border-color] duration-300 hover:border-white/85 hover:bg-white/[0.035] focus:outline-none"
           >
-            <span>
-              Menu
-            </span>
-
+            <MotionText
+              text="MENU"
+              variant="pill"
+            />
             <span className="flex w-[8px] flex-col gap-[2.5px]">
               <span className="h-px w-full bg-current" />
-
               <span className="h-px w-full bg-current" />
             </span>
           </button>
         </div>
       </div>
 
-      {/* OPEN MENU */}
-
       <div
         id="site-navigation"
         ref={layerRef}
-        aria-hidden={
-          !isOpen
-        }
+        aria-hidden={!isOpen}
         className="pointer-events-none fixed inset-0 z-[30] opacity-0"
       >
         <button
           ref={backdropRef}
           type="button"
           aria-label="Close navigation"
-          onClick={
-            closeMenu
-          }
-          className="absolute inset-0 cursor-default bg-black/[0.1] focus:outline-none"
+          onClick={closeMenu}
+          className="absolute inset-0 cursor-default bg-black/20 focus:outline-none"
         />
 
         <aside
           ref={panelRef}
-          className="absolute bottom-3 right-3 top-3 w-[calc(100vw-24px)] overflow-hidden rounded-[6px] bg-[#fafafa] text-[#151515] shadow-[0_10px_45px_rgba(0,0,0,0.16)] md:w-[356px]"
+          className="absolute bottom-[10px] right-[10px] top-[10px] w-[calc(100vw-20px)] overflow-hidden rounded-[10px] border border-black/[0.05] bg-[#f3f2ee] text-[#151515] shadow-[0_18px_70px_rgba(0,0,0,0.18)] sm:w-[min(468px,calc(100vw-20px))]"
         >
-          {/* PANEL CONTROLS */}
-
           <div
             data-menu-controls
             className="absolute right-[17px] top-[17px] z-10 flex items-center gap-[7px]"
           >
             <SoundButton
               light
-              soundOn={
-                soundOn
-              }
-              onClick={
-                toggleSound
-              }
+              soundOn={soundOn}
+              onClick={toggleSound}
             />
 
-            <a
+            <TransitionLink
               href="/contact"
-              style={{
-                color:
-                  "#ffffff",
-
-                WebkitTextFillColor:
-                  "#ffffff",
+              aria-label="Let's talk"
+              style={pillTextStyle}
+              onClick={closeMenu}
+              onMouseEnter={(
+                event,
+              ) => {
+                playTextMotion(
+                  event.currentTarget,
+                );
               }}
-              className="flex h-[31px] items-center rounded-full bg-[#090909] px-[16px] text-[11.5px] font-normal uppercase tracking-[-0.005em]"
+              className="group hidden h-[31px] items-center overflow-hidden rounded-full bg-[#0c0c0c] px-[15px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] !text-white sm:flex"
             >
-              Let&apos;s talk
-            </a>
+              <MotionText
+                text="LET'S TALK"
+                variant="pill"
+              />
+            </TransitionLink>
 
             <button
               type="button"
               aria-label="Close menu"
-              onClick={
-                closeMenu
-              }
-              className="flex h-[31px] items-center gap-[6px] rounded-full border border-black/75 px-[12px] text-[7.5px] font-normal uppercase tracking-[0.035em] text-[#111] focus:outline-none"
+              style={pillTextStyle}
+              onMouseEnter={(
+                event,
+              ) => {
+                playTextMotion(
+                  event.currentTarget,
+                );
+              }}
+              onClick={closeMenu}
+              className="group flex h-[31px] items-center gap-[6px] rounded-full border border-black/70 px-[12px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] text-[#111] transition-[background-color,border-color] duration-300 hover:border-black/90 hover:bg-black/[0.025] focus:outline-none"
             >
-              <span>
-                Menu
-              </span>
-
-              <span className="text-[11px] leading-none">
-                ×
+              <MotionText
+                text="MENU"
+                variant="pill"
+              />
+              <span className="relative block h-[9px] w-[9px]">
+                <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-current" />
+                <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-current" />
               </span>
             </button>
           </div>
 
-          <div className="flex h-full flex-col px-[27px] pb-[29px] pt-[222px]">
-            {/* MAIN NAV */}
-
+          <div className="flex h-full flex-col px-[24px] pb-[26px] pt-[145px] sm:px-[32px] sm:pb-[31px] sm:pt-[154px]">
             <nav
               aria-label="Main navigation"
               onMouseLeave={() => {
@@ -1047,7 +1054,7 @@ export function SiteHeader() {
                 );
               }}
             >
-              <ul className="space-y-[4px]">
+              <ul className="space-y-[1px]">
                 {navigationItems.map(
                   (
                     item,
@@ -1056,7 +1063,6 @@ export function SiteHeader() {
                     const hovered =
                       hoveredMenuIndex ===
                       index;
-
                     const dimmed =
                       hoveredMenuIndex !==
                         null &&
@@ -1064,47 +1070,46 @@ export function SiteHeader() {
 
                     return (
                       <li
-                        key={
-                          item.label
-                        }
-                        data-menu-item
-                        onMouseEnter={() => {
-                          setHoveredMenuIndex(
-                            index,
-                          );
-                        }}
+                        key={item.label}
+                        data-menu-nav-item
                       >
                         <TransitionLink
-                          href={
-                            item.href
-                          }
-                          onClick={
-                            closeMenu
-                          }
+                          href={item.href}
+                          aria-label={item.label}
+                          onClick={closeMenu}
+                          onMouseEnter={(
+                            event,
+                          ) => {
+                            setHoveredMenuIndex(
+                              index,
+                            );
+                            playTextMotion(
+                              event.currentTarget,
+                            );
+                          }}
                           style={{
                             opacity:
                               dimmed
-                                ? 0.25
+                                ? 0.22
                                 : 1,
                           }}
-                          className="flex w-full items-center justify-between text-[29px] font-normal leading-[1.12] tracking-[-0.052em] text-[#171717] transition-opacity duration-300"
+                          className="group flex w-full items-center justify-between py-[1px] text-[clamp(38px,4.5vw,47px)] font-normal leading-[0.98] tracking-[-0.045em] text-[#171717] transition-opacity duration-300"
                         >
-                          <span>
-                            {
-                              item.label
-                            }
-                          </span>
+                          <MotionText
+                            text={item.label}
+                            variant="wave"
+                          />
 
                           <span
+                            aria-hidden="true"
                             className={[
-                              "text-[11px] transition-[opacity,transform] duration-250",
-
+                              "mr-[2px] text-[15px] leading-none transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
                               hovered
                                 ? "translate-x-0 opacity-100"
-                                : "-translate-x-[5px] opacity-0",
+                                : "-translate-x-[9px] opacity-0",
                             ].join(" ")}
                           >
-                            →
+                            ↗
                           </span>
                         </TransitionLink>
                       </li>
@@ -1114,96 +1119,83 @@ export function SiteHeader() {
               </ul>
             </nav>
 
-            {/* NAME STORY */}
-
             <TransitionLink
-              data-menu-item
+              data-menu-secondary
               href="/trionn-story"
               aria-label="The TRIONN name Story"
-              onClick={
-                closeMenu
-              }
-              onMouseEnter={
-                (
-                  event,
-                ) => {
-                  playSwapAnimation(
-                    event.currentTarget,
-                  );
-                }
-              }
-              className="group relative mt-[21px] flex h-[35px] w-[214px] items-center overflow-hidden rounded-full border border-black/[0.32] px-[12px] text-[10px] font-normal uppercase tracking-[-0.01em]"
+              onClick={closeMenu}
+              onMouseEnter={(
+                event,
+              ) => {
+                playTextMotion(
+                  event.currentTarget,
+                );
+              }}
+              className="group mt-[27px] flex h-[46px] w-fit min-w-[308px] items-center rounded-full border border-black/[0.34] px-[16px] text-[15.5px] font-normal leading-none tracking-[-0.025em] transition-[border-color,background-color] duration-300 hover:border-black/58 hover:bg-black/[0.02]"
             >
-              <span className="mr-[5px] shrink-0">
+              <span className="mr-[9px] shrink-0 text-[12.5px]">
                 ✦
               </span>
-
-              <SwapText
-                text="THE TRIONN NAME STORY"
+              <MotionText
+                text="The TRIONN name Story"
+                variant="rewrite"
               />
-
-              <span className="absolute right-[11px] translate-x-[7px] text-[10px] opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                →
+              <span className="ml-auto pl-[14px] text-[13px]">
+                ↗
               </span>
             </TransitionLink>
 
-            {/* LOWER INFO */}
-
-            <div className="mb-[19px] mt-auto">
+            <div className="mt-auto">
               <div
-                data-menu-item
+                data-menu-secondary
               >
-                <p className="mb-[12px] text-[10px] font-normal uppercase tracking-[-0.005em] text-black/35">
+                <p className="mb-[13px] text-[10px] font-normal uppercase tracking-[0.025em] text-black/38">
                   Business enquiry
                 </p>
 
-                <div className="space-y-[7px] text-[13px] leading-none text-black/72">
+                <div className="space-y-[9px] text-[15px] font-normal leading-none tracking-[-0.025em] text-black/76">
                   <p className="flex items-center">
-                    <span className="mr-[14px] w-[12px] text-[12px] text-black/35">
+                    <span className="mr-[14px] w-[18px] shrink-0 text-[13px] text-black/38">
                       E.
                     </span>
-
                     <a
                       href="mailto:hello@trionn.com"
                       aria-label="hello@trionn.com"
-                      onMouseEnter={
-                        (
-                          event,
-                        ) => {
-                          playSwapAnimation(
-                            event.currentTarget,
-                          );
-                        }
-                      }
-                      className="transition-opacity duration-200"
+                      onMouseEnter={(
+                        event,
+                      ) => {
+                        playTextMotion(
+                          event.currentTarget,
+                        );
+                      }}
+                      className="group inline-flex overflow-hidden"
                     >
-                      <SwapText
+                      <MotionText
                         text="hello@trionn.com"
+                        variant="rewrite"
                       />
                     </a>
                   </p>
 
                   <p className="flex items-center">
-                    <span className="mr-[14px] w-[12px] text-[12px] text-black/35">
+                    <span className="mr-[14px] w-[18px] shrink-0 text-[13px] text-black/38">
                       P.
                     </span>
-
                     <a
                       href="tel:+919824182099"
                       aria-label="+91 9824182099"
-                      onMouseEnter={
-                        (
-                          event,
-                        ) => {
-                          playSwapAnimation(
-                            event.currentTarget,
-                          );
-                        }
-                      }
-                      className="transition-opacity duration-200"
+                      onMouseEnter={(
+                        event,
+                      ) => {
+                        playTextMotion(
+                          event.currentTarget,
+                        );
+                      }}
+                      className="group inline-flex overflow-hidden"
                     >
-                      <SwapText
-                        text="+91 9824182099"
+                      <MotionText
+                        text="+91 98241 82099"
+                        variant="rewrite"
                       />
                     </a>
                   </p>
@@ -1211,32 +1203,35 @@ export function SiteHeader() {
               </div>
 
               <div
-                data-menu-item
-                className="mt-[44px]"
+                data-menu-secondary
+                className="mt-[42px]"
               >
-                <p className="mb-[11px] text-[9px] font-normal uppercase tracking-[-0.005em] text-black/34">
+                <p className="mb-[12px] text-[9.5px] font-normal uppercase tracking-[0.025em] text-black/36">
                   Social
                 </p>
 
-                <div className="grid grid-cols-2 gap-x-[32px] gap-y-[5px] text-[12px] leading-none text-black/70">
+                <div className="grid grid-cols-2 gap-x-[38px] gap-y-[8px] text-[13px] font-normal leading-none tracking-[-0.015em] text-black/68">
                   {socialItems.map(
-                    (
-                      item,
-                    ) => (
+                    (item) => (
                       <a
-                        key={
-                          item.label
-                        }
-                        href={
-                          item.href
-                        }
+                        key={item.label}
+                        href={item.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-fit transition-opacity duration-250 hover:opacity-40"
+                        aria-label={item.label}
+                        onMouseEnter={(
+                          event,
+                        ) => {
+                          playTextMotion(
+                            event.currentTarget,
+                          );
+                        }}
+                        className="group w-fit overflow-hidden"
                       >
-                        {
-                          item.label
-                        }
+                        <MotionText
+                          text={item.label}
+                          variant="pill"
+                        />
                       </a>
                     ),
                   )}
