@@ -201,6 +201,12 @@ export function HomeSelectedWork() {
       const servicesRise = section.querySelector<HTMLElement>(
         "[data-services-rise]",
       );
+      const entryRule = entryFrame.querySelector<HTMLElement>(
+        "[data-entry-rule]",
+      );
+      const entryPlusWrap = entryFrame.querySelector<HTMLElement>(
+        "[data-entry-plus-wrap]",
+      );
       const entryPlus = entryFrame.querySelector<HTMLElement>(
         "[data-entry-plus]",
       );
@@ -213,6 +219,8 @@ export function HomeSelectedWork() {
         projectRises.length !== PROJECTS.length ||
         !collectionRise ||
         !servicesRise ||
+        !entryRule ||
+        !entryPlusWrap ||
         !entryPlus ||
         !boundaryPlus
       ) {
@@ -220,7 +228,7 @@ export function HomeSelectedWork() {
       }
 
       gsap.set(entryFrame, {
-        y: "54svh",
+        y: "42svh",
         force3D: true,
         willChange: "transform",
       });
@@ -262,12 +270,13 @@ export function HomeSelectedWork() {
 
       gsap.set(servicesBoundary, {
         x: () => window.innerWidth,
+        autoAlpha: 1,
         force3D: true,
-        willChange: "transform",
+        willChange: "transform, opacity",
       });
 
       gsap.set([entryPlus, boundaryPlus], {
-        rotation: 45,
+        rotation: 0,
         transformOrigin: "50% 50%",
         force3D: true,
       });
@@ -282,12 +291,11 @@ export function HomeSelectedWork() {
         },
       });
 
-      /* Key facts -> selected work: the whole work scene rises from below. */
       timeline.to(
         entryFrame,
         {
           y: 0,
-          duration: 0.18,
+          duration: 0.15,
           ease: "none",
         },
         0,
@@ -296,8 +304,8 @@ export function HomeSelectedWork() {
       timeline.to(
         entryPlus,
         {
-          rotation: 765,
-          duration: 1,
+          rotation: 540,
+          duration: 0.15,
           ease: "none",
         },
         0,
@@ -307,21 +315,30 @@ export function HomeSelectedWork() {
         introRise,
         {
           y: 0,
-          duration: 0.13,
+          duration: 0.14,
           ease: "power1.out",
         },
-        0.03,
+        0.02,
       );
 
-      /* Horizontal rail: quick enough that every wheel/trackpad gesture moves. */
+      timeline.to(
+        [entryRule, entryPlusWrap],
+        {
+          autoAlpha: 0,
+          duration: 0.04,
+          ease: "none",
+        },
+        0.11,
+      );
+
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.6,
+          duration: 0.7,
           ease: "none",
         },
-        0.16,
+        0.1,
       );
 
       projectRises.forEach((projectRise, index) => {
@@ -329,10 +346,10 @@ export function HomeSelectedWork() {
           projectRise,
           {
             y: 0,
-            duration: 0.16,
+            duration: 0.18,
             ease: "power1.out",
           },
-          0.17 + index * 0.17,
+          0.12 + index * 0.2,
         );
       });
 
@@ -340,61 +357,70 @@ export function HomeSelectedWork() {
         collectionRise,
         {
           y: 0,
-          duration: 0.15,
+          duration: 0.17,
           ease: "power1.out",
         },
-        0.62,
+        0.66,
       );
 
-      /* Collection -> services: both the wipe edge and type move together. */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 2,
-          duration: 0.24,
+          duration: 0.2,
           ease: "none",
         },
-        0.76,
+        0.8,
       );
 
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.24,
+          duration: 0.2,
           ease: "none",
         },
-        0.76,
+        0.8,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.24,
+          duration: 0.2,
           ease: "none",
         },
-        0.76,
+        0.8,
       );
 
       timeline.to(
         boundaryPlus,
         {
-          rotation: 585,
-          duration: 0.24,
+          rotation: 540,
+          duration: 0.2,
           ease: "none",
         },
-        0.76,
+        0.8,
       );
 
       timeline.to(
         servicesRise,
         {
           y: 0,
-          duration: 0.2,
+          duration: 0.18,
           ease: "power1.out",
         },
-        0.77,
+        0.81,
+      );
+
+      timeline.to(
+        servicesBoundary,
+        {
+          autoAlpha: 0,
+          duration: 0.03,
+          ease: "none",
+        },
+        0.97,
       );
 
       return () => {
@@ -408,27 +434,37 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] -mt-[54svh] h-[410svh] bg-transparent"
+      className="relative z-[52] -mt-[100svh] h-[470svh] bg-[#fbfbfb]"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-transparent">
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#fbfbfb]">
         <div
           ref={entryFrameRef}
           className="absolute inset-0 overflow-hidden"
           style={{
-            background:
-              "linear-gradient(180deg, #dedddb 0%, #e8e8e6 45%, #d1d1d0 100%)",
+            background: "linear-gradient(180deg, #fbfbfb 0%, #d1d1d1 100%)",
           }}
         >
-          <div className="pointer-events-none absolute left-[2.1vw] right-[2.1vw] top-0 z-[8] h-px bg-black/[0.1]" />
-          <div className="pointer-events-none absolute bottom-0 left-1/2 top-0 z-[2] w-px bg-black/[0.09]" />
+          <div
+            data-entry-rule
+            className="pointer-events-none absolute left-[2.1vw] right-[2.1vw] top-0 z-[8]"
+            style={{
+              height: "1px",
+              background: "rgba(65, 65, 63, 0.14)",
+            }}
+          />
 
-          <span
-            data-entry-plus
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-0 z-[9] block -translate-x-1/2 -translate-y-1/2 text-[18px] font-light leading-none text-[#424240]"
+          <div
+            data-entry-plus-wrap
+            className="pointer-events-none absolute left-1/2 top-0 z-[9] -translate-x-1/2 -translate-y-1/2"
           >
-            +
-          </span>
+            <span
+              data-entry-plus
+              aria-hidden="true"
+              className="block text-[14px] font-light leading-none text-[#424240]"
+            >
+              +
+            </span>
+          </div>
 
           <div
             ref={trackRef}
@@ -456,15 +492,17 @@ export function HomeSelectedWork() {
 
           <div
             ref={servicesBoundaryRef}
-            className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.11]"
+            className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.1]"
           >
-            <span
-              data-boundary-plus
-              aria-hidden="true"
-              className="absolute left-1/2 top-[50.5%] block -translate-x-1/2 text-[18px] font-light leading-none text-[#424240]"
-            >
-              +
-            </span>
+            <div className="absolute left-1/2 top-[50.5%] -translate-x-1/2">
+              <span
+                data-boundary-plus
+                aria-hidden="true"
+                className="block text-[14px] font-light leading-none text-[#424240]"
+              >
+                +
+              </span>
+            </div>
           </div>
         </div>
       </div>
