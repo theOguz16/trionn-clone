@@ -77,7 +77,7 @@ function ProjectPanel({
   index: number;
 }) {
   return (
-    <article className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.085] bg-transparent">
+    <article className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.065] bg-transparent">
       <div
         data-project-rise
         data-project-index={index}
@@ -116,7 +116,7 @@ function ProjectPanel({
 
 function CollectionPanel() {
   return (
-    <section className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.085] bg-transparent">
+    <section className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.065] bg-transparent">
       <div
         data-collection-rise
         className="absolute left-1/2 top-[57.4%] w-[82%] -translate-x-1/2 -translate-y-1/2 text-center"
@@ -175,10 +175,10 @@ function TransitionPlus({ marker }: { marker: "entry" | "services" }) {
     <span
       data-transition-plus={marker}
       aria-hidden="true"
-      className="relative block h-[12px] w-[12px]"
+      className="relative block h-[10px] w-[10px]"
     >
-      <span className="absolute left-1/2 top-1/2 h-px w-[10px] -translate-x-1/2 -translate-y-1/2 bg-[#5a5a57]" />
-      <span className="absolute left-1/2 top-1/2 h-[10px] w-px -translate-x-1/2 -translate-y-1/2 bg-[#5a5a57]" />
+      <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 bg-[#74746f]" />
+      <span className="absolute left-1/2 top-1/2 h-[9px] w-px -translate-x-1/2 -translate-y-1/2 bg-[#74746f]" />
     </span>
   );
 }
@@ -202,9 +202,7 @@ export function HomeSelectedWork() {
         return;
       }
 
-      const introRise = section.querySelector<HTMLElement>(
-        "[data-work-intro-rise]",
-      );
+      const introRise = section.querySelector<HTMLElement>("[data-work-intro-rise]");
       const projectRises = Array.from(
         section.querySelectorAll<HTMLElement>("[data-project-rise]"),
       );
@@ -213,9 +211,6 @@ export function HomeSelectedWork() {
       );
       const servicesRise = section.querySelector<HTMLElement>(
         "[data-services-rise]",
-      );
-      const entryPlusWrap = entryFrame.querySelector<HTMLElement>(
-        "[data-entry-plus-wrap]",
       );
       const entryPlus = entryFrame.querySelector<HTMLElement>(
         '[data-transition-plus="entry"]',
@@ -229,7 +224,6 @@ export function HomeSelectedWork() {
         projectRises.length !== PROJECTS.length ||
         !collectionRise ||
         !servicesRise ||
-        !entryPlusWrap ||
         !entryPlus ||
         !boundaryPlus
       ) {
@@ -277,10 +271,6 @@ export function HomeSelectedWork() {
         willChange: "transform",
       });
 
-      gsap.set(entryPlusWrap, {
-        autoAlpha: 1,
-      });
-
       gsap.set(servicesBoundary, {
         x: () => window.innerWidth,
         autoAlpha: 1,
@@ -304,17 +294,11 @@ export function HomeSelectedWork() {
         },
       });
 
-      /*
-       * Key Facts is 152svh tall and pinned for its final 52svh. This section
-       * overlaps it by 100svh, so our trigger begins exactly when that pin
-       * releases. The work viewport then rises 100svh while Key Facts moves
-       * up by the same physical distance: no dead scroll and no early cover.
-       */
       timeline.to(
         entryFrame,
         {
           yPercent: 0,
-          duration: 0.15,
+          duration: 0.16,
           ease: "none",
         },
         0,
@@ -324,7 +308,7 @@ export function HomeSelectedWork() {
         entryPlus,
         {
           rotation: 360,
-          duration: 0.15,
+          duration: 0.16,
           ease: "none",
         },
         0,
@@ -334,45 +318,30 @@ export function HomeSelectedWork() {
         introRise,
         {
           y: 0,
-          duration: 0.18,
+          duration: 0.2,
           ease: "power1.out",
         },
         0.025,
       );
 
       timeline.to(
-        entryPlusWrap,
-        {
-          autoAlpha: 0,
-          duration: 0.025,
-          ease: "none",
-        },
-        0.135,
-      );
-
-      /*
-       * The work rail is deliberately slower than the previous pass. With a
-       * 780svh section this gives roughly 120svh of vertical scroll for every
-       * 50vw project step while keeping motion continuous on every gesture.
-       */
-      timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.54,
+          duration: 0.56,
           ease: "none",
         },
-        0.155,
+        0.16,
       );
 
       projectRises.forEach((projectRise, index) => {
-        const starts = [0.055, 0.31, 0.49];
+        const starts = [0.07, 0.31, 0.5];
 
         timeline.to(
           projectRise,
           {
             y: 0,
-            duration: 0.2,
+            duration: 0.21,
             ease: "power1.out",
           },
           starts[index],
@@ -386,58 +355,57 @@ export function HomeSelectedWork() {
           duration: 0.18,
           ease: "power1.out",
         },
-        0.655,
+        0.66,
       );
 
-      /* Collection -> Services gets a full, readable wipe instead of a snap. */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 2,
-          duration: 0.25,
+          duration: 0.26,
           ease: "none",
         },
-        0.75,
+        0.74,
       );
 
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.25,
+          duration: 0.26,
           ease: "none",
         },
-        0.75,
+        0.74,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.25,
+          duration: 0.26,
           ease: "none",
         },
-        0.75,
+        0.74,
       );
 
       timeline.to(
         boundaryPlus,
         {
           rotation: 360,
-          duration: 0.25,
+          duration: 0.26,
           ease: "none",
         },
-        0.75,
+        0.74,
       );
 
       timeline.to(
         servicesRise,
         {
           y: 0,
-          duration: 0.22,
+          duration: 0.23,
           ease: "power1.out",
         },
-        0.765,
+        0.76,
       );
 
       timeline.to(
@@ -447,7 +415,7 @@ export function HomeSelectedWork() {
           duration: 0.02,
           ease: "none",
         },
-        0.98,
+        0.985,
       );
 
       return () => {
@@ -466,22 +434,15 @@ export function HomeSelectedWork() {
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-transparent">
         <div
           ref={entryFrameRef}
-          className="absolute -top-[2px] bottom-0 left-0 right-0 overflow-hidden"
-          style={{
-            height: "calc(100% + 2px)",
-            background:
-              "linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 48%, #dedddb 100%)",
-          }}
+          className="absolute inset-0 overflow-hidden"
+          style={{ backgroundColor: "#fbfbfb" }}
         >
           <div
-            className="pointer-events-none absolute left-[2.1vw] right-[2.1vw] top-[2px] z-[8] h-px"
-            style={{ backgroundColor: "#d7d6d3" }}
+            className="pointer-events-none absolute left-[2.1vw] right-[2.1vw] top-0 z-[8] h-px"
+            style={{ backgroundColor: "rgba(116,116,111,0.22)" }}
           />
 
-          <div
-            data-entry-plus-wrap
-            className="pointer-events-none absolute left-1/2 top-[2px] z-[9] -translate-x-1/2 -translate-y-1/2"
-          >
+          <div className="pointer-events-none absolute left-1/2 top-0 z-[9] -translate-x-1/2 -translate-y-1/2">
             <TransitionPlus marker="entry" />
           </div>
 
@@ -512,7 +473,7 @@ export function HomeSelectedWork() {
           <div
             ref={servicesBoundaryRef}
             className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px"
-            style={{ backgroundColor: "#d7d6d3" }}
+            style={{ backgroundColor: "rgba(116,116,111,0.22)" }}
           >
             <div className="absolute left-1/2 top-[50.5%] -translate-x-1/2 -translate-y-1/2">
               <TransitionPlus marker="services" />
