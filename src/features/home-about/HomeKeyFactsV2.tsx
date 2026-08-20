@@ -28,43 +28,43 @@ type HingeSwing = {
 
 const CARD_STARTS: CardPose[] = [
   {
-    z: -120,
-    rotateX: -17,
-    opacity: 0.7,
+    z: -104,
+    rotateX: -16,
+    opacity: 0.72,
   },
   {
-    z: -300,
-    rotateX: -36,
-    opacity: 0.44,
+    z: -262,
+    rotateX: -33,
+    opacity: 0.48,
   },
   {
-    z: -520,
-    rotateX: -56,
-    opacity: 0.24,
+    z: -430,
+    rotateX: -50,
+    opacity: 0.26,
   },
 ];
 
 const CARD_WINDOWS = [
-  [0.07, 0.7],
-  [0.17, 0.86],
-  [0.28, 0.99],
+  [0.08, 0.7],
+  [0.2, 0.84],
+  [0.34, 0.96],
 ] as const;
 
 const HINGE_SWINGS: HingeSwing[] = [
   {
-    forward: 5.5,
-    backward: -3.2,
-    settle: 1.2,
+    forward: 4.5,
+    backward: -2.6,
+    settle: 0.9,
   },
   {
-    forward: 8.5,
-    backward: -5.2,
-    settle: 2,
+    forward: 7,
+    backward: -4.2,
+    settle: 1.6,
   },
   {
-    forward: 12.5,
-    backward: -7.4,
-    settle: 3,
+    forward: 10.5,
+    backward: -6.2,
+    settle: 2.2,
   },
 ];
 
@@ -124,45 +124,41 @@ function getHingeRotation(
   const start = CARD_STARTS[index].rotateX;
   const swing = HINGE_SWINGS[index];
 
-  /*
-   * Long glide first, then a damped clothesline settle.
-   * The top edge never moves; only the lower body swings through depth.
-   */
-  if (progress <= 0.58) {
+  if (progress <= 0.62) {
     return segmentLerp(
       progress,
       0,
-      0.58,
+      0.62,
       start,
       0,
     );
   }
 
-  if (progress <= 0.72) {
+  if (progress <= 0.76) {
     return segmentLerp(
       progress,
-      0.58,
-      0.72,
+      0.62,
+      0.76,
       0,
       swing.forward,
     );
   }
 
-  if (progress <= 0.84) {
+  if (progress <= 0.87) {
     return segmentLerp(
       progress,
-      0.72,
-      0.84,
+      0.76,
+      0.87,
       swing.forward,
       swing.backward,
     );
   }
 
-  if (progress <= 0.93) {
+  if (progress <= 0.95) {
     return segmentLerp(
       progress,
-      0.84,
-      0.93,
+      0.87,
+      0.95,
       swing.backward,
       swing.settle,
     );
@@ -170,7 +166,7 @@ function getHingeRotation(
 
   return segmentLerp(
     progress,
-    0.93,
+    0.95,
     1,
     swing.settle,
     0,
@@ -335,10 +331,6 @@ export function HomeKeyFacts() {
         return;
       }
 
-      /*
-       * Cache digit-track references once. The previous version searched
-       * inside every counter on every ScrollTrigger update.
-       */
       const counterTracks = counters.map((counter) =>
         Array.from(
           counter.querySelectorAll<HTMLElement>(
@@ -374,12 +366,12 @@ export function HomeKeyFacts() {
 
       const updateHeader = (progress: number) => {
         const p = smootherStep(
-          mapRange(progress, 0.02, 0.22),
+          mapRange(progress, 0.03, 0.22),
         );
 
         header.style.opacity = `${p}`;
         header.style.transform =
-          `translate3d(0, ${24 * (1 - p)}px, 0)`;
+          `translate3d(0, ${20 * (1 - p)}px, 0)`;
       };
 
       const updateCard = (
@@ -396,44 +388,34 @@ export function HomeKeyFacts() {
           windowEnd,
         );
 
-        /*
-         * A wider window gives the cards a slower floating approach.
-         * Transform + opacity only: no large-surface blur filters while
-         * scrolling, which removes a sizeable GPU/compositing cost.
-         */
-        const depthProgress =
-          smoothStep(rawLocal);
-        const settle = smoothStep(
-          mapRange(rawLocal, 0.8, 1),
+        const depthProgress = smootherStep(rawLocal);
+        const settleProgress = smootherStep(
+          mapRange(rawLocal, 0.78, 1),
         );
         const z =
           lerp(start.z, 0, depthProgress) +
-          12 * settle * (1 - settle);
-        const rotateX =
-          getHingeRotation(
-            index,
-            rawLocal,
-          );
-        const opacity =
-          lerp(
-            start.opacity,
-            1,
-            smootherStep(
-              mapRange(rawLocal, 0, 0.72),
-            ),
-          );
+          8 * settleProgress * (1 - settleProgress);
+        const rotateX = getHingeRotation(
+          index,
+          rawLocal,
+        );
+        const opacity = lerp(
+          start.opacity,
+          1,
+          smootherStep(
+            mapRange(rawLocal, 0, 0.78),
+          ),
+        );
 
         shell.style.transform =
           `translate3d(0, 0, ${z}px) rotateX(${rotateX}deg)`;
         shell.style.opacity = `${opacity}`;
 
-        const counterProgress =
-          smootherStep(
-            mapRange(rawLocal, 0.48, 0.9),
-          );
+        const counterProgress = smootherStep(
+          mapRange(rawLocal, 0.52, 0.9),
+        );
 
-        counters[index].style.opacity =
-          `${0.42 + counterProgress * 0.58}`;
+        counters[index].style.opacity = `${0.4 + counterProgress * 0.6}`;
 
         for (const entry of counterTracks[index]) {
           entry.track.style.transform =
@@ -443,24 +425,19 @@ export function HomeKeyFacts() {
 
       const updatePartners = (progress: number) => {
         const p = smootherStep(
-          mapRange(progress, 0.82, 0.98),
+          mapRange(progress, 0.84, 0.985),
         );
 
         partners.style.opacity = `${p}`;
         partners.style.transform =
-          `translate3d(0, ${18 * (1 - p)}px, 0)`;
+          `translate3d(0, ${16 * (1 - p)}px, 0)`;
       };
 
       const update = (rawProgress: number) => {
         const progress = clamp01(rawProgress);
-
         updateHeader(progress);
 
-        for (
-          let index = 0;
-          index < cardShells.length;
-          index += 1
-        ) {
+        for (let index = 0; index < cardShells.length; index += 1) {
           updateCard(index, progress);
         }
 
@@ -489,7 +466,7 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top 94%",
-        end: "bottom 56%",
+        end: "bottom 58%",
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           scheduleUpdate(self.progress);
@@ -507,7 +484,11 @@ export function HomeKeyFacts() {
           setTheme("light");
         },
         onLeaveBack: () => {
-          scheduleUpdate(0);
+          if (rafId !== 0) {
+            window.cancelAnimationFrame(rafId);
+            rafId = 0;
+          }
+          update(0);
           setTheme("dark");
         },
       });
@@ -548,11 +529,11 @@ export function HomeKeyFacts() {
 
         <div
           data-facts-grid
-          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[18px] [perspective:1320px] [perspective-origin:50%_0%] md:grid-cols-3"
+          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[20px] [perspective:1240px] [perspective-origin:50%_0%] md:grid-cols-3"
         >
           <div
             data-card-shell
-            className="relative z-[3] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
+            className="relative z-[30] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
           >
             <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
@@ -568,8 +549,8 @@ export function HomeKeyFacts() {
                 Featured &amp; Awards
               </p>
 
-              <div className="absolute bottom-[91px] left-[31px] z-10 flex h-[22px] w-[18px] items-center justify-center bg-white text-[13px] font-semibold text-[#3f3f43]">
-                A
+              <div className="absolute bottom-[91px] left-[31px] z-10 flex h-[22px] w-[54px] items-center justify-center rounded-full border border-white/50 text-[12px] font-semibold tracking-[-0.03em] text-white">
+                FWA
               </div>
 
               <p className="absolute bottom-[32px] left-[31px] z-10 max-w-[172px] text-[13px] leading-[1.18] text-white/70">
@@ -586,7 +567,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[2] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
+            className="relative z-[10] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
           >
             <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
               <p className="absolute left-1/2 top-[34px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
@@ -607,7 +588,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[1] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
+            className="relative z-[20] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [contain:layout_paint] [transform-style:preserve-3d]"
           >
             <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
