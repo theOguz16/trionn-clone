@@ -325,9 +325,9 @@ export function HomeKeyFacts() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[50] -mt-[48svh] min-h-[86svh] bg-[#dedddb] text-[#414141]"
+      className="relative z-[50] -mt-[48svh] h-[152svh] bg-[#dedddb] text-[#414141]"
     >
-      <div className="min-h-[86svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[2svh] pt-[7svh] max-md:px-5">
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[2svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
