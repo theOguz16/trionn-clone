@@ -353,29 +353,27 @@ export function HomeSelectedWork() {
       );
 
       /*
-       * Main rail: MyWorker -> Pulse -> Loftloom -> collection.
-       * The section is shorter than the previous 760svh version so scrolling
-       * never feels stuck, while this phase occupies most of the timeline so
-       * the panels themselves still move deliberately rather than snapping.
+       * Keep almost the same physical scroll distance for the horizontal
+       * work rail while reserving a larger, slower phase for Services.
        */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.76,
+          duration: 0.7,
           ease: "none",
         },
         0,
       );
 
-      const projectStarts = [0.02, 0.27, 0.52];
+      const projectStarts = [0.02, 0.25, 0.48];
 
       projectRises.forEach((projectRise, index) => {
         timeline.to(
           projectRise,
           {
             y: 0,
-            duration: 0.28,
+            duration: 0.27,
             ease: "power1.out",
           },
           projectStarts[index],
@@ -386,75 +384,74 @@ export function HomeSelectedWork() {
         collectionRise,
         {
           y: 0,
-          duration: 0.22,
+          duration: 0.2,
           ease: "power1.out",
         },
-        0.63,
+        0.58,
       );
 
       /*
-       * Services uses the final quarter of the scroll sequence. The wipe,
-       * moving boundary, rotating + and rising typography all share the same
-       * progress window so none of them races ahead of the others.
+       * Services owns the final 30% of a slightly longer section. This turns
+       * the wipe into a deliberate handoff instead of a compressed final beat.
        */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 2,
-          duration: 0.24,
+          duration: 0.3,
           ease: "none",
         },
-        0.76,
+        0.7,
       );
 
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.24,
+          duration: 0.3,
           ease: "none",
         },
-        0.76,
+        0.7,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.24,
+          duration: 0.3,
           ease: "none",
         },
-        0.76,
+        0.7,
       );
 
       timeline.to(
         boundaryPlus,
         {
           rotation: 540,
-          duration: 0.24,
+          duration: 0.3,
           ease: "none",
         },
-        0.76,
+        0.7,
       );
 
       timeline.to(
         servicesRise,
         {
           y: 0,
-          duration: 0.22,
+          duration: 0.28,
           ease: "power1.out",
         },
-        0.77,
+        0.71,
       );
 
       timeline.to(
         servicesBoundary,
         {
           autoAlpha: 0,
-          duration: 0.03,
+          duration: 0.04,
           ease: "none",
         },
-        0.97,
+        0.96,
       );
 
       return () => {
@@ -470,7 +467,7 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[560svh] bg-[#fbfbfb]"
+      className="relative z-[52] h-[620svh] bg-[#fbfbfb]"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
