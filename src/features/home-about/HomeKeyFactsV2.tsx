@@ -6,7 +6,6 @@ import { useRef } from "react";
 
 import {
   gsap,
-  ScrollTrigger,
   useGSAP,
 } from "@/lib/gsap/client";
 
@@ -58,12 +57,12 @@ function Counter50() {
   return (
     <span
       data-counter
-      className="inline-flex items-baseline text-[50px] font-normal leading-none tracking-[-0.07em]"
+      className="inline-flex items-baseline text-[54px] font-normal leading-none tracking-[-0.07em]"
       aria-label="50 plus"
     >
       <DigitReel target={5} />
       <DigitReel target={0} />
-      <sup className="ml-[3px] text-[16px] leading-none">+</sup>
+      <sup className="ml-[3px] text-[17px] leading-none">+</sup>
     </span>
   );
 }
@@ -72,14 +71,14 @@ function Counter15K() {
   return (
     <span
       data-counter
-      className="inline-flex items-baseline text-[49px] font-normal leading-none tracking-[-0.07em]"
+      className="inline-flex items-baseline text-[53px] font-normal leading-none tracking-[-0.07em]"
       aria-label="1.5K plus"
     >
       <DigitReel target={1} />
       <span className="mx-[1px]">.</span>
       <DigitReel target={5} />
       <span className="ml-[2px] tracking-[-0.04em]">K</span>
-      <sup className="ml-[3px] text-[15px] leading-none">+</sup>
+      <sup className="ml-[3px] text-[16px] leading-none">+</sup>
     </span>
   );
 }
@@ -88,49 +87,49 @@ function Counter20() {
   return (
     <span
       data-counter
-      className="inline-flex items-baseline text-[50px] font-normal leading-none tracking-[-0.07em]"
+      className="inline-flex items-baseline text-[54px] font-normal leading-none tracking-[-0.07em]"
       aria-label="20 plus"
     >
       <DigitReel target={2} />
       <DigitReel target={0} />
-      <sup className="ml-[3px] text-[16px] leading-none">+</sup>
+      <sup className="ml-[3px] text-[17px] leading-none">+</sup>
     </span>
   );
 }
 
 function PartnerWordmarks() {
   return (
-    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#444]">
-      <div className="flex h-[42px] items-center justify-center px-[18px]">
-        <span className="text-[21px] font-semibold tracking-[-0.065em]">
+    <div className="mt-[26px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#444]">
+      <div className="flex h-[44px] items-center justify-center px-[18px]">
+        <span className="text-[22px] font-semibold tracking-[-0.065em]">
           credible
         </span>
       </div>
 
-      <div className="flex h-[42px] items-center justify-center px-[18px]">
-        <span className="text-[20px] font-semibold tracking-[-0.04em]">
+      <div className="flex h-[44px] items-center justify-center px-[18px]">
+        <span className="text-[21px] font-semibold tracking-[-0.04em]">
           Yellowtail
         </span>
       </div>
 
-      <div className="flex h-[42px] items-center justify-center gap-[7px] px-[18px]">
-        <span className="text-[25px] font-light leading-none">♮</span>
-        <span className="text-[11px] font-medium uppercase leading-[1.02] tracking-[0.075em]">
+      <div className="flex h-[44px] items-center justify-center gap-[7px] px-[18px]">
+        <span className="text-[26px] font-light leading-none">♮</span>
+        <span className="text-[12px] font-medium uppercase leading-[1.02] tracking-[0.07em]">
           Luxury
           <br />
           Presence
         </span>
       </div>
 
-      <div className="flex h-[42px] items-center justify-center px-[18px]">
-        <span className="-skew-x-[12deg] text-[22px] font-bold tracking-[-0.075em]">
+      <div className="flex h-[44px] items-center justify-center px-[18px]">
+        <span className="-skew-x-[12deg] text-[23px] font-bold tracking-[-0.075em]">
           technis
         </span>
       </div>
 
-      <div className="flex h-[42px] items-center justify-center gap-[7px] px-[18px]">
-        <span className="h-[20px] w-[20px] rounded-full border-[5px] border-[#474747]" />
-        <span className="text-[15px] font-semibold tracking-[0.025em]">
+      <div className="flex h-[44px] items-center justify-center gap-[7px] px-[18px]">
+        <span className="h-[21px] w-[21px] rounded-full border-[5px] border-[#474747]" />
+        <span className="text-[16px] font-semibold tracking-[0.025em]">
           OCKTO
         </span>
       </div>
@@ -153,10 +152,6 @@ export function HomeKeyFacts() {
         section.querySelector<HTMLElement>(
           "[data-keyfacts-header]",
         );
-      const grid =
-        section.querySelector<HTMLElement>(
-          "[data-facts-grid]",
-        );
       const cards = Array.from(
         section.querySelectorAll<HTMLElement>(
           "[data-card-shell]",
@@ -174,7 +169,6 @@ export function HomeKeyFacts() {
 
       if (
         !header ||
-        !grid ||
         cards.length !== 3 ||
         counters.length !== 3 ||
         !partners
@@ -215,95 +209,79 @@ export function HomeKeyFacts() {
           ),
       );
 
+      const allTracks = counterTracks
+        .flat()
+        .map(({ track }) => track);
+
+      gsap.set(header, {
+        autoAlpha: 0,
+        y: 18,
+      });
+
       gsap.set(cards, {
         transformOrigin: "50% 0%",
-        transformPerspective: 1120,
+        transformPerspective: 900,
         backfaceVisibility: "hidden",
         willChange: "transform, opacity",
       });
 
-      gsap.set(counterTracks.flat().map(({ track }) => track), {
+      gsap.set(cards[0], {
+        rotationX: -78,
+        autoAlpha: 0.38,
+      });
+
+      gsap.set(cards[1], {
+        rotationX: -82,
+        autoAlpha: 0.26,
+      });
+
+      gsap.set(cards[2], {
+        rotationX: -85,
+        autoAlpha: 0.18,
+      });
+
+      gsap.set(partners, {
+        autoAlpha: 0,
+        y: 14,
+      });
+
+      gsap.set(allTracks, {
         y: 0,
-        willChange: "transform",
       });
-
-      const themeTrigger = ScrollTrigger.create({
-        trigger: section,
-        start: "top 99%",
-        end: "bottom top",
-
-        onEnter: () => {
-          setTheme("light");
-          canvasManager.setActive("home-hero", false);
-        },
-
-        onEnterBack: () => {
-          setTheme("light");
-          canvasManager.setActive("home-hero", false);
-        },
-
-        onUpdate: () => {
-          canvasManager.setActive("home-hero", false);
-        },
-
-        onLeave: () => {
-          canvasManager.setActive("home-hero", false);
-        },
-
-        onLeaveBack: () => {
-          setTheme("dark");
-        },
-      });
-
-      const headerTween = gsap.fromTo(
-        header,
-        {
-          autoAlpha: 0,
-          y: 22,
-        },
-        {
-          autoAlpha: 1,
-          y: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: header,
-            start: "top 99%",
-            end: "top 73%",
-            scrub: true,
-          },
-        },
-      );
 
       /*
-       * Match the Trionn screenshots: all three cards hang from the same
-       * top edge and simply unfold toward the viewer. No scale, translateZ,
-       * bounce, or secondary wobble. The stagger alone creates the frame
-       * where left is moderately open, center is deeper, and right is almost
-       * horizontal. Final state is exactly rotationX(0deg) for every card.
+       * One shared scrub clock for the whole Key Facts scene. This keeps the
+       * three planes synchronized, avoids several competing ScrollTriggers,
+       * and matches the reference frame more predictably.
+       *
+       * At the middle of the unfold the intended visual relationship is
+       * roughly: left ~30deg, center ~45deg, right ~60–65deg. The left card
+       * therefore gets a much longer travel than before; it no longer snaps
+       * upright while the other two are still nearly horizontal.
        */
-      const cardsTimeline = gsap.timeline({
+      const timeline = gsap.timeline({
         scrollTrigger: {
-          trigger: grid,
-          start: "top 99%",
-          end: "top 38%",
+          trigger: section,
+          start: "top 96%",
+          end: "bottom 60%",
           scrub: true,
           invalidateOnRefresh: true,
 
           onEnter: () => {
-            gsap.set(cards, {
-              willChange: "transform, opacity",
-            });
+            setTheme("light");
             canvasManager.setActive("home-hero", false);
           },
 
           onEnterBack: () => {
+            setTheme("light");
+            canvasManager.setActive("home-hero", false);
             gsap.set(cards, {
               willChange: "transform, opacity",
             });
-            canvasManager.setActive("home-hero", false);
           },
 
           onLeave: () => {
+            canvasManager.setActive("home-hero", false);
             gsap.set(cards, {
               rotationX: 0,
               autoAlpha: 1,
@@ -315,97 +293,85 @@ export function HomeKeyFacts() {
             gsap.set(cards, {
               willChange: "auto",
             });
+            setTheme("dark");
           },
         },
       });
 
-      cardsTimeline
-        .fromTo(
-          cards[0],
-          {
-            rotationX: -78,
-            autoAlpha: 0.36,
-          },
-          {
-            rotationX: 0,
-            autoAlpha: 1,
-            duration: 0.62,
-            ease: "none",
-          },
-          0.02,
-        )
-        .fromTo(
-          cards[1],
-          {
-            rotationX: -82,
-            autoAlpha: 0.24,
-          },
-          {
-            rotationX: 0,
-            autoAlpha: 1,
-            duration: 0.64,
-            ease: "none",
-          },
-          0.16,
-        )
-        .fromTo(
-          cards[2],
-          {
-            rotationX: -84,
-            autoAlpha: 0.16,
-          },
-          {
-            rotationX: 0,
-            autoAlpha: 1,
-            duration: 0.64,
-            ease: "none",
-          },
-          0.3,
-        );
+      timeline.to(
+        header,
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.15,
+          ease: "none",
+        },
+        0.02,
+      );
+
+      timeline.to(
+        cards[0],
+        {
+          rotationX: 0,
+          autoAlpha: 1,
+          duration: 0.78,
+          ease: "none",
+        },
+        0.08,
+      );
+
+      timeline.to(
+        cards[1],
+        {
+          rotationX: 0,
+          autoAlpha: 1,
+          duration: 0.74,
+          ease: "none",
+        },
+        0.14,
+      );
+
+      timeline.to(
+        cards[2],
+        {
+          rotationX: 0,
+          autoAlpha: 1,
+          duration: 0.68,
+          ease: "none",
+        },
+        0.28,
+      );
 
       counterTracks.forEach((tracks, index) => {
         tracks.forEach(({ track, target }) => {
-          cardsTimeline.to(
+          timeline.to(
             track,
             {
               y: `${-target}em`,
-              duration: 0.2,
+              duration: 0.18,
               ease: "power2.out",
             },
-            0.34 + index * 0.13,
+            0.39 + index * 0.11,
           );
         });
       });
 
-      cardsTimeline.to({}, { duration: 0.06 }, 0.94);
-
-      const partnersTween = gsap.fromTo(
+      timeline.to(
         partners,
-        {
-          autoAlpha: 0,
-          y: 18,
-        },
         {
           autoAlpha: 1,
           y: 0,
+          duration: 0.17,
           ease: "none",
-          scrollTrigger: {
-            trigger: partners,
-            start: "top 97%",
-            end: "top 74%",
-            scrub: true,
-          },
         },
+        0.78,
       );
 
+      timeline.to({}, { duration: 0.06 }, 0.95);
+
       return () => {
-        themeTrigger.kill();
-        headerTween.scrollTrigger?.kill();
-        headerTween.kill();
-        cardsTimeline.scrollTrigger?.kill();
-        cardsTimeline.kill();
-        partnersTween.scrollTrigger?.kill();
-        partnersTween.kill();
+        timeline.scrollTrigger?.kill();
+        timeline.kill();
       };
     },
     { scope: sectionRef },
@@ -421,11 +387,11 @@ export function HomeKeyFacts() {
           data-keyfacts-header
           className="text-center"
         >
-          <h2 className="text-[clamp(4.4rem,5.35vw,6rem)] font-normal leading-[0.94] tracking-[-0.062em]">
+          <h2 className="text-[clamp(4.65rem,5.55vw,6.2rem)] font-normal leading-[0.94] tracking-[-0.064em]">
             Key facts
           </h2>
 
-          <p className="mx-auto mt-[18px] max-w-[210px] text-[14px] leading-[1.16] tracking-[-0.025em]">
+          <p className="mx-auto mt-[17px] max-w-[220px] text-[15px] leading-[1.15] tracking-[-0.027em]">
             A snapshot of our
             <br />
             experience and impact.
@@ -434,7 +400,7 @@ export function HomeKeyFacts() {
 
         <div
           data-facts-grid
-          className="mx-auto mt-[4.8svh] grid w-full max-w-[1000px] grid-cols-1 items-start gap-[18px] md:grid-cols-3"
+          className="mx-auto mt-[4.6svh] grid w-full max-w-[1000px] grid-cols-1 items-start gap-[18px] md:grid-cols-3"
         >
           <div
             data-card-shell
@@ -451,11 +417,11 @@ export function HomeKeyFacts() {
 
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/25" />
 
-              <p className="absolute left-[31px] top-[33px] z-10 text-[13px] uppercase tracking-[-0.028em]">
+              <p className="absolute left-[31px] top-[32px] z-10 text-[14px] uppercase tracking-[-0.03em]">
                 Featured &amp; Awards
               </p>
 
-              <div className="absolute bottom-[78px] left-[31px] z-10 flex h-[25px] items-center">
+              <div className="absolute bottom-[80px] left-[31px] z-10 flex h-[25px] items-center">
                 <img
                   src="https://trionn.com/images/thefwa.svg"
                   alt="FWA"
@@ -463,13 +429,13 @@ export function HomeKeyFacts() {
                 />
               </div>
 
-              <p className="absolute bottom-[30px] left-[31px] z-10 max-w-[176px] text-[14px] leading-[1.16] text-white/70">
+              <p className="absolute bottom-[30px] left-[31px] z-10 max-w-[184px] text-[15px] leading-[1.15] text-white/70">
                 Featured on top design
                 <br />
                 platforms worldwide.
               </p>
 
-              <div className="absolute bottom-[22px] right-[27px] z-10">
+              <div className="absolute bottom-[20px] right-[27px] z-10">
                 <Counter50 />
               </div>
             </article>
@@ -480,15 +446,15 @@ export function HomeKeyFacts() {
             className="relative z-[20] origin-top"
           >
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
-              <p className="absolute left-1/2 top-[33px] -translate-x-1/2 whitespace-nowrap text-[13px] uppercase tracking-[-0.028em]">
+              <p className="absolute left-1/2 top-[32px] -translate-x-1/2 whitespace-nowrap text-[14px] uppercase tracking-[-0.03em]">
                 Projects completed
               </p>
 
-              <div className="absolute left-1/2 top-[104px] flex h-[166px] w-[166px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
+              <div className="absolute left-1/2 top-[102px] flex h-[170px] w-[170px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
                 <Counter15K />
               </div>
 
-              <p className="absolute bottom-[30px] left-1/2 w-[232px] -translate-x-1/2 text-center text-[14px] leading-[1.2] text-black/58">
+              <p className="absolute bottom-[29px] left-1/2 w-[246px] -translate-x-1/2 text-center text-[15px] leading-[1.18] text-black/58">
                 90% of our clients seek our
                 <br />
                 services for a second project.
@@ -502,24 +468,24 @@ export function HomeKeyFacts() {
           >
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
-                className="absolute left-[30px] right-[30px] top-[79px] h-[212px] bg-cover bg-center"
+                className="absolute left-[30px] right-[30px] top-[77px] h-[216px] bg-cover bg-center"
                 style={{
                   backgroundImage:
                     "url('https://images.unsplash.com/photo-1562569633-622303bafef5?auto=format&fit=crop&q=82&w=900')",
                 }}
               />
 
-              <p className="absolute right-[29px] top-[33px] z-10 text-[13px] uppercase tracking-[-0.028em]">
+              <p className="absolute right-[29px] top-[32px] z-10 text-[14px] uppercase tracking-[-0.03em]">
                 Our team members
               </p>
 
-              <p className="absolute bottom-[34px] left-[31px] z-10 max-w-[150px] text-[14px] leading-[1.14] text-white/60">
+              <p className="absolute bottom-[33px] left-[31px] z-10 max-w-[158px] text-[15px] leading-[1.13] text-white/60">
                 Different skills.
                 <br />
                 One standard.
               </p>
 
-              <div className="absolute bottom-[22px] right-[28px] z-10">
+              <div className="absolute bottom-[20px] right-[28px] z-10">
                 <Counter20 />
               </div>
             </article>
@@ -528,9 +494,9 @@ export function HomeKeyFacts() {
 
         <div
           data-partners
-          className="mx-auto mt-[7svh] max-w-[720px]"
+          className="mx-auto mt-[6.8svh] max-w-[740px]"
         >
-          <p className="text-center text-[12px] uppercase tracking-[-0.02em]">
+          <p className="text-center text-[13px] uppercase tracking-[-0.022em]">
             Our business partners
           </p>
 
