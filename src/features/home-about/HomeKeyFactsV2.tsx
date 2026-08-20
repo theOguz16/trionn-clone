@@ -198,17 +198,17 @@ export function HomeKeyFacts() {
       });
 
       gsap.set(cards[0], {
-        rotationX: -40,
-        autoAlpha: 0.48,
+        rotationX: -42,
+        autoAlpha: 0.52,
       });
 
       gsap.set(cards[1], {
-        rotationX: -50,
-        autoAlpha: 0.42,
+        rotationX: -56,
+        autoAlpha: 0.46,
       });
 
       gsap.set(cards[2], {
-        rotationX: -60,
+        rotationX: -68,
         autoAlpha: 0.44,
       });
 
@@ -223,57 +223,59 @@ export function HomeKeyFacts() {
         },
       });
 
+      /*
+       * Keep the three cards on clearly separated beats. The left card
+       * settles first, the center follows, and the right card keeps its
+       * fold for noticeably longer — matching the source site's cascade
+       * instead of reading as one synchronized transform.
+       */
       timeline
         .to(
           cards[0],
           {
             rotationX: 0,
             autoAlpha: 1,
-            duration: 0.72,
+            duration: 0.48,
             ease: "sine.inOut",
           },
-          0.03,
+          0.0,
         )
         .to(
           cards[1],
           {
             rotationX: 0,
             autoAlpha: 1,
-            duration: 0.72,
+            duration: 0.52,
             ease: "sine.inOut",
           },
-          0.11,
+          0.22,
         )
         .to(
           cards[2],
           {
             rotationX: 0,
             autoAlpha: 1,
-            duration: 0.72,
+            duration: 0.56,
             ease: "sine.inOut",
           },
-          0.19,
+          0.44,
         );
 
-      tracks.forEach((counterTracks) => {
+      tracks.forEach((counterTracks, counterIndex) => {
         counterTracks.forEach(({ track, target }) => {
           timeline.to(
             track,
             {
               y: `${-target}em`,
-              duration: 0.18,
+              duration: 0.17,
               ease: "sine.out",
             },
-            0.16,
+            0.25 + counterIndex * 0.22,
           );
         });
       });
 
-      timeline.to({}, { duration: 0.09 }, 0.91);
-
-      const setProgress = (progress: number) => {
-        timeline.progress(Math.max(0, Math.min(1, progress)), false);
-      };
+      timeline.to({}, { duration: 0.12 }, 1.02);
 
       const activateLightSection = () => {
         setTheme("light");
@@ -284,32 +286,29 @@ export function HomeKeyFacts() {
         });
       };
 
+      /*
+       * Let ScrollTrigger drive the animation directly with a small scrub
+       * catch-up instead of assigning timeline.progress() on every scroll
+       * event. That removes the reverse-scroll stepping seen with trackpads
+       * while keeping the transform fully scroll-linked.
+       */
       const trigger = ScrollTrigger.create({
         trigger: grid,
-        start: "top 92%",
-        end: () => `+=${Math.round(window.innerHeight * 1.35)}`,
+        start: "top 91%",
+        end: () => `+=${Math.round(window.innerHeight * 1.28)}`,
+        animation: timeline,
+        scrub: 0.38,
         invalidateOnRefresh: true,
 
-        onEnter: (self) => {
+        onEnter: () => {
           activateLightSection();
-          setProgress(self.progress);
         },
 
-        onEnterBack: (self) => {
+        onEnterBack: () => {
           activateLightSection();
-          setProgress(self.progress);
-        },
-
-        onUpdate: (self) => {
-          setProgress(self.progress);
-        },
-
-        onRefresh: (self) => {
-          setProgress(self.progress);
         },
 
         onLeave: () => {
-          setProgress(1);
           gsap.set(cards, {
             willChange: "auto",
           });
@@ -317,15 +316,16 @@ export function HomeKeyFacts() {
         },
 
         onLeaveBack: () => {
-          setProgress(0);
           gsap.set(cards, {
             willChange: "auto",
           });
-          setTheme("dark");
+          /*
+           * Do not force the root back to dark here. HomeStripeWipe owns
+           * that hand-off while scrolling upward; competing theme changes
+           * at the boundary were causing a visible hitch.
+           */
         },
       });
-
-      setProgress(trigger.progress);
 
       return () => {
         trigger.kill();
@@ -338,7 +338,7 @@ export function HomeKeyFacts() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[50] -mt-[14svh] min-h-[154svh] bg-[#dedddb] text-[#414141]"
+      className="relative z-[50] -mt-[48svh] min-h-[154svh] bg-[#dedddb] text-[#414141]"
     >
       <div className="min-h-[154svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[16svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
