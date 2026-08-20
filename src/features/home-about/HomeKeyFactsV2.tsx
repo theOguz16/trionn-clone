@@ -206,17 +206,33 @@ export function HomeKeyFacts() {
       );
 
       /*
-       * Calibrated against the supplied Trionn frames at this viewport:
-       * when grid top is ~60% of the viewport, the reference reads roughly
-       * left 23deg / middle 49deg / right 64deg. At grid top ~30%, all three
-       * are exactly upright. Local perspective keeps z-index deterministic.
+       * Trionn does not read like three symmetric X-axis flips. The cards are
+       * pinned along one horizontal top line while the lower edge swings
+       * toward the centre. rotationX creates the depth; skewX creates that
+       * clothesline-like lateral sweep without another expensive 3D scene.
        */
       gsap.set(cards, {
         transformOrigin: "50% 0%",
         transformPerspective: 1120,
-        rotationX: -80,
-        autoAlpha: 0.2,
         backfaceVisibility: "hidden",
+      });
+
+      gsap.set(cards[0], {
+        rotationX: -72,
+        skewX: 12,
+        autoAlpha: 0.28,
+      });
+
+      gsap.set(cards[1], {
+        rotationX: -80,
+        skewX: 0,
+        autoAlpha: 0.2,
+      });
+
+      gsap.set(cards[2], {
+        rotationX: -84,
+        skewX: -28,
+        autoAlpha: 0.14,
       });
 
       tracks.flat().forEach(({ track }) => {
@@ -237,31 +253,34 @@ export function HomeKeyFacts() {
           cards[0],
           {
             rotationX: 0,
+            skewX: 0,
             autoAlpha: 1,
-            duration: 0.54,
+            duration: 0.58,
             ease: "none",
           },
-          0.07,
+          0.04,
         )
         .to(
           cards[1],
           {
             rotationX: 0,
+            skewX: 0,
             autoAlpha: 1,
-            duration: 0.54,
+            duration: 0.58,
             ease: "none",
           },
-          0.244,
+          0.2,
         )
         .to(
           cards[2],
           {
             rotationX: 0,
+            skewX: 0,
             autoAlpha: 1,
-            duration: 0.54,
+            duration: 0.58,
             ease: "none",
           },
-          0.345,
+          0.31,
         );
 
       tracks.forEach((counterTracks) => {
@@ -279,7 +298,7 @@ export function HomeKeyFacts() {
       });
 
       /* Keep the timeline normalized to a true 0 → 1 clock. */
-      timeline.to({}, { duration: 0.115 }, 0.885);
+      timeline.to({}, { duration: 0.11 }, 0.89);
 
       const setProgress = (progress: number) => {
         timeline.progress(
@@ -326,6 +345,7 @@ export function HomeKeyFacts() {
           setProgress(1);
           gsap.set(cards, {
             rotationX: 0,
+            skewX: 0,
             autoAlpha: 1,
             willChange: "auto",
           });
