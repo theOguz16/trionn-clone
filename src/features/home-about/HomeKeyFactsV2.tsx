@@ -107,7 +107,7 @@ export function HomeKeyFacts() {
     const trigger = ScrollTrigger.create({
       trigger: grid,
       start: "top 91%",
-      end: () => `+=${Math.round(window.innerHeight * 0.98)}`,
+      end: () => `+=${Math.round(window.innerHeight * 0.58)}`,
       animation: timeline,
       scrub: true,
       invalidateOnRefresh: true,
@@ -125,7 +125,7 @@ export function HomeKeyFacts() {
   }, { scope: sectionRef });
 
   return (
-    <section ref={sectionRef} className="relative z-[50] -mt-[48svh] bg-[#dedddb] text-[#414141]">
+    <section ref={sectionRef} className="relative z-[50] bg-[#dedddb] text-[#414141]">
       <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[6svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">Key facts</h2>
