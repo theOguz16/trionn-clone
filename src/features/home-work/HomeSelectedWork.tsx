@@ -30,7 +30,8 @@ const PROJECTS = [
   },
 ] as const;
 
-const GUIDE = "rgba(89, 89, 85, 0.14)";
+const GUIDE = "rgba(78, 78, 73, 0.18)";
+const PLUS_STROKE = "#85847e";
 
 function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -55,10 +56,16 @@ function TransitionPlus({ marker }: { marker: "entry" | "services" }) {
     <span
       data-transition-plus={marker}
       aria-hidden="true"
-      className="relative block h-[12px] w-[12px]"
+      className="relative block h-[14px] w-[14px]"
     >
-      <span className="absolute left-1/2 top-1/2 h-px w-[10px] -translate-x-1/2 -translate-y-1/2 bg-[#72726d]" />
-      <span className="absolute left-1/2 top-1/2 h-[10px] w-px -translate-x-1/2 -translate-y-1/2 bg-[#72726d]" />
+      <span
+        className="absolute left-1/2 top-1/2 h-px w-[11px] -translate-x-1/2 -translate-y-1/2"
+        style={{ backgroundColor: PLUS_STROKE }}
+      />
+      <span
+        className="absolute left-1/2 top-1/2 h-[11px] w-px -translate-x-1/2 -translate-y-1/2"
+        style={{ backgroundColor: PLUS_STROKE }}
+      />
     </span>
   );
 }
@@ -159,7 +166,7 @@ function CollectionPanel() {
 
 function ServicesContent() {
   return (
-    <div className="relative h-[100svh] w-[100vw] bg-[#fbfbfb] text-[#202020]">
+    <div className="relative h-[100svh] w-[100vw] bg-[#efeeeb] text-[#202020]">
       <p className="absolute left-1/2 top-[11.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
         Our services
       </p>
@@ -192,20 +199,29 @@ function ServicesContent() {
 
 export function HomeSelectedWork() {
   const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const servicesBoundaryRef = useRef<HTMLDivElement>(null);
-  const entryPlusRef = useRef<HTMLDivElement>(null);
+  const entryGuideRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       const section = sectionRef.current;
+      const stage = stageRef.current;
       const track = trackRef.current;
       const services = servicesRef.current;
       const servicesBoundary = servicesBoundaryRef.current;
-      const entryPlusWrap = entryPlusRef.current;
+      const entryGuide = entryGuideRef.current;
 
-      if (!section || !track || !services || !servicesBoundary || !entryPlusWrap) {
+      if (
+        !section ||
+        !stage ||
+        !track ||
+        !services ||
+        !servicesBoundary ||
+        !entryGuide
+      ) {
         return;
       }
 
@@ -219,7 +235,7 @@ export function HomeSelectedWork() {
       const servicesRise = section.querySelector<HTMLElement>(
         "[data-services-rise]",
       );
-      const entryPlus = entryPlusWrap.querySelector<HTMLElement>(
+      const entryPlus = entryGuide.querySelector<HTMLElement>(
         '[data-transition-plus="entry"]',
       );
       const boundaryPlus = servicesBoundary.querySelector<HTMLElement>(
@@ -237,6 +253,10 @@ export function HomeSelectedWork() {
         return;
       }
 
+      gsap.set(stage, {
+        backgroundColor: "#fbfbfb",
+      });
+
       gsap.set(track, {
         x: 0,
         force3D: true,
@@ -246,6 +266,10 @@ export function HomeSelectedWork() {
       gsap.set(introRise, { y: "7svh", force3D: true });
       gsap.set(projectRises, { y: "11svh", force3D: true });
       gsap.set(collectionRise, { y: "9svh", force3D: true });
+
+      gsap.set(entryGuide, {
+        autoAlpha: 1,
+      });
 
       gsap.set(services, {
         clipPath: "inset(0% 0% 0% 100%)",
@@ -274,11 +298,19 @@ export function HomeSelectedWork() {
         },
       });
 
-      /* The section has already entered vertically in normal document flow.
-       * Once it reaches the top, horizontal travel starts immediately: there
-       * is no hidden 100vh entry tween and therefore no dead wheel zone. */
       timeline.to(introRise, { y: 0, duration: 0.12, ease: "power1.out" }, 0);
-      timeline.to(entryPlus, { rotation: 720, duration: 0.72, ease: "none" }, 0);
+
+      timeline.to(
+        entryPlus,
+        { rotation: 360, duration: 0.12, ease: "none" },
+        0,
+      );
+
+      timeline.to(
+        entryGuide,
+        { autoAlpha: 0, duration: 0.035, ease: "none" },
+        0.105,
+      );
 
       timeline.to(
         track,
@@ -309,6 +341,16 @@ export function HomeSelectedWork() {
         track,
         {
           x: () => -window.innerWidth * 2,
+          duration: 0.28,
+          ease: "none",
+        },
+        0.72,
+      );
+
+      timeline.to(
+        stage,
+        {
+          backgroundColor: "#efeeeb",
           duration: 0.28,
           ease: "none",
         },
@@ -353,8 +395,8 @@ export function HomeSelectedWork() {
 
       timeline.to(
         servicesBoundary,
-        { autoAlpha: 0, duration: 0.02, ease: "none" },
-        0.98,
+        { autoAlpha: 0, duration: 0.035, ease: "none" },
+        0.955,
       );
 
       return () => {
@@ -370,46 +412,54 @@ export function HomeSelectedWork() {
       ref={sectionRef}
       className="relative z-[52] h-[760svh] bg-[#fbfbfb]"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#fbfbfb]">
-        {/* Trionn guide system: faint horizontal line, centered +, and the
-            center vertical guide continuing through the work viewport. */}
+      <div className="sticky top-0 h-[100svh] overflow-visible">
         <div
-          className="pointer-events-none absolute left-[19vw] right-[19vw] top-0 z-[8] h-px"
-          style={{ backgroundColor: GUIDE }}
-        />
-        <div
-          className="pointer-events-none absolute bottom-0 left-1/2 top-0 z-[2] w-px"
-          style={{ backgroundColor: GUIDE }}
-        />
-        <div
-          ref={entryPlusRef}
-          className="pointer-events-none absolute left-1/2 top-0 z-[9] -translate-x-1/2 -translate-y-1/2"
+          ref={entryGuideRef}
+          className="pointer-events-none absolute inset-x-0 top-0 z-[20] h-0"
         >
-          <TransitionPlus marker="entry" />
+          <div
+            className="absolute left-[2.1vw] right-[calc(50%+10px)] top-0 h-px"
+            style={{ backgroundColor: GUIDE }}
+          />
+          <div
+            className="absolute left-[calc(50%+10px)] right-[2.1vw] top-0 h-px"
+            style={{ backgroundColor: GUIDE }}
+          />
+          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+            <TransitionPlus marker="entry" />
+          </div>
         </div>
 
         <div
-          ref={trackRef}
-          className="absolute inset-y-0 left-0 flex w-max items-stretch"
+          ref={stageRef}
+          className="absolute inset-0 overflow-hidden bg-[#fbfbfb]"
         >
-          <IntroPanel />
-          {PROJECTS.map((project, index) => (
-            <ProjectPanel key={project.title} project={project} index={index} />
-          ))}
-          <CollectionPanel />
-        </div>
+          <div
+            ref={trackRef}
+            className="absolute inset-y-0 left-0 flex w-max items-stretch"
+          >
+            <IntroPanel />
+            {PROJECTS.map((project, index) => (
+              <ProjectPanel key={project.title} project={project} index={index} />
+            ))}
+            <CollectionPanel />
+          </div>
 
-        <div ref={servicesRef} className="absolute inset-0 z-[5] overflow-hidden">
-          <ServicesContent />
-        </div>
+          <div
+            ref={servicesRef}
+            className="absolute inset-0 z-[5] overflow-hidden"
+          >
+            <ServicesContent />
+          </div>
 
-        <div
-          ref={servicesBoundaryRef}
-          className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px"
-          style={{ backgroundColor: GUIDE }}
-        >
-          <div className="absolute left-1/2 top-[50.5%] -translate-x-1/2 -translate-y-1/2">
-            <TransitionPlus marker="services" />
+          <div
+            ref={servicesBoundaryRef}
+            className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px"
+            style={{ backgroundColor: GUIDE }}
+          >
+            <div className="absolute left-1/2 top-[50.5%] -translate-x-1/2 -translate-y-1/2">
+              <TransitionPlus marker="services" />
+            </div>
           </div>
         </div>
       </div>
