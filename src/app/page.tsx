@@ -33,7 +33,7 @@ export const metadata:
 
 export default function HomePage() {
   return (
-    <main className="bg-[#090909]">
+    <main className="bg-transparent">
       <HomeHero />
 
       <HomeAboutIntro />
