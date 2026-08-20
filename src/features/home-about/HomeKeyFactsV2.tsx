@@ -4,88 +4,32 @@
 
 import { useRef } from "react";
 
-import { ScrollTrigger, useGSAP } from "@/lib/gsap/client";
+import {
+  gsap,
+  ScrollTrigger,
+  useGSAP,
+} from "@/lib/gsap/client";
 
-const DIGITS = Array.from({ length: 10 }, (_, index) => index);
+import {
+  canvasManager,
+} from "@/runtime/canvas/CanvasManager";
 
-const CARD_WINDOWS = [
-  [0.08, 0.58],
-  [0.18, 0.7],
-  [0.3, 0.82],
-] as const;
+const DIGITS = Array.from(
+  { length: 10 },
+  (_, index) => index,
+);
 
-const CARD_STARTS = [
-  { rotateX: -17, scale: 0.95, opacity: 0.74 },
-  { rotateX: -36, scale: 0.88, opacity: 0.5 },
-  { rotateX: -57, scale: 0.8, opacity: 0.28 },
-] as const;
-
-const CARD_SWINGS = [
-  { forward: 3.8, back: -2.1, settle: 0.7 },
-  { forward: 6.2, back: -3.6, settle: 1.2 },
-  { forward: 9.5, back: -5.4, settle: 1.8 },
-] as const;
-
-function clamp01(value: number) {
-  return Math.max(0, Math.min(1, value));
-}
-
-function smoothStep(value: number) {
-  const t = clamp01(value);
-  return t * t * (3 - 2 * t);
-}
-
-function smootherStep(value: number) {
-  const t = clamp01(value);
-  return t * t * t * (t * (t * 6 - 15) + 10);
-}
-
-function mapRange(value: number, start: number, end: number) {
-  return clamp01((value - start) / Math.max(0.0001, end - start));
-}
-
-function lerp(from: number, to: number, progress: number) {
-  return from + (to - from) * progress;
-}
-
-function segmentLerp(
-  value: number,
-  start: number,
-  end: number,
-  from: number,
-  to: number,
+function setTheme(
+  theme: "dark" | "light",
 ) {
-  return lerp(from, to, smootherStep(mapRange(value, start, end)));
-}
-
-function getHingeRotation(index: number, progress: number) {
-  const start = CARD_STARTS[index].rotateX;
-  const swing = CARD_SWINGS[index];
-
-  if (progress <= 0.66) {
-    return segmentLerp(progress, 0, 0.66, start, 0);
-  }
-
-  if (progress <= 0.78) {
-    return segmentLerp(progress, 0.66, 0.78, 0, swing.forward);
-  }
-
-  if (progress <= 0.88) {
-    return segmentLerp(progress, 0.78, 0.88, swing.forward, swing.back);
-  }
-
-  if (progress <= 0.95) {
-    return segmentLerp(progress, 0.88, 0.95, swing.back, swing.settle);
-  }
-
-  return segmentLerp(progress, 0.95, 1, swing.settle, 0);
-}
-
-function setTheme(theme: "dark" | "light") {
   document.documentElement.dataset.pageTheme = theme;
 }
 
-function DigitReel({ target }: { target: number }) {
+function DigitReel({
+  target,
+}: {
+  target: number;
+}) {
   return (
     <span
       data-counter-digit
@@ -95,7 +39,7 @@ function DigitReel({ target }: { target: number }) {
     >
       <span
         data-digit-track
-        className="absolute left-0 top-0 flex w-full flex-col items-center will-change-transform"
+        className="absolute left-0 top-0 flex w-full flex-col items-center"
       >
         {DIGITS.map((digit) => (
           <span
@@ -158,11 +102,17 @@ function PartnerWordmarks() {
   return (
     <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#454545]">
       <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="text-[20px] font-semibold tracking-[-0.065em]">credible</span>
+        <span className="text-[20px] font-semibold tracking-[-0.065em]">
+          credible
+        </span>
       </div>
+
       <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="text-[18px] font-semibold tracking-[-0.035em]">Yellowtail</span>
+        <span className="text-[18px] font-semibold tracking-[-0.035em]">
+          Yellowtail
+        </span>
       </div>
+
       <div className="flex h-[46px] items-center justify-center gap-[8px] px-5">
         <span className="text-[23px] font-light leading-none">♮</span>
         <span className="text-[10px] font-medium uppercase leading-[1.05] tracking-[0.08em]">
@@ -171,12 +121,18 @@ function PartnerWordmarks() {
           Presence
         </span>
       </div>
+
       <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="-skew-x-[12deg] text-[20px] font-bold tracking-[-0.07em]">technis</span>
+        <span className="-skew-x-[12deg] text-[20px] font-bold tracking-[-0.07em]">
+          technis
+        </span>
       </div>
+
       <div className="flex h-[46px] items-center justify-center gap-[7px] px-5">
         <span className="flex h-[19px] w-[19px] items-center justify-center rounded-full border-[5px] border-[#4a4a4a]" />
-        <span className="text-[14px] font-semibold tracking-[0.03em]">OCKTO</span>
+        <span className="text-[14px] font-semibold tracking-[0.03em]">
+          OCKTO
+        </span>
       </div>
     </div>
   );
@@ -193,22 +149,40 @@ export function HomeKeyFacts() {
         return;
       }
 
-      const header = section.querySelector<HTMLElement>("[data-keyfacts-header]");
-      const cardShells = Array.from(
-        section.querySelectorAll<HTMLElement>("[data-card-shell]"),
+      const header =
+        section.querySelector<HTMLElement>(
+          "[data-keyfacts-header]",
+        );
+      const cards = Array.from(
+        section.querySelectorAll<HTMLElement>(
+          "[data-card-shell]",
+        ),
       );
       const counters = Array.from(
-        section.querySelectorAll<HTMLElement>("[data-counter]"),
+        section.querySelectorAll<HTMLElement>(
+          "[data-counter]",
+        ),
       );
 
-      if (!header || cardShells.length !== 3 || counters.length !== 3) {
+      if (
+        !header ||
+        cards.length !== 3 ||
+        counters.length !== 3
+      ) {
         return;
       }
 
-      const counterTracks = counters.map((counter) =>
-        Array.from(counter.querySelectorAll<HTMLElement>("[data-counter-digit]"))
+      const tracks = counters.map((counter) =>
+        Array.from(
+          counter.querySelectorAll<HTMLElement>(
+            "[data-counter-digit]",
+          ),
+        )
           .map((digit) => {
-            const track = digit.querySelector<HTMLElement>("[data-digit-track]");
+            const track =
+              digit.querySelector<HTMLElement>(
+                "[data-digit-track]",
+              );
 
             if (!track) {
               return null;
@@ -216,115 +190,253 @@ export function HomeKeyFacts() {
 
             return {
               track,
-              target: Number(digit.dataset.target ?? "0"),
+              target: Number(
+                digit.dataset.target ?? "0",
+              ),
             };
           })
           .filter(
-            (entry): entry is { track: HTMLElement; target: number } =>
-              entry !== null,
+            (
+              entry,
+            ): entry is {
+              track: HTMLElement;
+              target: number;
+            } => entry !== null,
           ),
       );
 
-      const updateHeader = (progress: number) => {
-        const p = smootherStep(mapRange(progress, 0.02, 0.18));
-        header.style.opacity = `${p}`;
-        header.style.transform = `translate3d(0, ${18 * (1 - p)}px, 0)`;
-      };
+      gsap.set(header, {
+        autoAlpha: 0,
+        y: 18,
+      });
 
-      const updateCard = (index: number, progress: number) => {
-        const shell = cardShells[index];
-        const [windowStart, windowEnd] = CARD_WINDOWS[index];
-        const local = mapRange(progress, windowStart, windowEnd);
-        const travel = smootherStep(local);
-        const rotateX = getHingeRotation(index, local);
-        const scale = lerp(CARD_STARTS[index].scale, 1, travel);
-        const opacity = lerp(
-          CARD_STARTS[index].opacity,
-          1,
-          smootherStep(mapRange(local, 0, 0.76)),
+      gsap.set(cards[0], {
+        scaleY: 0.76,
+        autoAlpha: 0.72,
+        transformOrigin: "50% 0%",
+        force3D: false,
+      });
+
+      gsap.set(cards[1], {
+        scaleY: 0.56,
+        autoAlpha: 0.48,
+        transformOrigin: "50% 0%",
+        force3D: false,
+      });
+
+      gsap.set(cards[2], {
+        scaleY: 0.36,
+        autoAlpha: 0.26,
+        transformOrigin: "50% 0%",
+        force3D: false,
+      });
+
+      tracks.flat().forEach(({ track }) => {
+        gsap.set(track, {
+          y: 0,
+          force3D: false,
+        });
+      });
+
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: {
+          overwrite: true,
+        },
+      });
+
+      timeline.to(
+        header,
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.14,
+          ease: "power2.out",
+        },
+        0.02,
+      );
+
+      /*
+       * No 3D perspective and no rotateX here. The top edge stays fixed and
+       * the lower edge appears to float only because scaleY overshoots and
+       * settles. Cards remain rectangular at every frame and never compete
+       * in a shared 3D stacking context.
+       */
+      timeline
+        .to(
+          cards[0],
+          {
+            scaleY: 1.035,
+            autoAlpha: 1,
+            duration: 0.3,
+            ease: "power2.out",
+            force3D: false,
+          },
+          0.08,
+        )
+        .to(
+          cards[0],
+          {
+            scaleY: 0.992,
+            duration: 0.08,
+            ease: "power1.inOut",
+            force3D: false,
+          },
+          0.38,
+        )
+        .to(
+          cards[0],
+          {
+            scaleY: 1,
+            duration: 0.07,
+            ease: "power1.out",
+            force3D: false,
+          },
+          0.46,
         );
 
-        /*
-         * Local perspective instead of a shared 3D scene.
-         * This preserves the hanging-card look while allowing z-index to
-         * deterministically control overlap and dramatically lowers GPU cost.
-         */
-        shell.style.transform = [
-          "perspective(920px)",
-          `rotateX(${rotateX}deg)`,
-          `scale(${scale})`,
-        ].join(" ");
-        shell.style.opacity = `${opacity}`;
+      timeline
+        .to(
+          cards[1],
+          {
+            scaleY: 1.045,
+            autoAlpha: 1,
+            duration: 0.32,
+            ease: "power2.out",
+            force3D: false,
+          },
+          0.18,
+        )
+        .to(
+          cards[1],
+          {
+            scaleY: 0.988,
+            duration: 0.09,
+            ease: "power1.inOut",
+            force3D: false,
+          },
+          0.5,
+        )
+        .to(
+          cards[1],
+          {
+            scaleY: 1,
+            duration: 0.07,
+            ease: "power1.out",
+            force3D: false,
+          },
+          0.59,
+        );
 
-        const counterProgress = smootherStep(mapRange(local, 0.48, 0.88));
-        counters[index].style.opacity = `${0.45 + counterProgress * 0.55}`;
+      timeline
+        .to(
+          cards[2],
+          {
+            scaleY: 1.055,
+            autoAlpha: 1,
+            duration: 0.34,
+            ease: "power2.out",
+            force3D: false,
+          },
+          0.28,
+        )
+        .to(
+          cards[2],
+          {
+            scaleY: 0.985,
+            duration: 0.1,
+            ease: "power1.inOut",
+            force3D: false,
+          },
+          0.62,
+        )
+        .to(
+          cards[2],
+          {
+            scaleY: 1,
+            duration: 0.08,
+            ease: "power1.out",
+            force3D: false,
+          },
+          0.72,
+        );
 
-        for (const entry of counterTracks[index]) {
-          entry.track.style.transform =
-            `translate3d(0, ${-(entry.target * counterProgress)}em, 0)`;
-        }
-      };
-
-      const update = (rawProgress: number) => {
-        const progress = clamp01(rawProgress);
-        updateHeader(progress);
-
-        for (let index = 0; index < cardShells.length; index += 1) {
-          updateCard(index, progress);
-        }
-      };
-
-      const setFinalState = () => {
-        header.style.opacity = "1";
-        header.style.transform = "translate3d(0,0,0)";
-
-        cardShells.forEach((shell) => {
-          shell.style.transform = "perspective(920px) rotateX(0deg) scale(1)";
-          shell.style.opacity = "1";
+      tracks.forEach((counterTracks, index) => {
+        counterTracks.forEach(({ track, target }) => {
+          timeline.to(
+            track,
+            {
+              y: `${-target}em`,
+              duration: 0.2,
+              ease: "power2.out",
+              force3D: false,
+            },
+            0.26 + index * 0.12,
+          );
         });
+      });
 
-        counters.forEach((counter, index) => {
-          counter.style.opacity = "1";
-          for (const entry of counterTracks[index]) {
-            entry.track.style.transform =
-              `translate3d(0, ${-entry.target}em, 0)`;
-          }
-        });
+      timeline.to({}, { duration: 0.2 }, 0.8);
+
+      const setProgress = (progress: number) => {
+        timeline.progress(
+          Math.max(0, Math.min(1, progress)),
+          false,
+        );
       };
-
-      setTheme("light");
-      update(0);
 
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top 94%",
-        end: "bottom 66%",
+        end: "bottom 64%",
         invalidateOnRefresh: true,
+
         onUpdate: (self) => {
-          update(self.progress);
+          canvasManager.setActive(
+            "home-hero",
+            false,
+          );
+          setProgress(self.progress);
         },
+
         onEnter: (self) => {
           setTheme("light");
-          update(self.progress);
+          canvasManager.setActive(
+            "home-hero",
+            false,
+          );
+          setProgress(self.progress);
         },
+
         onEnterBack: (self) => {
           setTheme("light");
-          update(self.progress);
+          canvasManager.setActive(
+            "home-hero",
+            false,
+          );
+          setProgress(self.progress);
         },
+
         onLeave: () => {
-          setFinalState();
+          canvasManager.setActive(
+            "home-hero",
+            false,
+          );
+          setProgress(1);
           setTheme("light");
         },
+
         onLeaveBack: () => {
-          update(0);
+          setProgress(0);
           setTheme("dark");
         },
       });
 
-      update(trigger.progress);
+      setProgress(trigger.progress);
 
       return () => {
         trigger.kill();
+        timeline.kill();
       };
     },
     { scope: sectionRef },
@@ -335,14 +447,15 @@ export function HomeKeyFacts() {
       ref={sectionRef}
       className="relative z-[50] -mt-[14svh] min-h-[132svh] bg-[#dedddb] text-[#414141]"
     >
-      <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[8svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
         <div
           data-keyfacts-header
-          className="text-center opacity-0 will-change-[transform,opacity]"
+          className="text-center opacity-0"
         >
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
           </h2>
+
           <p className="mx-auto mt-[19px] max-w-[205px] text-[13px] leading-[1.18] tracking-[-0.025em]">
             A snapshot of our
             <br />
@@ -350,13 +463,10 @@ export function HomeKeyFacts() {
           </p>
         </div>
 
-        <div
-          data-facts-grid
-          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[20px] md:grid-cols-3"
-        >
+        <div className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[20px] md:grid-cols-3">
           <div
             data-card-shell
-            className="relative z-[30] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden]"
+            className="relative z-[30] origin-top opacity-0"
           >
             <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
@@ -367,17 +477,21 @@ export function HomeKeyFacts() {
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30" />
+
               <p className="absolute left-[31px] top-[34px] z-10 text-[12px] uppercase tracking-[-0.025em]">
                 Featured &amp; Awards
               </p>
+
               <div className="absolute bottom-[91px] left-[31px] z-10 flex h-[22px] w-[54px] items-center justify-center rounded-full border border-white/50 text-[12px] font-semibold tracking-[-0.03em] text-white">
                 FWA
               </div>
+
               <p className="absolute bottom-[32px] left-[31px] z-10 max-w-[172px] text-[13px] leading-[1.18] text-white/70">
                 Featured on top design
                 <br />
                 platforms worldwide.
               </p>
+
               <div className="absolute bottom-[25px] right-[27px] z-10">
                 <Counter50 />
               </div>
@@ -386,15 +500,17 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[10] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden]"
+            className="relative z-[10] origin-top opacity-0"
           >
             <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
               <p className="absolute left-1/2 top-[34px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
                 Projects completed
               </p>
+
               <div className="absolute left-1/2 top-[108px] flex h-[170px] w-[170px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
                 <Counter15K />
               </div>
+
               <p className="absolute bottom-[32px] left-1/2 w-[225px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">
                 90% of our clients seek our
                 <br />
@@ -405,7 +521,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[20] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden]"
+            className="relative z-[20] origin-top opacity-0"
           >
             <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
@@ -415,14 +531,17 @@ export function HomeKeyFacts() {
                     "url('https://images.unsplash.com/photo-1562569633-622303bafef5?auto=format&fit=crop&q=82&w=900')",
                 }}
               />
+
               <p className="absolute right-[29px] top-[34px] z-10 text-[12px] uppercase tracking-[-0.025em]">
                 Our team members
               </p>
+
               <p className="absolute bottom-[36px] left-[31px] z-10 max-w-[145px] text-[13px] leading-[1.15] text-white/60">
                 Different skills.
                 <br />
                 One standard.
               </p>
+
               <div className="absolute bottom-[25px] right-[28px] z-10">
                 <Counter20 />
               </div>
@@ -430,10 +549,11 @@ export function HomeKeyFacts() {
           </div>
         </div>
 
-        <div className="mx-auto mt-[8svh] max-w-[760px] opacity-100">
+        <div className="mx-auto mt-[6.5svh] max-w-[760px]">
           <p className="text-center text-[11px] uppercase tracking-[-0.02em]">
             Our business partners
           </p>
+
           <PartnerWordmarks />
         </div>
       </div>
