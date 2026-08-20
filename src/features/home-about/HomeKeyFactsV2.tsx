@@ -290,7 +290,7 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: grid,
         start: "top 91%",
-        end: () => `+=${Math.round(window.innerHeight * 0.56)}`,
+        end: () => `+=${Math.round(window.innerHeight * 0.82)}`,
         animation: timeline,
         scrub: true,
         invalidateOnRefresh: true,
