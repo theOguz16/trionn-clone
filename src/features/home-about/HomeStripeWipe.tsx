@@ -12,17 +12,6 @@ import {
 } from "@/runtime/canvas/CanvasManager";
 
 const STRIPE_COUNT = 6;
-
-/*
- * The six bands still finish exactly at progress 1:
- *
- * 0.03 + (5 × 0.12) + 0.37 = 1.00
- *
- * Compared with the previous pass, the starts are spaced a little
- * farther apart and each band has a slightly shorter normalized travel.
- * The section itself is taller, so the physical scroll is slower while
- * the dark gaps between bands remain more legible.
- */
 const STRIPE_START = 0.03;
 const STRIPE_STEP = 0.12;
 const STRIPE_DURATION = 0.37;
@@ -106,7 +95,7 @@ export function HomeStripeWipe() {
           "translate3d(-50%, 9px, 0)";
       }
 
-      let heroPaused = false;
+      let heroPaused = true;
       let currentTheme:
         | "dark"
         | "light" = "dark";
@@ -146,29 +135,20 @@ export function HomeStripeWipe() {
       const update = (
         rawProgress: number,
       ) => {
-        const progress =
-          clamp01(rawProgress);
+        const progress = clamp01(rawProgress);
 
         /*
-         * By this point the assembled hero symbol is already disappearing
-         * behind several bands, so the WebGL scene can safely stop.
+         * Keep the expensive hero WebGL scene paused throughout almost all
+         * of the light wipe, including reverse scroll. It only resumes when
+         * the user is genuinely back near the dark hero handoff.
          */
-        setHeroPaused(
-          progress > 0.62,
-        );
+        setHeroPaused(progress > 0.14);
 
         const yPercents =
           new Array<number>(
             STRIPE_COUNT,
           ).fill(102);
 
-        /*
-         * Bottom → top.
-         *
-         * Each inner panel eases with smootherStep. Because scroll drives
-         * the normalized progress directly, this gives a softer start/end
-         * without adding lag between pointer/scroll input and the wipe.
-         */
         for (
           let orderIndex = 0;
           orderIndex <
@@ -176,9 +156,7 @@ export function HomeStripeWipe() {
           orderIndex += 1
         ) {
           const stripeIndex =
-            STRIPE_COUNT -
-            1 -
-            orderIndex;
+            STRIPE_COUNT - 1 - orderIndex;
 
           const localProgress =
             getStripeProgress(
@@ -193,19 +171,11 @@ export function HomeStripeWipe() {
           yPercents[stripeIndex] =
             yPercent;
 
-          stripes[
-            stripeIndex
-          ].style.transform =
+          stripes[stripeIndex].style.transform =
             `translate3d(0, ${yPercent}%, 0)`;
         }
 
         if (caption) {
-          /*
-           * The reference keeps this caption in a dark pocket between
-           * moving light bands. Determine the band underneath the caption
-           * and fade the copy before that band's light surface reaches it.
-           * This prevents the old light-on-light "caption on white" state.
-           */
           const stripeHeight =
             1 / STRIPE_COUNT;
 
@@ -272,10 +242,6 @@ export function HomeStripeWipe() {
             `translate3d(-50%, ${y}px, 0)`;
         }
 
-        /*
-         * Keep navigation in the dark treatment until almost the entire
-         * frame has been handed to the light section.
-         */
         if (progress >= 0.92) {
           changeTheme("light");
         } else {
@@ -283,37 +249,36 @@ export function HomeStripeWipe() {
         }
       };
 
-      const trigger =
-        ScrollTrigger.create({
-          trigger: section,
-          start: "top top",
-          end: "bottom bottom",
-          invalidateOnRefresh: true,
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        invalidateOnRefresh: true,
 
-          onUpdate: (self) => {
-            update(self.progress);
-          },
+        onUpdate: (self) => {
+          update(self.progress);
+        },
 
-          onEnter: (self) => {
-            update(self.progress);
-          },
+        onEnter: (self) => {
+          update(self.progress);
+        },
 
-          onEnterBack: (self) => {
-            update(self.progress);
-          },
+        onEnterBack: (self) => {
+          update(self.progress);
+        },
 
-          onLeave: () => {
-            update(1);
-            setHeroPaused(true);
-            changeTheme("light");
-          },
+        onLeave: () => {
+          update(1);
+          setHeroPaused(true);
+          changeTheme("light");
+        },
 
-          onLeaveBack: () => {
-            update(0);
-            setHeroPaused(false);
-            changeTheme("dark");
-          },
-        });
+        onLeaveBack: () => {
+          update(0);
+          setHeroPaused(false);
+          changeTheme("dark");
+        },
+      });
 
       update(trigger.progress);
 
