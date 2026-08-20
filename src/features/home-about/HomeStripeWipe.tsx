@@ -12,12 +12,12 @@ import {
 } from "@/runtime/canvas/CanvasManager";
 
 const STRIPE_COUNT = 6;
-const STRIPE_START = 0.02;
-const STRIPE_STEP = 0.105;
-const STRIPE_DURATION = 0.48;
+const STRIPE_START = 0.015;
+const STRIPE_STEP = 0.095;
+const STRIPE_DURATION = 0.58;
 
 const CAPTION_VIEWPORT_Y = 0.78;
-const CAPTION_CLEARANCE = 20;
+const CAPTION_CLEARANCE = 22;
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -138,7 +138,7 @@ export function HomeStripeWipe() {
       ) => {
         const progress = clamp01(rawProgress);
 
-        setHeroPaused(progress > 0.12);
+        setHeroPaused(progress > 0.1);
 
         const yPercents =
           new Array<number>(
@@ -215,15 +215,15 @@ export function HomeStripeWipe() {
             );
 
           const enter = smootherStep(
-            (progress - 0.095) /
-              0.13,
+            (progress - 0.09) /
+              0.15,
           );
 
           const phaseLeave =
             1 -
             smootherStep(
-              (progress - 0.42) /
-                0.15,
+              (progress - 0.45) /
+                0.18,
             );
 
           const opacity =
@@ -242,7 +242,7 @@ export function HomeStripeWipe() {
             `translate3d(-50%, ${y}px, 0)`;
         }
 
-        if (progress >= 0.94) {
+        if (progress >= 0.95) {
           changeTheme("light");
         } else {
           changeTheme("dark");
@@ -299,8 +299,8 @@ export function HomeStripeWipe() {
         pointer-events-none
         relative
         z-[45]
-        -mt-[228svh]
-        h-[312svh]
+        -mt-[224svh]
+        h-[308svh]
         bg-transparent
       "
     >
