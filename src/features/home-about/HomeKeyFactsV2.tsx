@@ -58,12 +58,12 @@ function Counter50() {
   return (
     <span
       data-counter
-      className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]"
+      className="inline-flex items-baseline text-[50px] font-normal leading-none tracking-[-0.07em]"
       aria-label="50 plus"
     >
       <DigitReel target={5} />
       <DigitReel target={0} />
-      <sup className="ml-[3px] text-[15px] leading-none">+</sup>
+      <sup className="ml-[3px] text-[16px] leading-none">+</sup>
     </span>
   );
 }
@@ -72,14 +72,14 @@ function Counter15K() {
   return (
     <span
       data-counter
-      className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]"
+      className="inline-flex items-baseline text-[49px] font-normal leading-none tracking-[-0.07em]"
       aria-label="1.5K plus"
     >
       <DigitReel target={1} />
       <span className="mx-[1px]">.</span>
       <DigitReel target={5} />
       <span className="ml-[2px] tracking-[-0.04em]">K</span>
-      <sup className="ml-[3px] text-[14px] leading-none">+</sup>
+      <sup className="ml-[3px] text-[15px] leading-none">+</sup>
     </span>
   );
 }
@@ -88,49 +88,49 @@ function Counter20() {
   return (
     <span
       data-counter
-      className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]"
+      className="inline-flex items-baseline text-[50px] font-normal leading-none tracking-[-0.07em]"
       aria-label="20 plus"
     >
       <DigitReel target={2} />
       <DigitReel target={0} />
-      <sup className="ml-[3px] text-[15px] leading-none">+</sup>
+      <sup className="ml-[3px] text-[16px] leading-none">+</sup>
     </span>
   );
 }
 
 function PartnerWordmarks() {
   return (
-    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#454545]">
-      <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="text-[20px] font-semibold tracking-[-0.065em]">
+    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#444]">
+      <div className="flex h-[42px] items-center justify-center px-[18px]">
+        <span className="text-[21px] font-semibold tracking-[-0.065em]">
           credible
         </span>
       </div>
 
-      <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="text-[18px] font-semibold tracking-[-0.035em]">
+      <div className="flex h-[42px] items-center justify-center px-[18px]">
+        <span className="text-[20px] font-semibold tracking-[-0.04em]">
           Yellowtail
         </span>
       </div>
 
-      <div className="flex h-[46px] items-center justify-center gap-[8px] px-5">
-        <span className="text-[23px] font-light leading-none">♮</span>
-        <span className="text-[10px] font-medium uppercase leading-[1.05] tracking-[0.08em]">
+      <div className="flex h-[42px] items-center justify-center gap-[7px] px-[18px]">
+        <span className="text-[25px] font-light leading-none">♮</span>
+        <span className="text-[11px] font-medium uppercase leading-[1.02] tracking-[0.075em]">
           Luxury
           <br />
           Presence
         </span>
       </div>
 
-      <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="-skew-x-[12deg] text-[20px] font-bold tracking-[-0.07em]">
+      <div className="flex h-[42px] items-center justify-center px-[18px]">
+        <span className="-skew-x-[12deg] text-[22px] font-bold tracking-[-0.075em]">
           technis
         </span>
       </div>
 
-      <div className="flex h-[46px] items-center justify-center gap-[7px] px-5">
-        <span className="flex h-[19px] w-[19px] items-center justify-center rounded-full border-[5px] border-[#4a4a4a]" />
-        <span className="text-[14px] font-semibold tracking-[0.03em]">
+      <div className="flex h-[42px] items-center justify-center gap-[7px] px-[18px]">
+        <span className="h-[20px] w-[20px] rounded-full border-[5px] border-[#474747]" />
+        <span className="text-[15px] font-semibold tracking-[0.025em]">
           OCKTO
         </span>
       </div>
@@ -153,6 +153,10 @@ export function HomeKeyFacts() {
         section.querySelector<HTMLElement>(
           "[data-keyfacts-header]",
         );
+      const grid =
+        section.querySelector<HTMLElement>(
+          "[data-facts-grid]",
+        );
       const cards = Array.from(
         section.querySelectorAll<HTMLElement>(
           "[data-card-shell]",
@@ -163,16 +167,22 @@ export function HomeKeyFacts() {
           "[data-counter]",
         ),
       );
+      const partners =
+        section.querySelector<HTMLElement>(
+          "[data-partners]",
+        );
 
       if (
         !header ||
+        !grid ||
         cards.length !== 3 ||
-        counters.length !== 3
+        counters.length !== 3 ||
+        !partners
       ) {
         return;
       }
 
-      const tracks = counters.map((counter) =>
+      const counterTracks = counters.map((counter) =>
         Array.from(
           counter.querySelectorAll<HTMLElement>(
             "[data-counter-digit]",
@@ -205,238 +215,197 @@ export function HomeKeyFacts() {
           ),
       );
 
-      gsap.set(header, {
-        autoAlpha: 0,
-        y: 18,
-      });
-
-      gsap.set(cards[0], {
-        scaleY: 0.76,
-        autoAlpha: 0.72,
+      gsap.set(cards, {
         transformOrigin: "50% 0%",
-        force3D: false,
+        transformPerspective: 1120,
+        backfaceVisibility: "hidden",
+        willChange: "transform, opacity",
       });
 
-      gsap.set(cards[1], {
-        scaleY: 0.56,
-        autoAlpha: 0.48,
-        transformOrigin: "50% 0%",
-        force3D: false,
+      gsap.set(counterTracks.flat().map(({ track }) => track), {
+        y: 0,
+        willChange: "transform",
       });
 
-      gsap.set(cards[2], {
-        scaleY: 0.36,
-        autoAlpha: 0.26,
-        transformOrigin: "50% 0%",
-        force3D: false,
-      });
+      const themeTrigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top 99%",
+        end: "bottom top",
 
-      tracks.flat().forEach(({ track }) => {
-        gsap.set(track, {
-          y: 0,
-          force3D: false,
-        });
-      });
+        onEnter: () => {
+          setTheme("light");
+          canvasManager.setActive("home-hero", false);
+        },
 
-      const timeline = gsap.timeline({
-        paused: true,
-        defaults: {
-          overwrite: true,
+        onEnterBack: () => {
+          setTheme("light");
+          canvasManager.setActive("home-hero", false);
+        },
+
+        onUpdate: () => {
+          canvasManager.setActive("home-hero", false);
+        },
+
+        onLeave: () => {
+          canvasManager.setActive("home-hero", false);
+        },
+
+        onLeaveBack: () => {
+          setTheme("dark");
         },
       });
 
-      timeline.to(
+      const headerTween = gsap.fromTo(
         header,
+        {
+          autoAlpha: 0,
+          y: 22,
+        },
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.14,
-          ease: "power2.out",
+          ease: "none",
+          scrollTrigger: {
+            trigger: header,
+            start: "top 99%",
+            end: "top 73%",
+            scrub: true,
+          },
         },
-        0.02,
       );
 
       /*
-       * No 3D perspective and no rotateX here. The top edge stays fixed and
-       * the lower edge appears to float only because scaleY overshoots and
-       * settles. Cards remain rectangular at every frame and never compete
-       * in a shared 3D stacking context.
+       * Match the Trionn screenshots: all three cards hang from the same
+       * top edge and simply unfold toward the viewer. No scale, translateZ,
+       * bounce, or secondary wobble. The stagger alone creates the frame
+       * where left is moderately open, center is deeper, and right is almost
+       * horizontal. Final state is exactly rotationX(0deg) for every card.
        */
-      timeline
-        .to(
+      const cardsTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: grid,
+          start: "top 99%",
+          end: "top 38%",
+          scrub: true,
+          invalidateOnRefresh: true,
+
+          onEnter: () => {
+            gsap.set(cards, {
+              willChange: "transform, opacity",
+            });
+            canvasManager.setActive("home-hero", false);
+          },
+
+          onEnterBack: () => {
+            gsap.set(cards, {
+              willChange: "transform, opacity",
+            });
+            canvasManager.setActive("home-hero", false);
+          },
+
+          onLeave: () => {
+            gsap.set(cards, {
+              rotationX: 0,
+              autoAlpha: 1,
+              willChange: "auto",
+            });
+          },
+
+          onLeaveBack: () => {
+            gsap.set(cards, {
+              willChange: "auto",
+            });
+          },
+        },
+      });
+
+      cardsTimeline
+        .fromTo(
           cards[0],
           {
-            scaleY: 1.035,
+            rotationX: -78,
+            autoAlpha: 0.36,
+          },
+          {
+            rotationX: 0,
             autoAlpha: 1,
-            duration: 0.3,
-            ease: "power2.out",
-            force3D: false,
+            duration: 0.62,
+            ease: "none",
           },
-          0.08,
+          0.02,
         )
-        .to(
-          cards[0],
-          {
-            scaleY: 0.992,
-            duration: 0.08,
-            ease: "power1.inOut",
-            force3D: false,
-          },
-          0.38,
-        )
-        .to(
-          cards[0],
-          {
-            scaleY: 1,
-            duration: 0.07,
-            ease: "power1.out",
-            force3D: false,
-          },
-          0.46,
-        );
-
-      timeline
-        .to(
+        .fromTo(
           cards[1],
           {
-            scaleY: 1.045,
+            rotationX: -82,
+            autoAlpha: 0.24,
+          },
+          {
+            rotationX: 0,
             autoAlpha: 1,
-            duration: 0.32,
-            ease: "power2.out",
-            force3D: false,
+            duration: 0.64,
+            ease: "none",
           },
-          0.18,
+          0.16,
         )
-        .to(
-          cards[1],
+        .fromTo(
+          cards[2],
           {
-            scaleY: 0.988,
-            duration: 0.09,
-            ease: "power1.inOut",
-            force3D: false,
+            rotationX: -84,
+            autoAlpha: 0.16,
           },
-          0.5,
-        )
-        .to(
-          cards[1],
           {
-            scaleY: 1,
-            duration: 0.07,
-            ease: "power1.out",
-            force3D: false,
+            rotationX: 0,
+            autoAlpha: 1,
+            duration: 0.64,
+            ease: "none",
           },
-          0.59,
+          0.3,
         );
 
-      timeline
-        .to(
-          cards[2],
-          {
-            scaleY: 1.055,
-            autoAlpha: 1,
-            duration: 0.34,
-            ease: "power2.out",
-            force3D: false,
-          },
-          0.28,
-        )
-        .to(
-          cards[2],
-          {
-            scaleY: 0.985,
-            duration: 0.1,
-            ease: "power1.inOut",
-            force3D: false,
-          },
-          0.62,
-        )
-        .to(
-          cards[2],
-          {
-            scaleY: 1,
-            duration: 0.08,
-            ease: "power1.out",
-            force3D: false,
-          },
-          0.72,
-        );
-
-      tracks.forEach((counterTracks, index) => {
-        counterTracks.forEach(({ track, target }) => {
-          timeline.to(
+      counterTracks.forEach((tracks, index) => {
+        tracks.forEach(({ track, target }) => {
+          cardsTimeline.to(
             track,
             {
               y: `${-target}em`,
               duration: 0.2,
               ease: "power2.out",
-              force3D: false,
             },
-            0.26 + index * 0.12,
+            0.34 + index * 0.13,
           );
         });
       });
 
-      timeline.to({}, { duration: 0.2 }, 0.8);
+      cardsTimeline.to({}, { duration: 0.06 }, 0.94);
 
-      const setProgress = (progress: number) => {
-        timeline.progress(
-          Math.max(0, Math.min(1, progress)),
-          false,
-        );
-      };
-
-      const trigger = ScrollTrigger.create({
-        trigger: section,
-        start: "top 94%",
-        end: "bottom 64%",
-        invalidateOnRefresh: true,
-
-        onUpdate: (self) => {
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          setProgress(self.progress);
+      const partnersTween = gsap.fromTo(
+        partners,
+        {
+          autoAlpha: 0,
+          y: 18,
         },
-
-        onEnter: (self) => {
-          setTheme("light");
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          setProgress(self.progress);
+        {
+          autoAlpha: 1,
+          y: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: partners,
+            start: "top 97%",
+            end: "top 74%",
+            scrub: true,
+          },
         },
-
-        onEnterBack: (self) => {
-          setTheme("light");
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          setProgress(self.progress);
-        },
-
-        onLeave: () => {
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          setProgress(1);
-          setTheme("light");
-        },
-
-        onLeaveBack: () => {
-          setProgress(0);
-          setTheme("dark");
-        },
-      });
-
-      setProgress(trigger.progress);
+      );
 
       return () => {
-        trigger.kill();
-        timeline.kill();
+        themeTrigger.kill();
+        headerTween.scrollTrigger?.kill();
+        headerTween.kill();
+        cardsTimeline.scrollTrigger?.kill();
+        cardsTimeline.kill();
+        partnersTween.scrollTrigger?.kill();
+        partnersTween.kill();
       };
     },
     { scope: sectionRef },
@@ -445,54 +414,62 @@ export function HomeKeyFacts() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[50] -mt-[14svh] min-h-[132svh] bg-[#dedddb] text-[#414141]"
+      className="relative z-[50] -mt-[16svh] min-h-[116svh] bg-[#dedddb] text-[#414141]"
     >
-      <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[116svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[5svh] max-md:px-5">
         <div
           data-keyfacts-header
-          className="text-center opacity-0"
+          className="text-center"
         >
-          <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
+          <h2 className="text-[clamp(4.4rem,5.35vw,6rem)] font-normal leading-[0.94] tracking-[-0.062em]">
             Key facts
           </h2>
 
-          <p className="mx-auto mt-[19px] max-w-[205px] text-[13px] leading-[1.18] tracking-[-0.025em]">
+          <p className="mx-auto mt-[18px] max-w-[210px] text-[14px] leading-[1.16] tracking-[-0.025em]">
             A snapshot of our
             <br />
             experience and impact.
           </p>
         </div>
 
-        <div className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[20px] md:grid-cols-3">
+        <div
+          data-facts-grid
+          className="mx-auto mt-[4.8svh] grid w-full max-w-[1000px] grid-cols-1 items-start gap-[18px] md:grid-cols-3"
+        >
           <div
             data-card-shell
-            className="relative z-[30] origin-top opacity-0"
+            className="relative z-[30] origin-top"
           >
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
-                className="absolute inset-x-0 bottom-0 top-[56px] bg-cover bg-center"
+                className="absolute inset-x-0 bottom-0 top-[55px] bg-cover bg-center"
                 style={{
                   backgroundImage:
                     "url('https://images.unsplash.com/photo-1760719438551-6c5408b122e9?auto=format&fit=crop&q=82&w=900')",
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30" />
 
-              <p className="absolute left-[31px] top-[34px] z-10 text-[12px] uppercase tracking-[-0.025em]">
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/25" />
+
+              <p className="absolute left-[31px] top-[33px] z-10 text-[13px] uppercase tracking-[-0.028em]">
                 Featured &amp; Awards
               </p>
 
-              <div className="absolute bottom-[91px] left-[31px] z-10 flex h-[22px] w-[54px] items-center justify-center rounded-full border border-white/50 text-[12px] font-semibold tracking-[-0.03em] text-white">
-                FWA
+              <div className="absolute bottom-[78px] left-[31px] z-10 flex h-[25px] items-center">
+                <img
+                  src="https://trionn.com/images/thefwa.svg"
+                  alt="FWA"
+                  className="max-h-[22px] w-[58px] object-contain brightness-0 invert"
+                />
               </div>
 
-              <p className="absolute bottom-[32px] left-[31px] z-10 max-w-[172px] text-[13px] leading-[1.18] text-white/70">
+              <p className="absolute bottom-[30px] left-[31px] z-10 max-w-[176px] text-[14px] leading-[1.16] text-white/70">
                 Featured on top design
                 <br />
                 platforms worldwide.
               </p>
 
-              <div className="absolute bottom-[25px] right-[27px] z-10">
+              <div className="absolute bottom-[22px] right-[27px] z-10">
                 <Counter50 />
               </div>
             </article>
@@ -500,18 +477,18 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[10] origin-top opacity-0"
+            className="relative z-[20] origin-top"
           >
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
-              <p className="absolute left-1/2 top-[34px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
+              <p className="absolute left-1/2 top-[33px] -translate-x-1/2 whitespace-nowrap text-[13px] uppercase tracking-[-0.028em]">
                 Projects completed
               </p>
 
-              <div className="absolute left-1/2 top-[108px] flex h-[170px] w-[170px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
+              <div className="absolute left-1/2 top-[104px] flex h-[166px] w-[166px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
                 <Counter15K />
               </div>
 
-              <p className="absolute bottom-[32px] left-1/2 w-[225px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">
+              <p className="absolute bottom-[30px] left-1/2 w-[232px] -translate-x-1/2 text-center text-[14px] leading-[1.2] text-black/58">
                 90% of our clients seek our
                 <br />
                 services for a second project.
@@ -521,36 +498,39 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[20] origin-top opacity-0"
+            className="relative z-[10] origin-top"
           >
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
               <div
-                className="absolute left-[30px] right-[30px] top-[80px] h-[220px] bg-cover bg-center"
+                className="absolute left-[30px] right-[30px] top-[79px] h-[212px] bg-cover bg-center"
                 style={{
                   backgroundImage:
                     "url('https://images.unsplash.com/photo-1562569633-622303bafef5?auto=format&fit=crop&q=82&w=900')",
                 }}
               />
 
-              <p className="absolute right-[29px] top-[34px] z-10 text-[12px] uppercase tracking-[-0.025em]">
+              <p className="absolute right-[29px] top-[33px] z-10 text-[13px] uppercase tracking-[-0.028em]">
                 Our team members
               </p>
 
-              <p className="absolute bottom-[36px] left-[31px] z-10 max-w-[145px] text-[13px] leading-[1.15] text-white/60">
+              <p className="absolute bottom-[34px] left-[31px] z-10 max-w-[150px] text-[14px] leading-[1.14] text-white/60">
                 Different skills.
                 <br />
                 One standard.
               </p>
 
-              <div className="absolute bottom-[25px] right-[28px] z-10">
+              <div className="absolute bottom-[22px] right-[28px] z-10">
                 <Counter20 />
               </div>
             </article>
           </div>
         </div>
 
-        <div className="mx-auto mt-[6.5svh] max-w-[760px]">
-          <p className="text-center text-[11px] uppercase tracking-[-0.02em]">
+        <div
+          data-partners
+          className="mx-auto mt-[7svh] max-w-[720px]"
+        >
+          <p className="text-center text-[12px] uppercase tracking-[-0.02em]">
             Our business partners
           </p>
 
