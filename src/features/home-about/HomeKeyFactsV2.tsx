@@ -206,32 +206,29 @@ export function HomeKeyFacts() {
       );
 
       /*
-       * A calmer Trionn-style cascade: all cards share one top line, the
-       * perspective is softer, lateral sway is restrained, and the stagger
-       * is close enough that the three planes still read as one composition.
+       * Keep the hinge read without a wide-angle lens look. A very long
+       * perspective keeps the side edges almost parallel, while moderate
+       * rotationX still gives the cards a calm top-anchored unfold.
        */
       gsap.set(cards, {
         transformOrigin: "50% 0%",
-        transformPerspective: 1280,
+        transformPerspective: 10000,
         backfaceVisibility: "hidden",
       });
 
       gsap.set(cards[0], {
-        rotationX: -64,
-        skewX: 4,
-        autoAlpha: 0.46,
+        rotationX: -48,
+        autoAlpha: 0.56,
       });
 
       gsap.set(cards[1], {
-        rotationX: -70,
-        skewX: 0,
-        autoAlpha: 0.4,
+        rotationX: -54,
+        autoAlpha: 0.5,
       });
 
       gsap.set(cards[2], {
-        rotationX: -74,
-        skewX: -6,
-        autoAlpha: 0.42,
+        rotationX: -60,
+        autoAlpha: 0.52,
       });
 
       tracks.flat().forEach(({ track }) => {
@@ -252,34 +249,31 @@ export function HomeKeyFacts() {
           cards[0],
           {
             rotationX: 0,
-            skewX: 0,
             autoAlpha: 1,
-            duration: 0.68,
+            duration: 0.72,
             ease: "sine.inOut",
           },
-          0.04,
+          0.03,
         )
         .to(
           cards[1],
           {
             rotationX: 0,
-            skewX: 0,
             autoAlpha: 1,
-            duration: 0.7,
+            duration: 0.72,
             ease: "sine.inOut",
           },
-          0.13,
+          0.11,
         )
         .to(
           cards[2],
           {
             rotationX: 0,
-            skewX: 0,
             autoAlpha: 1,
-            duration: 0.7,
+            duration: 0.72,
             ease: "sine.inOut",
           },
-          0.22,
+          0.19,
         );
 
       tracks.forEach((counterTracks) => {
@@ -296,7 +290,7 @@ export function HomeKeyFacts() {
         });
       });
 
-      timeline.to({}, { duration: 0.08 }, 0.92);
+      timeline.to({}, { duration: 0.09 }, 0.91);
 
       const setProgress = (progress: number) => {
         timeline.progress(
@@ -343,7 +337,6 @@ export function HomeKeyFacts() {
           setProgress(1);
           gsap.set(cards, {
             rotationX: 0,
-            skewX: 0,
             autoAlpha: 1,
             willChange: "auto",
           });
