@@ -41,23 +41,25 @@ type CardPose = {
 };
 
 /*
- * The reference does not bring three flat cards straight toward camera.
- * They arrive as three planes at very different depths and inclinations:
- * left is already close, center is deeper, right is furthest and most
- * foreshortened. The angle also survives longer than the Z movement.
+ * All three cards hang from the SAME top line.
+ *
+ * The reference gets its stagger from depth and inclination, not from
+ * moving the cards to different vertical positions. Think of three cards
+ * clipped to one clothesline: left resolves first, center follows, right
+ * follows last, but their top edge always shares one horizontal anchor.
  */
 const CARD_STARTS: CardPose[] = [
   {
     z: -150,
-    y: 28,
+    y: 0,
     rotateX: -15,
-    rotateZ: -0.8,
+    rotateZ: 0,
     opacity: 0.64,
     blur: 1.9,
   },
   {
     z: -305,
-    y: 45,
+    y: 0,
     rotateX: -31,
     rotateZ: 0,
     opacity: 0.42,
@@ -65,24 +67,24 @@ const CARD_STARTS: CardPose[] = [
   },
   {
     z: -470,
-    y: 64,
+    y: 0,
     rotateX: -47,
-    rotateZ: 0.8,
+    rotateZ: 0,
     opacity: 0.24,
     blur: 4.3,
   },
 ];
 
 /*
- * Even after settling the cards keep a slight physical attitude instead
- * of snapping to a perfectly flat 0deg plane.
+ * The cards retain a little backward attitude after settling, while their
+ * top edge remains pinned to the shared line.
  */
 const CARD_ENDS: CardPose[] = [
   {
     z: 0,
     y: 0,
     rotateX: -3.8,
-    rotateZ: -0.25,
+    rotateZ: 0,
     opacity: 1,
     blur: 0,
   },
@@ -98,7 +100,7 @@ const CARD_ENDS: CardPose[] = [
     z: 0,
     y: 0,
     rotateX: -4.4,
-    rotateZ: 0.25,
+    rotateZ: 0,
     opacity: 1,
     blur: 0,
   },
@@ -303,9 +305,8 @@ export function HomeKeyFacts() {
         );
 
         /*
-         * Depth resolves first. Angle resolves later. This is the important
-         * reference behaviour: a card can already feel close to camera while
-         * still visibly lying back in perspective.
+         * Depth resolves first. Angle resolves later. The top edge remains
+         * pinned to one line for every card throughout the whole journey.
          */
         const depthProgress =
           smootherStep(rawLocal);
@@ -320,20 +321,14 @@ export function HomeKeyFacts() {
         const z =
           lerp(start.z, end.z, depthProgress) +
           14 * settle * (1 - settle);
-        const y =
-          lerp(start.y, end.y, depthProgress);
+        const y = 0;
         const rotateX =
           lerp(
             start.rotateX,
             end.rotateX,
             angleProgress,
           );
-        const rotateZ =
-          lerp(
-            start.rotateZ,
-            end.rotateZ,
-            angleProgress,
-          );
+        const rotateZ = 0;
         const opacity =
           lerp(
             start.opacity,
@@ -348,7 +343,7 @@ export function HomeKeyFacts() {
           );
 
         shell.style.transformOrigin =
-          "50% 100%";
+          "50% 0%";
         shell.style.transform = [
           `translate3d(0, ${y}px, ${z}px)`,
           `rotateX(${rotateX}deg)`,
@@ -486,11 +481,11 @@ export function HomeKeyFacts() {
 
         <div
           data-facts-grid
-          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-end gap-[18px] [perspective:1450px] [perspective-origin:50%_128%] md:grid-cols-3"
+          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[18px] [perspective:1450px] [perspective-origin:50%_0%] md:grid-cols-3"
         >
           <div
             data-card-shell
-            className="relative z-[3] origin-bottom opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
+            className="relative z-[3] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
           >
             <article
               data-card-surface
@@ -533,7 +528,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[2] origin-bottom opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
+            className="relative z-[2] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
           >
             <article
               data-card-surface
@@ -556,7 +551,7 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[1] origin-bottom opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
+            className="relative z-[1] origin-top opacity-0 will-change-[transform,opacity] [backface-visibility:hidden] [transform-style:preserve-3d]"
           >
             <article
               data-card-surface
