@@ -139,7 +139,7 @@ function CollectionPanel() {
 
 function ServicesContent() {
   return (
-    <div className="relative h-[100svh] w-[100vw] bg-[#ffffff] text-[#202020]">
+    <div className="relative h-[100svh] w-[100vw] bg-[#fbfbfb] text-[#202020]">
       <p className="absolute left-1/2 top-[11.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
         Our services
       </p>
@@ -167,6 +167,19 @@ function ServicesContent() {
         <ArrowLink href="/services">View services</ArrowLink>
       </div>
     </div>
+  );
+}
+
+function TransitionPlus({ dataAttribute }: { dataAttribute: string }) {
+  return (
+    <span
+      {...{ [dataAttribute]: "" }}
+      aria-hidden="true"
+      className="relative block h-[12px] w-[12px]"
+    >
+      <span className="absolute left-1/2 top-1/2 h-px w-[10px] -translate-x-1/2 -translate-y-1/2 bg-[#424240]" />
+      <span className="absolute left-1/2 top-1/2 h-[10px] w-px -translate-x-1/2 -translate-y-1/2 bg-[#424240]" />
+    </span>
   );
 }
 
@@ -201,9 +214,6 @@ export function HomeSelectedWork() {
       const servicesRise = section.querySelector<HTMLElement>(
         "[data-services-rise]",
       );
-      const entryRule = entryFrame.querySelector<HTMLElement>(
-        "[data-entry-rule]",
-      );
       const entryPlusWrap = entryFrame.querySelector<HTMLElement>(
         "[data-entry-plus-wrap]",
       );
@@ -219,7 +229,6 @@ export function HomeSelectedWork() {
         projectRises.length !== PROJECTS.length ||
         !collectionRise ||
         !servicesRise ||
-        !entryRule ||
         !entryPlusWrap ||
         !entryPlus ||
         !boundaryPlus
@@ -228,9 +237,10 @@ export function HomeSelectedWork() {
       }
 
       gsap.set(entryFrame, {
-        y: "42svh",
+        y: "54svh",
+        backgroundColor: "#dedddb",
         force3D: true,
-        willChange: "transform",
+        willChange: "transform, background-color",
       });
 
       gsap.set(track, {
@@ -246,13 +256,13 @@ export function HomeSelectedWork() {
       });
 
       gsap.set(projectRises, {
-        y: "10svh",
+        y: "12svh",
         force3D: true,
         willChange: "transform",
       });
 
       gsap.set(collectionRise, {
-        y: "9svh",
+        y: "10svh",
         force3D: true,
         willChange: "transform",
       });
@@ -263,9 +273,13 @@ export function HomeSelectedWork() {
       });
 
       gsap.set(servicesRise, {
-        y: "18svh",
+        y: "20svh",
         force3D: true,
         willChange: "transform",
+      });
+
+      gsap.set(entryPlusWrap, {
+        autoAlpha: 1,
       });
 
       gsap.set(servicesBoundary, {
@@ -291,11 +305,18 @@ export function HomeSelectedWork() {
         },
       });
 
+      /*
+       * The section overlaps Key Facts by exactly 54svh. At this point the
+       * Key Facts sticky panel is naturally leaving the viewport, while this
+       * scene rises through the same 54svh. Nothing opaque sits above the
+       * incoming panel, so Key Facts remains visible until it actually scrolls
+       * away instead of being covered by the next section.
+       */
       timeline.to(
         entryFrame,
         {
           y: 0,
-          duration: 0.15,
+          duration: 0.105,
           ease: "none",
         },
         0,
@@ -304,41 +325,67 @@ export function HomeSelectedWork() {
       timeline.to(
         entryPlus,
         {
-          rotation: 540,
-          duration: 0.15,
+          rotation: 360,
+          duration: 0.1,
           ease: "none",
         },
         0,
       );
 
       timeline.to(
-        introRise,
+        entryPlusWrap,
         {
-          y: 0,
-          duration: 0.14,
-          ease: "power1.out",
+          autoAlpha: 0,
+          duration: 0.025,
+          ease: "none",
         },
-        0.02,
+        0.08,
       );
 
       timeline.to(
-        [entryRule, entryPlusWrap],
+        introRise,
         {
-          autoAlpha: 0,
-          duration: 0.04,
-          ease: "none",
+          y: 0,
+          duration: 0.16,
+          ease: "power1.out",
         },
-        0.11,
+        0.03,
       );
 
+      /*
+       * The work surface starts as the same #dedddb used by Key Facts and
+       * lightens while the horizontal rail advances. This is a scroll-driven
+       * color handoff, not a fixed vertical gradient.
+       */
+      timeline.to(
+        entryFrame,
+        {
+          backgroundColor: "#f4f4f4",
+          duration: 0.28,
+          ease: "none",
+        },
+        0.1,
+      );
+
+      timeline.to(
+        entryFrame,
+        {
+          backgroundColor: "#fbfbfb",
+          duration: 0.22,
+          ease: "none",
+        },
+        0.5,
+      );
+
+      /* Roughly one viewport of vertical scroll per half-width project step. */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.7,
+          duration: 0.58,
           ease: "none",
         },
-        0.1,
+        0.12,
       );
 
       projectRises.forEach((projectRise, index) => {
@@ -346,10 +393,10 @@ export function HomeSelectedWork() {
           projectRise,
           {
             y: 0,
-            duration: 0.18,
+            duration: 0.22,
             ease: "power1.out",
           },
-          0.12 + index * 0.2,
+          0.12 + index * 0.19,
         );
       });
 
@@ -357,70 +404,74 @@ export function HomeSelectedWork() {
         collectionRise,
         {
           y: 0,
-          duration: 0.17,
+          duration: 0.18,
           ease: "power1.out",
         },
-        0.66,
+        0.59,
       );
 
+      /*
+       * Give the collection a short breathing zone, then make the service wipe
+       * consume more than a full viewport of scroll instead of snapping in.
+       */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 2,
-          duration: 0.2,
+          duration: 0.23,
           ease: "none",
         },
-        0.8,
+        0.77,
       );
 
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.2,
+          duration: 0.23,
           ease: "none",
         },
-        0.8,
+        0.77,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.2,
+          duration: 0.23,
           ease: "none",
         },
-        0.8,
+        0.77,
       );
 
       timeline.to(
         boundaryPlus,
         {
-          rotation: 540,
-          duration: 0.2,
+          rotation: 360,
+          duration: 0.23,
           ease: "none",
         },
-        0.8,
+        0.77,
       );
 
       timeline.to(
         servicesRise,
         {
           y: 0,
-          duration: 0.18,
+          duration: 0.2,
           ease: "power1.out",
         },
-        0.81,
+        0.79,
       );
 
       timeline.to(
         servicesBoundary,
         {
           autoAlpha: 0,
-          duration: 0.03,
+          duration: 0.035,
           ease: "none",
         },
-        0.97,
+        0.965,
       );
 
       return () => {
@@ -434,36 +485,18 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] -mt-[100svh] h-[470svh] bg-[#fbfbfb]"
+      className="relative z-[52] -mt-[54svh] h-[620svh] bg-transparent"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#fbfbfb]">
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-transparent">
         <div
           ref={entryFrameRef}
-          className="absolute inset-0 overflow-hidden"
-          style={{
-            background: "linear-gradient(180deg, #fbfbfb 0%, #d1d1d1 100%)",
-          }}
+          className="absolute inset-0 overflow-hidden bg-[#dedddb]"
         >
-          <div
-            data-entry-rule
-            className="pointer-events-none absolute left-[2.1vw] right-[2.1vw] top-0 z-[8]"
-            style={{
-              height: "1px",
-              background: "rgba(65, 65, 63, 0.14)",
-            }}
-          />
-
           <div
             data-entry-plus-wrap
             className="pointer-events-none absolute left-1/2 top-0 z-[9] -translate-x-1/2 -translate-y-1/2"
           >
-            <span
-              data-entry-plus
-              aria-hidden="true"
-              className="block text-[14px] font-light leading-none text-[#424240]"
-            >
-              +
-            </span>
+            <TransitionPlus dataAttribute="data-entry-plus" />
           </div>
 
           <div
@@ -492,16 +525,10 @@ export function HomeSelectedWork() {
 
           <div
             ref={servicesBoundaryRef}
-            className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.1]"
+            className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.08]"
           >
             <div className="absolute left-1/2 top-[50.5%] -translate-x-1/2">
-              <span
-                data-boundary-plus
-                aria-hidden="true"
-                className="block text-[14px] font-light leading-none text-[#424240]"
-              >
-                +
-              </span>
+              <TransitionPlus dataAttribute="data-boundary-plus" />
             </div>
           </div>
         </div>
