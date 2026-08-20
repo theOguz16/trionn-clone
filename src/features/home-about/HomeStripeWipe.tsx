@@ -95,7 +95,13 @@ export function HomeStripeWipe() {
           "translate3d(-50%, 9px, 0)";
       }
 
-      let heroPaused = true;
+      /*
+       * This flag mirrors the real CanvasManager state. Starting it as true
+       * caused the first pause request to bail out while the WebGL scene was
+       * still active. Keep it false until we actually pause the scene.
+       */
+      let heroPaused = false;
+
       let currentTheme:
         | "dark"
         | "light" = "dark";
@@ -138,9 +144,9 @@ export function HomeStripeWipe() {
         const progress = clamp01(rawProgress);
 
         /*
-         * Keep the expensive hero WebGL scene paused throughout almost all
-         * of the light wipe, including reverse scroll. It only resumes when
-         * the user is genuinely back near the dark hero handoff.
+         * Pause the expensive hero WebGL scene through the light wipe and
+         * while reversing back from Key Facts. Only resume when the user is
+         * genuinely close to the dark hero handoff again.
          */
         setHeroPaused(progress > 0.14);
 
@@ -156,7 +162,9 @@ export function HomeStripeWipe() {
           orderIndex += 1
         ) {
           const stripeIndex =
-            STRIPE_COUNT - 1 - orderIndex;
+            STRIPE_COUNT -
+            1 -
+            orderIndex;
 
           const localProgress =
             getStripeProgress(
@@ -171,7 +179,9 @@ export function HomeStripeWipe() {
           yPercents[stripeIndex] =
             yPercent;
 
-          stripes[stripeIndex].style.transform =
+          stripes[
+            stripeIndex
+          ].style.transform =
             `translate3d(0, ${yPercent}%, 0)`;
         }
 
@@ -249,46 +259,42 @@ export function HomeStripeWipe() {
         }
       };
 
-      const trigger = ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: "bottom bottom",
-        invalidateOnRefresh: true,
+      const trigger =
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: "bottom bottom",
+          invalidateOnRefresh: true,
 
-        onUpdate: (self) => {
-          update(self.progress);
-        },
+          onUpdate: (self) => {
+            update(self.progress);
+          },
 
-        onEnter: (self) => {
-          update(self.progress);
-        },
+          onEnter: (self) => {
+            update(self.progress);
+          },
 
-        onEnterBack: (self) => {
-          update(self.progress);
-        },
+          onEnterBack: (self) => {
+            update(self.progress);
+          },
 
-        onLeave: () => {
-          update(1);
-          setHeroPaused(true);
-          changeTheme("light");
-        },
+          onLeave: () => {
+            update(1);
+            setHeroPaused(true);
+            changeTheme("light");
+          },
 
-        onLeaveBack: () => {
-          update(0);
-          setHeroPaused(false);
-          changeTheme("dark");
-        },
-      });
+          onLeaveBack: () => {
+            update(0);
+            setHeroPaused(false);
+            changeTheme("dark");
+          },
+        });
 
       update(trigger.progress);
 
       return () => {
         trigger.kill();
-
-        canvasManager.setActive(
-          "home-hero",
-          true,
-        );
       };
     },
     {
