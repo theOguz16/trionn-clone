@@ -296,3 +296,28 @@ html[data-page-theme="light"]
   padding-left: 15px !important;
   font-size: 13px !important;
 }
+
+/* Keep the rotating transition crosses centered on the same pixel geometry
+ * as the guide-line intersection. Odd dimensions avoid half-pixel drift. */
+[data-transition-plus] {
+  width: 15px !important;
+  height: 15px !important;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+[data-transition-plus] > span:first-child {
+  left: 7px !important;
+  top: 0 !important;
+  width: 1px !important;
+  height: 15px !important;
+  transform: none !important;
+}
+
+[data-transition-plus] > span:last-child {
+  left: 0 !important;
+  top: 7px !important;
+  width: 15px !important;
+  height: 1px !important;
+  transform: none !important;
+}
