@@ -230,7 +230,7 @@ export function HomeKeyFacts() {
           {
             rotationX: 0,
             autoAlpha: 1,
-            duration: 0.48,
+            duration: 0.72,
             ease: "sine.inOut",
           },
           0,
@@ -240,20 +240,20 @@ export function HomeKeyFacts() {
           {
             rotationX: 0,
             autoAlpha: 1,
-            duration: 0.52,
+            duration: 0.76,
             ease: "sine.inOut",
           },
-          0.22,
+          0.28,
         )
         .to(
           cards[2],
           {
             rotationX: 0,
             autoAlpha: 1,
-            duration: 0.56,
+            duration: 0.8,
             ease: "sine.inOut",
           },
-          0.44,
+          0.56,
         );
 
       tracks.forEach((counterTracks, counterIndex) => {
@@ -262,15 +262,15 @@ export function HomeKeyFacts() {
             track,
             {
               y: `${-target}em`,
-              duration: 0.17,
+              duration: 0.24,
               ease: "sine.out",
             },
-            0.25 + counterIndex * 0.22,
+            0.34 + counterIndex * 0.28,
           );
         });
       });
 
-      timeline.to({}, { duration: 0.12 }, 1.02);
+      timeline.to({}, { duration: 0.12 }, 1.42);
 
       const setKeyFactsActive = (active: boolean) => {
         if (active) {
@@ -325,9 +325,9 @@ export function HomeKeyFacts() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[50] -mt-[48svh] min-h-[100svh] bg-[#dedddb] text-[#414141]"
+      className="relative z-[50] -mt-[48svh] min-h-[92svh] bg-[#dedddb] text-[#414141]"
     >
-      <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[92svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[4svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
