@@ -41,45 +41,45 @@ type CardPose = {
 };
 
 /*
- * All three cards hang from the SAME top line.
- *
- * The reference gets its stagger from depth and inclination, not from
- * moving the cards to different vertical positions. Think of three cards
- * clipped to one clothesline: left resolves first, center follows, right
- * follows last, but their top edge always shares one horizontal anchor.
+ * One shared top anchor, three very different hanging depths.
+ * The visual separation comes from Z + rotateX, never from Y.
  */
 const CARD_STARTS: CardPose[] = [
   {
-    z: -150,
+    z: -135,
     y: 0,
-    rotateX: -15,
+    rotateX: -18,
     rotateZ: 0,
-    opacity: 0.64,
-    blur: 1.9,
+    opacity: 0.68,
+    blur: 1.7,
   },
   {
-    z: -305,
+    z: -330,
     y: 0,
-    rotateX: -31,
+    rotateX: -39,
     rotateZ: 0,
-    opacity: 0.42,
-    blur: 3.1,
+    opacity: 0.4,
+    blur: 3.25,
   },
   {
-    z: -470,
+    z: -560,
     y: 0,
-    rotateX: -47,
+    rotateX: -61,
     rotateZ: 0,
-    opacity: 0.24,
-    blur: 4.3,
+    opacity: 0.2,
+    blur: 4.7,
   },
 ];
 
-/*
- * The cards retain a little backward attitude after settling, while their
- * top edge remains pinned to the shared line.
- */
 const CARD_ENDS: CardPose[] = [
+  {
+    z: 0,
+    y: 0,
+    rotateX: -3.2,
+    rotateZ: 0,
+    opacity: 1,
+    blur: 0,
+  },
   {
     z: 0,
     y: 0,
@@ -91,25 +91,28 @@ const CARD_ENDS: CardPose[] = [
   {
     z: 0,
     y: 0,
-    rotateX: -2,
-    rotateZ: 0,
-    opacity: 1,
-    blur: 0,
-  },
-  {
-    z: 0,
-    y: 0,
-    rotateX: -4.4,
+    rotateX: -4.8,
     rotateZ: 0,
     opacity: 1,
     blur: 0,
   },
 ];
 
+/*
+ * Wider stagger means that at one scroll position the left card can already
+ * be almost upright while the center is still leaning and the right card is
+ * still strongly foreshortened — matching the reference frame.
+ */
 const CARD_WINDOWS = [
-  [0.14, 0.62],
-  [0.2, 0.72],
-  [0.26, 0.82],
+  [0.11, 0.61],
+  [0.22, 0.76],
+  [0.33, 0.91],
+] as const;
+
+const SWING_AMPLITUDES = [
+  4.5,
+  7.5,
+  11.5,
 ] as const;
 
 function clamp01(value: number) {
@@ -304,15 +307,11 @@ export function HomeKeyFacts() {
           windowEnd,
         );
 
-        /*
-         * Depth resolves first. Angle resolves later. The top edge remains
-         * pinned to one line for every card throughout the whole journey.
-         */
         const depthProgress =
           smootherStep(rawLocal);
         const angleProgress =
           smoothStep(
-            mapRange(rawLocal, 0.18, 1),
+            mapRange(rawLocal, 0.12, 1),
           );
         const settle = smoothStep(
           mapRange(rawLocal, 0.78, 1),
@@ -320,15 +319,33 @@ export function HomeKeyFacts() {
 
         const z =
           lerp(start.z, end.z, depthProgress) +
-          14 * settle * (1 - settle);
-        const y = 0;
+          15 * settle * (1 - settle);
+
+        /*
+         * Clothesline / hinged-card motion:
+         * - top edge is pinned (transform-origin top)
+         * - only rotateX moves the lower half through depth
+         * - one damped forward/back swing is scrubbed by scroll
+         * - right card has the largest swing, left the smallest
+         */
+        const swingPhase =
+          mapRange(rawLocal, 0.08, 0.94);
+        const swingEnvelope =
+          (1 - smootherStep(swingPhase)) *
+          smoothStep(mapRange(swingPhase, 0, 0.18));
+        const hingeSwing =
+          Math.sin(swingPhase * Math.PI * 2) *
+          SWING_AMPLITUDES[index] *
+          swingEnvelope;
+
         const rotateX =
           lerp(
             start.rotateX,
             end.rotateX,
             angleProgress,
-          );
-        const rotateZ = 0;
+          ) +
+          hingeSwing;
+
         const opacity =
           lerp(
             start.opacity,
@@ -345,9 +362,8 @@ export function HomeKeyFacts() {
         shell.style.transformOrigin =
           "50% 0%";
         shell.style.transform = [
-          `translate3d(0, ${y}px, ${z}px)`,
+          `translate3d(0, 0, ${z}px)`,
           `rotateX(${rotateX}deg)`,
-          `rotateZ(${rotateZ}deg)`,
         ].join(" ");
         shell.style.opacity = `${opacity}`;
         surface.style.filter = `blur(${blur}px)`;
@@ -389,7 +405,7 @@ export function HomeKeyFacts() {
 
       const updatePartners = (progress: number) => {
         const p = smootherStep(
-          mapRange(progress, 0.8, 0.97),
+          mapRange(progress, 0.82, 0.98),
         );
 
         partners.style.opacity = `${p}`;
@@ -426,7 +442,7 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top 94%",
-        end: "bottom 68%",
+        end: "bottom 64%",
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           update(self.progress);
@@ -481,7 +497,7 @@ export function HomeKeyFacts() {
 
         <div
           data-facts-grid
-          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[18px] [perspective:1450px] [perspective-origin:50%_0%] md:grid-cols-3"
+          className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[18px] [perspective:1320px] [perspective-origin:50%_0%] md:grid-cols-3"
         >
           <div
             data-card-shell
