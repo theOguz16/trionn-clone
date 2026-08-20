@@ -51,7 +51,18 @@ function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
 function IntroPanel() {
   return (
     <section className="relative h-[100svh] w-[50vw] flex-none bg-transparent">
-      <div className="absolute left-[2.1vw] top-[53.2%] -translate-y-1/2">
+      <span
+        data-opening-plus
+        aria-hidden="true"
+        className="pointer-events-none absolute left-[-7px] top-[50.5%] z-[3] block text-[18px] font-light leading-none text-[#4d4d4b]"
+      >
+        +
+      </span>
+
+      <div
+        data-work-intro-rise
+        className="absolute left-[2.1vw] top-[53.2%] -translate-y-1/2"
+      >
         <h2 className="w-[43vw] text-[clamp(4.2rem,5vw,6rem)] font-normal leading-[0.88] tracking-[-0.068em] text-[#454545]">
           Selected work
           <br />
@@ -66,10 +77,20 @@ function IntroPanel() {
   );
 }
 
-function ProjectPanel({ project }: { project: (typeof PROJECTS)[number] }) {
+function ProjectPanel({
+  project,
+  index,
+}: {
+  project: (typeof PROJECTS)[number];
+  index: number;
+}) {
   return (
     <article className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.085] bg-transparent">
-      <div className="absolute left-[8.45%] right-[8.45%] top-[19.5svh]">
+      <div
+        data-project-rise
+        data-project-index={index}
+        className="absolute left-[8.45%] right-[8.45%] top-[19.5svh]"
+      >
         <a
           href={project.href}
           className="block h-[50.15svh] min-h-[410px] max-h-[610px] overflow-hidden rounded-[6px] bg-[#d8d8d6]"
@@ -104,7 +125,10 @@ function ProjectPanel({ project }: { project: (typeof PROJECTS)[number] }) {
 function CollectionPanel() {
   return (
     <section className="relative h-[100svh] w-[50vw] flex-none border-l border-black/[0.085] bg-transparent">
-      <div className="absolute left-1/2 top-[57.4%] w-[82%] -translate-x-1/2 -translate-y-1/2 text-center">
+      <div
+        data-collection-rise
+        className="absolute left-1/2 top-[57.4%] w-[82%] -translate-x-1/2 -translate-y-1/2 text-center"
+      >
         <h3 className="mx-auto max-w-[470px] text-[30px] font-normal leading-[0.96] tracking-[-0.055em] text-[#474747]">
           Discover our complete collection
           <br />
@@ -123,12 +147,15 @@ function CollectionPanel() {
 
 function ServicesContent() {
   return (
-    <div className="relative h-[100svh] w-[100vw] bg-white text-[#202020]">
+    <div className="relative h-[100svh] w-[100vw] bg-[#ffffff] text-[#202020]">
       <p className="absolute left-1/2 top-[11.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
         Our services
       </p>
 
-      <div className="absolute left-1/2 top-[50.6%] w-[76vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase">
+      <div
+        data-services-rise
+        className="absolute left-1/2 top-[50.6%] w-[76vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
+      >
         <div
           className="text-[clamp(5.8rem,8.25vw,9.1rem)] font-normal leading-[0.68] tracking-[-0.085em]"
           style={{ transform: "scaleX(1.035)" }}
@@ -147,6 +174,14 @@ function ServicesContent() {
       <div className="absolute bottom-[7.7svh] right-[2.1vw]">
         <ArrowLink href="/services">View services</ArrowLink>
       </div>
+
+      <span
+        data-closing-plus
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-7px] top-[50.5%] block text-[18px] font-light leading-none text-[#3f3f3d]"
+      >
+        +
+      </span>
     </div>
   );
 }
@@ -155,14 +190,50 @@ export function HomeSelectedWork() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
+  const servicesBoundaryRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       const section = sectionRef.current;
       const track = trackRef.current;
       const services = servicesRef.current;
+      const servicesBoundary = servicesBoundaryRef.current;
 
-      if (!section || !track || !services) {
+      if (!section || !track || !services || !servicesBoundary) {
+        return;
+      }
+
+      const introRise = section.querySelector<HTMLElement>(
+        "[data-work-intro-rise]",
+      );
+      const projectRises = Array.from(
+        section.querySelectorAll<HTMLElement>("[data-project-rise]"),
+      );
+      const collectionRise = section.querySelector<HTMLElement>(
+        "[data-collection-rise]",
+      );
+      const servicesRise = section.querySelector<HTMLElement>(
+        "[data-services-rise]",
+      );
+      const openingPlus = section.querySelector<HTMLElement>(
+        "[data-opening-plus]",
+      );
+      const boundaryPlus = servicesBoundary.querySelector<HTMLElement>(
+        "[data-boundary-plus]",
+      );
+      const closingPlus = section.querySelector<HTMLElement>(
+        "[data-closing-plus]",
+      );
+
+      if (
+        !introRise ||
+        projectRises.length !== PROJECTS.length ||
+        !collectionRise ||
+        !servicesRise ||
+        !openingPlus ||
+        !boundaryPlus ||
+        !closingPlus
+      ) {
         return;
       }
 
@@ -172,11 +243,55 @@ export function HomeSelectedWork() {
         willChange: "transform",
       });
 
+      gsap.set(introRise, {
+        y: "10svh",
+        force3D: true,
+        willChange: "transform",
+      });
+
+      gsap.set(projectRises, {
+        y: "14svh",
+        force3D: true,
+        willChange: "transform",
+      });
+
+      gsap.set(collectionRise, {
+        y: "12svh",
+        force3D: true,
+        willChange: "transform",
+      });
+
       gsap.set(services, {
         clipPath: "inset(0% 0% 0% 100%)",
         willChange: "clip-path",
       });
 
+      gsap.set(servicesRise, {
+        y: "14svh",
+        force3D: true,
+        willChange: "transform",
+      });
+
+      gsap.set(servicesBoundary, {
+        x: () => window.innerWidth,
+        force3D: true,
+        willChange: "transform",
+      });
+
+      gsap.set([openingPlus, boundaryPlus, closingPlus], {
+        rotation: 45,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      });
+
+      /*
+       * Reference motion:
+       * 1) project rail moves fairly quickly while each incoming card rises
+       *    from below into the shared final baseline;
+       * 2) Loftloom + collection settle side-by-side;
+       * 3) collection then travels into the left half while Services wipes
+       *    in from the right. The + marker lives on that moving wipe edge.
+       */
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: section,
@@ -190,17 +305,109 @@ export function HomeSelectedWork() {
       timeline.to(
         track,
         {
-          x: () => -window.innerWidth * 2,
-          duration: 0.78,
+          x: () => -window.innerWidth * 1.5,
+          duration: 0.7,
           ease: "none",
         },
         0,
       );
 
       timeline.to(
+        introRise,
+        {
+          y: 0,
+          duration: 0.15,
+          ease: "power1.out",
+        },
+        0,
+      );
+
+      projectRises.forEach((projectRise, index) => {
+        timeline.to(
+          projectRise,
+          {
+            y: 0,
+            duration: 0.2,
+            ease: "power1.out",
+          },
+          0.01 + index * 0.19,
+        );
+      });
+
+      timeline.to(
+        collectionRise,
+        {
+          y: 0,
+          duration: 0.18,
+          ease: "power1.out",
+        },
+        0.52,
+      );
+
+      timeline.to(
+        openingPlus,
+        {
+          rotation: 405,
+          duration: 0.7,
+          ease: "none",
+        },
+        0,
+      );
+
+      timeline.to(
+        track,
+        {
+          x: () => -window.innerWidth * 2,
+          duration: 0.3,
+          ease: "none",
+        },
+        0.7,
+      );
+
+      timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
+          duration: 0.3,
+          ease: "none",
+        },
+        0.7,
+      );
+
+      timeline.to(
+        servicesBoundary,
+        {
+          x: 0,
+          duration: 0.3,
+          ease: "none",
+        },
+        0.7,
+      );
+
+      timeline.to(
+        boundaryPlus,
+        {
+          rotation: 585,
+          duration: 0.3,
+          ease: "none",
+        },
+        0.7,
+      );
+
+      timeline.to(
+        servicesRise,
+        {
+          y: 0,
+          duration: 0.24,
+          ease: "power1.out",
+        },
+        0.7,
+      );
+
+      timeline.to(
+        closingPlus,
+        {
+          rotation: 405,
           duration: 0.22,
           ease: "none",
         },
@@ -218,13 +425,13 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[540svh] bg-[#d1d1d0]"
+      className="relative z-[52] h-[460svh] bg-[#d1d1d1]"
     >
       <div
         className="sticky top-0 h-[100svh] overflow-hidden"
         style={{
           background:
-            "linear-gradient(180deg, #ffffff 0%, #d1d1d0 100%)",
+            "linear-gradient(180deg, rgb(255 255 255) 0%, rgb(209 209 209) 100%)",
         }}
       >
         <div
@@ -233,8 +440,12 @@ export function HomeSelectedWork() {
         >
           <IntroPanel />
 
-          {PROJECTS.map((project) => (
-            <ProjectPanel key={project.title} project={project} />
+          {PROJECTS.map((project, index) => (
+            <ProjectPanel
+              key={project.title}
+              project={project}
+              index={index}
+            />
           ))}
 
           <CollectionPanel />
@@ -245,6 +456,19 @@ export function HomeSelectedWork() {
           className="absolute inset-0 z-[5] overflow-hidden"
         >
           <ServicesContent />
+        </div>
+
+        <div
+          ref={servicesBoundaryRef}
+          className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.11]"
+        >
+          <span
+            data-boundary-plus
+            aria-hidden="true"
+            className="absolute left-1/2 top-[50.5%] block -translate-x-1/2 text-[18px] font-light leading-none text-[#424240]"
+          >
+            +
+          </span>
         </div>
       </div>
     </section>
