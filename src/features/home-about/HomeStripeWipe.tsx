@@ -12,12 +12,12 @@ import {
 } from "@/runtime/canvas/CanvasManager";
 
 const STRIPE_COUNT = 6;
-const STRIPE_START = 0.03;
-const STRIPE_STEP = 0.12;
-const STRIPE_DURATION = 0.37;
+const STRIPE_START = 0.02;
+const STRIPE_STEP = 0.105;
+const STRIPE_DURATION = 0.48;
 
 const CAPTION_VIEWPORT_Y = 0.78;
-const CAPTION_CLEARANCE = 18;
+const CAPTION_CLEARANCE = 20;
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -95,11 +95,6 @@ export function HomeStripeWipe() {
           "translate3d(-50%, 9px, 0)";
       }
 
-      /*
-       * This flag mirrors the real CanvasManager state. Starting it as true
-       * caused the first pause request to bail out while the WebGL scene was
-       * still active. Keep it false until we actually pause the scene.
-       */
       let heroPaused = false;
 
       let currentTheme:
@@ -143,12 +138,7 @@ export function HomeStripeWipe() {
       ) => {
         const progress = clamp01(rawProgress);
 
-        /*
-         * Pause the expensive hero WebGL scene through the light wipe and
-         * while reversing back from Key Facts. Only resume when the user is
-         * genuinely close to the dark hero handoff again.
-         */
-        setHeroPaused(progress > 0.14);
+        setHeroPaused(progress > 0.12);
 
         const yPercents =
           new Array<number>(
@@ -225,15 +215,15 @@ export function HomeStripeWipe() {
             );
 
           const enter = smootherStep(
-            (progress - 0.1) /
-              0.095,
+            (progress - 0.095) /
+              0.13,
           );
 
           const phaseLeave =
             1 -
             smootherStep(
-              (progress - 0.36) /
-                0.1,
+              (progress - 0.42) /
+                0.15,
             );
 
           const opacity =
@@ -252,7 +242,7 @@ export function HomeStripeWipe() {
             `translate3d(-50%, ${y}px, 0)`;
         }
 
-        if (progress >= 0.92) {
+        if (progress >= 0.94) {
           changeTheme("light");
         } else {
           changeTheme("dark");
@@ -309,8 +299,8 @@ export function HomeStripeWipe() {
         pointer-events-none
         relative
         z-[45]
-        -mt-[234svh]
-        h-[320svh]
+        -mt-[228svh]
+        h-[312svh]
         bg-transparent
       "
     >
