@@ -41,6 +41,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+ * Any transparent seam between the light home sections must reveal the
+ * light page surface, never the default black hero surface. This also
+ * prevents a one-frame #090909 band while sticky sections hand off.
+ */
+html[data-page-theme="light"],
+html[data-page-theme="light"] body {
+  background: #fbfbfb;
+}
+
 a {
   color: inherit;
   text-decoration: none;
