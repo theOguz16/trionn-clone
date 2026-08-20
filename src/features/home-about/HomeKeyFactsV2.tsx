@@ -205,23 +205,24 @@ export function HomeKeyFacts() {
       });
 
       gsap.set(cards[0], {
-        rotationX: -48,
-        autoAlpha: 0,
+        rotationX: -40,
+        autoAlpha: 0.48,
       });
 
       gsap.set(cards[1], {
-        rotationX: -54,
-        autoAlpha: 0,
+        rotationX: -50,
+        autoAlpha: 0.42,
       });
 
       /*
-       * The right card is deliberately much more folded. At the reference
-       * screenshot's scroll position it is still around a 45deg plane,
-       * while the left card is nearly flat.
+       * The reference keeps the right card visibly folded, but it never
+       * collapses into a thin plane behind the middle card. The three
+       * starting angles form a restrained 10deg staircase so the first
+       * readable state lands near 15deg / 30deg / 45deg while scrolling.
        */
       gsap.set(cards[2], {
-        rotationX: -80,
-        autoAlpha: 0,
+        rotationX: -60,
+        autoAlpha: 0.44,
       });
 
       tracks.flat().forEach(({ track }) => {
@@ -273,10 +274,10 @@ export function HomeKeyFacts() {
             track,
             {
               y: `${-target}em`,
-              duration: 0.24,
+              duration: 0.18,
               ease: "sine.out",
             },
-            0.28,
+            0.16,
           );
         });
       });
@@ -298,8 +299,8 @@ export function HomeKeyFacts() {
 
       const trigger = ScrollTrigger.create({
         trigger: grid,
-        start: "top 88%",
-        end: "top 24%",
+        start: "top 92%",
+        end: () => `+=${Math.round(window.innerHeight * 1.05)}`,
         invalidateOnRefresh: true,
 
         onEnter: (self) => {
