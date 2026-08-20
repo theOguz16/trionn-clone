@@ -30,8 +30,8 @@ const PROJECTS = [
   },
 ] as const;
 
-const GUIDE = "rgba(72, 72, 68, 0.22)";
-const PLUS_STROKE = "#676761";
+const GUIDE = "rgba(72, 72, 68, 0.16)";
+const PLUS_STROKE = "rgba(67, 67, 64, 0.72)";
 
 function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -56,24 +56,16 @@ function TransitionPlus({ marker }: { marker: "entry" | "services" }) {
     <span
       data-transition-plus={marker}
       aria-hidden="true"
-      className="block h-[20px] w-[20px]"
+      className="relative block h-[14px] w-[14px]"
     >
-      <svg
-        viewBox="0 0 20 20"
-        width="20"
-        height="20"
-        className="block overflow-visible"
-        aria-hidden="true"
-      >
-        <path
-          d="M10 2.5V17.5M2.5 10H17.5"
-          fill="none"
-          stroke={PLUS_STROKE}
-          strokeWidth="1.45"
-          strokeLinecap="square"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
+      <span
+        className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2"
+        style={{ backgroundColor: PLUS_STROKE }}
+      />
+      <span
+        className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2"
+        style={{ backgroundColor: PLUS_STROKE }}
+      />
     </span>
   );
 }
@@ -174,7 +166,7 @@ function CollectionPanel() {
 
 function ServicesContent() {
   return (
-    <div className="relative h-[100svh] w-[100vw] bg-[#efeeeb] text-[#202020]">
+    <div className="relative h-[100svh] w-[100vw] bg-[#fbfbfb] text-[#202020]">
       <p className="absolute left-1/2 top-[11.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
         Our services
       </p>
@@ -233,7 +225,9 @@ export function HomeSelectedWork() {
         return;
       }
 
-      const introRise = section.querySelector<HTMLElement>("[data-work-intro-rise]");
+      const introRise = section.querySelector<HTMLElement>(
+        "[data-work-intro-rise]",
+      );
       const projectRises = Array.from(
         section.querySelectorAll<HTMLElement>("[data-project-rise]"),
       );
@@ -261,19 +255,26 @@ export function HomeSelectedWork() {
         return;
       }
 
-      gsap.set(stage, {
-        backgroundColor: "#fbfbfb",
-      });
-
       gsap.set(track, {
         x: 0,
         force3D: true,
         willChange: "transform",
       });
 
-      gsap.set(introRise, { y: "7svh", force3D: true });
-      gsap.set(projectRises, { y: "11svh", force3D: true });
-      gsap.set(collectionRise, { y: "9svh", force3D: true });
+      gsap.set(introRise, {
+        y: "7svh",
+        force3D: true,
+      });
+
+      gsap.set(projectRises, {
+        y: "12svh",
+        force3D: true,
+      });
+
+      gsap.set(collectionRise, {
+        y: "10svh",
+        force3D: true,
+      });
 
       gsap.set(entryGuide, {
         autoAlpha: 1,
@@ -283,17 +284,42 @@ export function HomeSelectedWork() {
         clipPath: "inset(0% 0% 0% 100%)",
         willChange: "clip-path",
       });
-      gsap.set(servicesRise, { y: "18svh", force3D: true });
+
+      gsap.set(servicesRise, {
+        y: "18svh",
+        force3D: true,
+      });
 
       gsap.set(servicesBoundary, {
         x: () => window.innerWidth,
         autoAlpha: 1,
         force3D: true,
+        willChange: "transform, opacity",
       });
+
       gsap.set([entryPlus, boundaryPlus], {
         rotation: 0,
         transformOrigin: "50% 50%",
         force3D: true,
+      });
+
+      /*
+       * The Key Facts -> Work handoff is deliberately NOT pinned.
+       * The whole work viewport enters naturally from below as the document
+       * scrolls, so Key Facts remains visible until it physically leaves the
+       * viewport. The + rides on the incoming top edge and rotates through
+       * that real vertical movement.
+       */
+      const entryTween = gsap.to(entryPlus, {
+        rotation: 360,
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          start: "top bottom",
+          end: "top top",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
       });
 
       const timeline = gsap.timeline({
@@ -306,108 +332,134 @@ export function HomeSelectedWork() {
         },
       });
 
-      timeline.to(introRise, { y: 0, duration: 0.12, ease: "power1.out" }, 0);
-
       timeline.to(
-        entryPlus,
-        { rotation: 360, duration: 0.12, ease: "none" },
+        introRise,
+        {
+          y: 0,
+          duration: 0.18,
+          ease: "power1.out",
+        },
         0,
       );
 
       timeline.to(
         entryGuide,
-        { autoAlpha: 0, duration: 0.035, ease: "none" },
-        0.105,
+        {
+          autoAlpha: 0,
+          duration: 0.055,
+          ease: "none",
+        },
+        0.07,
       );
 
+      /*
+       * Main rail: MyWorker -> Pulse -> Loftloom -> collection.
+       * The section is shorter than the previous 760svh version so scrolling
+       * never feels stuck, while this phase occupies most of the timeline so
+       * the panels themselves still move deliberately rather than snapping.
+       */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.72,
+          duration: 0.76,
           ease: "none",
         },
         0,
       );
 
+      const projectStarts = [0.02, 0.27, 0.52];
+
       projectRises.forEach((projectRise, index) => {
-        const starts = [0.02, 0.25, 0.48];
         timeline.to(
           projectRise,
-          { y: 0, duration: 0.24, ease: "power1.out" },
-          starts[index],
+          {
+            y: 0,
+            duration: 0.28,
+            ease: "power1.out",
+          },
+          projectStarts[index],
         );
       });
 
       timeline.to(
         collectionRise,
-        { y: 0, duration: 0.2, ease: "power1.out" },
-        0.61,
+        {
+          y: 0,
+          duration: 0.22,
+          ease: "power1.out",
+        },
+        0.63,
       );
 
+      /*
+       * Services uses the final quarter of the scroll sequence. The wipe,
+       * moving boundary, rotating + and rising typography all share the same
+       * progress window so none of them races ahead of the others.
+       */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 2,
-          duration: 0.28,
+          duration: 0.24,
           ease: "none",
         },
-        0.72,
-      );
-
-      timeline.to(
-        stage,
-        {
-          backgroundColor: "#efeeeb",
-          duration: 0.28,
-          ease: "none",
-        },
-        0.72,
+        0.76,
       );
 
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.28,
+          duration: 0.24,
           ease: "none",
         },
-        0.72,
+        0.76,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.28,
+          duration: 0.24,
           ease: "none",
         },
-        0.72,
+        0.76,
       );
 
       timeline.to(
         boundaryPlus,
         {
           rotation: 540,
-          duration: 0.28,
+          duration: 0.24,
           ease: "none",
         },
-        0.72,
+        0.76,
       );
 
       timeline.to(
         servicesRise,
-        { y: 0, duration: 0.25, ease: "power1.out" },
-        0.735,
+        {
+          y: 0,
+          duration: 0.22,
+          ease: "power1.out",
+        },
+        0.77,
       );
 
       timeline.to(
         servicesBoundary,
-        { autoAlpha: 0, duration: 0.035, ease: "none" },
-        0.955,
+        {
+          autoAlpha: 0,
+          duration: 0.03,
+          ease: "none",
+        },
+        0.97,
       );
 
       return () => {
+        entryTween.scrollTrigger?.kill();
+        entryTween.kill();
         timeline.scrollTrigger?.kill();
         timeline.kill();
       };
@@ -418,38 +470,50 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[760svh] bg-[#fbfbfb]"
+      className="relative z-[52] h-[560svh] bg-[#fbfbfb]"
     >
-      <div className="sticky top-0 h-[100svh] overflow-visible">
-        <div
-          ref={entryGuideRef}
-          className="pointer-events-none absolute inset-x-0 top-0 z-[20] h-0"
-        >
-          <div
-            className="absolute left-[2.1vw] right-[calc(50%+14px)] top-0 h-px"
-            style={{ backgroundColor: GUIDE }}
-          />
-          <div
-            className="absolute left-[calc(50%+14px)] right-[2.1vw] top-0 h-px"
-            style={{ backgroundColor: GUIDE }}
-          />
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-            <TransitionPlus marker="entry" />
-          </div>
-        </div>
-
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
           ref={stageRef}
-          className="absolute inset-0 overflow-hidden bg-[#fbfbfb]"
+          className="absolute inset-0 overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 48%, #dedddb 100%)",
+          }}
         >
+          <div
+            ref={entryGuideRef}
+            className="pointer-events-none absolute inset-0 z-[20]"
+          >
+            <div
+              className="absolute inset-x-0 top-0 h-px"
+              style={{ backgroundColor: GUIDE }}
+            />
+
+            <div
+              className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2"
+              style={{ backgroundColor: GUIDE }}
+            />
+
+            <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+              <TransitionPlus marker="entry" />
+            </div>
+          </div>
+
           <div
             ref={trackRef}
             className="absolute inset-y-0 left-0 flex w-max items-stretch"
           >
             <IntroPanel />
+
             {PROJECTS.map((project, index) => (
-              <ProjectPanel key={project.title} project={project} index={index} />
+              <ProjectPanel
+                key={project.title}
+                project={project}
+                index={index}
+              />
             ))}
+
             <CollectionPanel />
           </div>
 
