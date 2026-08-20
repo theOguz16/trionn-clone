@@ -191,13 +191,6 @@ export function HomeKeyFacts() {
           ),
       );
 
-      /*
-       * The live page uses one shared camera for all three cards.
-       * That is what makes the lower edge of the left card drift right,
-       * the right card drift left, and the middle card stay centered
-       * while the cards unfold. A per-card transformPerspective creates
-       * three separate cameras and loses that very recognizable shape.
-       */
       gsap.set(cards, {
         transformOrigin: "50% 0%",
         backfaceVisibility: "hidden",
@@ -214,12 +207,6 @@ export function HomeKeyFacts() {
         autoAlpha: 0.42,
       });
 
-      /*
-       * The reference keeps the right card visibly folded, but it never
-       * collapses into a thin plane behind the middle card. The three
-       * starting angles form a restrained 10deg staircase so the first
-       * readable state lands near 15deg / 30deg / 45deg while scrolling.
-       */
       gsap.set(cards[2], {
         rotationX: -60,
         autoAlpha: 0.44,
@@ -300,7 +287,7 @@ export function HomeKeyFacts() {
       const trigger = ScrollTrigger.create({
         trigger: grid,
         start: "top 92%",
-        end: () => `+=${Math.round(window.innerHeight * 1.05)}`,
+        end: () => `+=${Math.round(window.innerHeight * 1.35)}`,
         invalidateOnRefresh: true,
 
         onEnter: (self) => {
@@ -324,8 +311,6 @@ export function HomeKeyFacts() {
         onLeave: () => {
           setProgress(1);
           gsap.set(cards, {
-            rotationX: 0,
-            autoAlpha: 1,
             willChange: "auto",
           });
           setTheme("light");
@@ -353,9 +338,9 @@ export function HomeKeyFacts() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[50] -mt-[14svh] min-h-[132svh] bg-[#dedddb] text-[#414141]"
+      className="relative z-[50] -mt-[14svh] min-h-[154svh] bg-[#dedddb] text-[#414141]"
     >
-      <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[154svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[16svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
@@ -455,7 +440,7 @@ export function HomeKeyFacts() {
           </div>
         </div>
 
-        <div className="mx-auto mt-[7svh] max-w-[720px]">
+        <div className="mx-auto mt-[9svh] max-w-[720px]">
           <p className="text-center text-[11px] uppercase tracking-[-0.02em]">
             Our business partners
           </p>
