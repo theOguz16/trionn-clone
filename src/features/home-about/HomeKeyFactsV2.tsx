@@ -10,26 +10,48 @@ import {
   useGSAP,
 } from "@/lib/gsap/client";
 
-import {
-  canvasManager,
-} from "@/runtime/canvas/CanvasManager";
+import { canvasManager } from "@/runtime/canvas/CanvasManager";
 
-const DIGITS = Array.from(
-  { length: 10 },
-  (_, index) => index,
-);
+const DIGITS = Array.from({ length: 10 }, (_, index) => index);
 
-function setTheme(
-  theme: "dark" | "light",
-) {
+const PARTNERS = [
+  {
+    src: "https://trionn.com/images/partner1.svg",
+    alt: "Credible",
+    width: 88,
+    height: 19,
+  },
+  {
+    src: "https://trionn.com/images/partner2.svg",
+    alt: "Yellowtail",
+    width: 108,
+    height: 18,
+  },
+  {
+    src: "https://trionn.com/images/partner3.svg",
+    alt: "Luxury Presence",
+    width: 105,
+    height: 38,
+  },
+  {
+    src: "https://trionn.com/images/partner4.svg",
+    alt: "Technis",
+    width: 108,
+    height: 19,
+  },
+  {
+    src: "https://trionn.com/images/partner5.svg",
+    alt: "Ockto",
+    width: 91,
+    height: 26,
+  },
+] as const;
+
+function setTheme(theme: "dark" | "light") {
   document.documentElement.dataset.pageTheme = theme;
 }
 
-function DigitReel({
-  target,
-}: {
-  target: number;
-}) {
+function DigitReel({ target }: { target: number }) {
   return (
     <span
       data-counter-digit
@@ -100,40 +122,21 @@ function Counter20() {
 
 function PartnerWordmarks() {
   return (
-    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08] text-[#454545]">
-      <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="text-[20px] font-semibold tracking-[-0.065em]">
-          credible
-        </span>
-      </div>
-
-      <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="text-[18px] font-semibold tracking-[-0.035em]">
-          Yellowtail
-        </span>
-      </div>
-
-      <div className="flex h-[46px] items-center justify-center gap-[8px] px-5">
-        <span className="text-[23px] font-light leading-none">♮</span>
-        <span className="text-[10px] font-medium uppercase leading-[1.05] tracking-[0.08em]">
-          Luxury
-          <br />
-          Presence
-        </span>
-      </div>
-
-      <div className="flex h-[46px] items-center justify-center px-5">
-        <span className="-skew-x-[12deg] text-[20px] font-bold tracking-[-0.07em]">
-          technis
-        </span>
-      </div>
-
-      <div className="flex h-[46px] items-center justify-center gap-[7px] px-5">
-        <span className="flex h-[19px] w-[19px] items-center justify-center rounded-full border-[5px] border-[#4a4a4a]" />
-        <span className="text-[14px] font-semibold tracking-[0.03em]">
-          OCKTO
-        </span>
-      </div>
+    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08]">
+      {PARTNERS.map((partner) => (
+        <div
+          key={partner.src}
+          className="flex h-[38px] items-center justify-center px-5"
+        >
+          <img
+            src={partner.src}
+            alt={partner.alt}
+            width={partner.width}
+            height={partner.height}
+            className="block h-auto max-h-[38px] max-w-full"
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -149,40 +152,25 @@ export function HomeKeyFacts() {
         return;
       }
 
-      const grid =
-        section.querySelector<HTMLElement>(
-          "[data-facts-grid]",
-        );
+      const grid = section.querySelector<HTMLElement>("[data-facts-grid]");
       const cards = Array.from(
-        section.querySelectorAll<HTMLElement>(
-          "[data-card-shell]",
-        ),
+        section.querySelectorAll<HTMLElement>("[data-card-shell]"),
       );
       const counters = Array.from(
-        section.querySelectorAll<HTMLElement>(
-          "[data-counter]",
-        ),
+        section.querySelectorAll<HTMLElement>("[data-counter]"),
       );
 
-      if (
-        !grid ||
-        cards.length !== 3 ||
-        counters.length !== 3
-      ) {
+      if (!grid || cards.length !== 3 || counters.length !== 3) {
         return;
       }
 
       const tracks = counters.map((counter) =>
         Array.from(
-          counter.querySelectorAll<HTMLElement>(
-            "[data-counter-digit]",
-          ),
+          counter.querySelectorAll<HTMLElement>("[data-counter-digit]"),
         )
           .map((digit) => {
             const track =
-              digit.querySelector<HTMLElement>(
-                "[data-digit-track]",
-              );
+              digit.querySelector<HTMLElement>("[data-digit-track]");
 
             if (!track) {
               return null;
@@ -190,9 +178,7 @@ export function HomeKeyFacts() {
 
             return {
               track,
-              target: Number(
-                digit.dataset.target ?? "0",
-              ),
+              target: Number(digit.dataset.target ?? "0"),
             };
           })
           .filter(
@@ -206,35 +192,40 @@ export function HomeKeyFacts() {
       );
 
       /*
-       * Keep the hinge read without a wide-angle lens look. A very long
-       * perspective keeps the side edges almost parallel, while moderate
-       * rotationX still gives the cards a calm top-anchored unfold.
+       * The live page uses one shared camera for all three cards.
+       * That is what makes the lower edge of the left card drift right,
+       * the right card drift left, and the middle card stay centered
+       * while the cards unfold. A per-card transformPerspective creates
+       * three separate cameras and loses that very recognizable shape.
        */
       gsap.set(cards, {
         transformOrigin: "50% 0%",
-        transformPerspective: 10000,
         backfaceVisibility: "hidden",
+        force3D: true,
       });
 
       gsap.set(cards[0], {
         rotationX: -48,
-        autoAlpha: 0.56,
+        autoAlpha: 0,
       });
 
       gsap.set(cards[1], {
         rotationX: -54,
-        autoAlpha: 0.5,
+        autoAlpha: 0,
       });
 
+      /*
+       * The right card is deliberately much more folded. At the reference
+       * screenshot's scroll position it is still around a 45deg plane,
+       * while the left card is nearly flat.
+       */
       gsap.set(cards[2], {
-        rotationX: -60,
-        autoAlpha: 0.52,
+        rotationX: -80,
+        autoAlpha: 0,
       });
 
       tracks.flat().forEach(({ track }) => {
-        gsap.set(track, {
-          y: 0,
-        });
+        gsap.set(track, { y: 0 });
       });
 
       const timeline = gsap.timeline({
@@ -293,10 +284,16 @@ export function HomeKeyFacts() {
       timeline.to({}, { duration: 0.09 }, 0.91);
 
       const setProgress = (progress: number) => {
-        timeline.progress(
-          Math.max(0, Math.min(1, progress)),
-          false,
-        );
+        timeline.progress(Math.max(0, Math.min(1, progress)), false);
+      };
+
+      const activateLightSection = () => {
+        setTheme("light");
+        canvasManager.setActive("home-hero", false);
+
+        gsap.set(cards, {
+          willChange: "transform, opacity",
+        });
       };
 
       const trigger = ScrollTrigger.create({
@@ -306,30 +303,20 @@ export function HomeKeyFacts() {
         invalidateOnRefresh: true,
 
         onEnter: (self) => {
-          setTheme("light");
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          gsap.set(cards, {
-            willChange: "transform, opacity",
-          });
+          activateLightSection();
           setProgress(self.progress);
         },
 
         onEnterBack: (self) => {
-          setTheme("light");
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          gsap.set(cards, {
-            willChange: "transform, opacity",
-          });
+          activateLightSection();
           setProgress(self.progress);
         },
 
         onUpdate: (self) => {
+          setProgress(self.progress);
+        },
+
+        onRefresh: (self) => {
           setProgress(self.progress);
         },
 
@@ -368,10 +355,7 @@ export function HomeKeyFacts() {
       className="relative z-[50] -mt-[14svh] min-h-[132svh] bg-[#dedddb] text-[#414141]"
     >
       <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
-        <div
-          data-keyfacts-header
-          className="text-center"
-        >
+        <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
           </h2>
@@ -386,11 +370,13 @@ export function HomeKeyFacts() {
         <div
           data-facts-grid
           className="mx-auto mt-[4.8svh] grid w-full max-w-[1000px] grid-cols-1 items-start gap-[18px] md:grid-cols-3"
+          style={{
+            perspective: "1200px",
+            perspectiveOrigin: "50% 0%",
+            transformStyle: "preserve-3d",
+          }}
         >
-          <div
-            data-card-shell
-            className="relative z-[30] origin-top"
-          >
+          <div data-card-shell className="relative z-[30] origin-top">
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
               <div
                 className="absolute inset-x-0 bottom-0 top-[55px] bg-cover bg-center"
@@ -423,10 +409,7 @@ export function HomeKeyFacts() {
             </article>
           </div>
 
-          <div
-            data-card-shell
-            className="relative z-[10] origin-top"
-          >
+          <div data-card-shell className="relative z-[10] origin-top">
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#e6e4e2] text-[#474747]">
               <p className="absolute left-1/2 top-[33px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
                 Projects completed
@@ -444,10 +427,7 @@ export function HomeKeyFacts() {
             </article>
           </div>
 
-          <div
-            data-card-shell
-            className="relative z-[20] origin-top"
-          >
+          <div data-card-shell className="relative z-[20] origin-top">
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
               <div
                 className="absolute left-[30px] right-[30px] top-[79px] h-[212px] bg-cover bg-center"
