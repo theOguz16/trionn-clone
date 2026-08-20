@@ -149,9 +149,9 @@ export function HomeKeyFacts() {
         return;
       }
 
-      const header =
+      const grid =
         section.querySelector<HTMLElement>(
-          "[data-keyfacts-header]",
+          "[data-facts-grid]",
         );
       const cards = Array.from(
         section.querySelectorAll<HTMLElement>(
@@ -165,7 +165,7 @@ export function HomeKeyFacts() {
       );
 
       if (
-        !header ||
+        !grid ||
         cards.length !== 3 ||
         counters.length !== 3
       ) {
@@ -205,36 +205,23 @@ export function HomeKeyFacts() {
           ),
       );
 
-      gsap.set(header, {
-        autoAlpha: 0,
-        y: 18,
-      });
-
-      gsap.set(cards[0], {
-        scaleY: 0.76,
-        autoAlpha: 0.72,
+      /*
+       * Calibrated against the supplied Trionn frames at this viewport:
+       * when grid top is ~60% of the viewport, the reference reads roughly
+       * left 23deg / middle 49deg / right 64deg. At grid top ~30%, all three
+       * are exactly upright. Local perspective keeps z-index deterministic.
+       */
+      gsap.set(cards, {
         transformOrigin: "50% 0%",
-        force3D: false,
-      });
-
-      gsap.set(cards[1], {
-        scaleY: 0.56,
-        autoAlpha: 0.48,
-        transformOrigin: "50% 0%",
-        force3D: false,
-      });
-
-      gsap.set(cards[2], {
-        scaleY: 0.36,
-        autoAlpha: 0.26,
-        transformOrigin: "50% 0%",
-        force3D: false,
+        transformPerspective: 1120,
+        rotationX: -80,
+        autoAlpha: 0.2,
+        backfaceVisibility: "hidden",
       });
 
       tracks.flat().forEach(({ track }) => {
         gsap.set(track, {
           y: 0,
-          force3D: false,
         });
       });
 
@@ -245,132 +232,54 @@ export function HomeKeyFacts() {
         },
       });
 
-      timeline.to(
-        header,
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.14,
-          ease: "power2.out",
-        },
-        0.02,
-      );
-
       timeline
         .to(
           cards[0],
           {
-            scaleY: 1.035,
+            rotationX: 0,
             autoAlpha: 1,
-            duration: 0.3,
-            ease: "power2.out",
-            force3D: false,
+            duration: 0.54,
+            ease: "none",
           },
-          0.08,
-        )
-        .to(
-          cards[0],
-          {
-            scaleY: 0.992,
-            duration: 0.08,
-            ease: "power1.inOut",
-            force3D: false,
-          },
-          0.38,
-        )
-        .to(
-          cards[0],
-          {
-            scaleY: 1,
-            duration: 0.07,
-            ease: "power1.out",
-            force3D: false,
-          },
-          0.46,
-        );
-
-      timeline
-        .to(
-          cards[1],
-          {
-            scaleY: 1.045,
-            autoAlpha: 1,
-            duration: 0.32,
-            ease: "power2.out",
-            force3D: false,
-          },
-          0.18,
+          0.07,
         )
         .to(
           cards[1],
           {
-            scaleY: 0.988,
-            duration: 0.09,
-            ease: "power1.inOut",
-            force3D: false,
-          },
-          0.5,
-        )
-        .to(
-          cards[1],
-          {
-            scaleY: 1,
-            duration: 0.07,
-            ease: "power1.out",
-            force3D: false,
-          },
-          0.59,
-        );
-
-      timeline
-        .to(
-          cards[2],
-          {
-            scaleY: 1.055,
+            rotationX: 0,
             autoAlpha: 1,
-            duration: 0.34,
-            ease: "power2.out",
-            force3D: false,
+            duration: 0.54,
+            ease: "none",
           },
-          0.28,
+          0.244,
         )
         .to(
           cards[2],
           {
-            scaleY: 0.985,
-            duration: 0.1,
-            ease: "power1.inOut",
-            force3D: false,
+            rotationX: 0,
+            autoAlpha: 1,
+            duration: 0.54,
+            ease: "none",
           },
-          0.62,
-        )
-        .to(
-          cards[2],
-          {
-            scaleY: 1,
-            duration: 0.08,
-            ease: "power1.out",
-            force3D: false,
-          },
-          0.72,
+          0.345,
         );
 
-      tracks.forEach((counterTracks, index) => {
+      tracks.forEach((counterTracks) => {
         counterTracks.forEach(({ track, target }) => {
           timeline.to(
             track,
             {
               y: `${-target}em`,
-              duration: 0.2,
+              duration: 0.18,
               ease: "power2.out",
-              force3D: false,
             },
-            0.26 + index * 0.12,
+            0.18,
           );
         });
       });
 
-      timeline.to({}, { duration: 0.2 }, 0.8);
+      /* Keep the timeline normalized to a true 0 → 1 clock. */
+      timeline.to({}, { duration: 0.115 }, 0.885);
 
       const setProgress = (progress: number) => {
         timeline.progress(
@@ -380,18 +289,10 @@ export function HomeKeyFacts() {
       };
 
       const trigger = ScrollTrigger.create({
-        trigger: section,
-        start: "top 94%",
-        end: "bottom 64%",
+        trigger: grid,
+        start: "top 85%",
+        end: "top 30%",
         invalidateOnRefresh: true,
-
-        onUpdate: (self) => {
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
-          setProgress(self.progress);
-        },
 
         onEnter: (self) => {
           setTheme("light");
@@ -399,6 +300,9 @@ export function HomeKeyFacts() {
             "home-hero",
             false,
           );
+          gsap.set(cards, {
+            willChange: "transform, opacity",
+          });
           setProgress(self.progress);
         },
 
@@ -408,20 +312,31 @@ export function HomeKeyFacts() {
             "home-hero",
             false,
           );
+          gsap.set(cards, {
+            willChange: "transform, opacity",
+          });
+          setProgress(self.progress);
+        },
+
+        onUpdate: (self) => {
           setProgress(self.progress);
         },
 
         onLeave: () => {
-          canvasManager.setActive(
-            "home-hero",
-            false,
-          );
           setProgress(1);
+          gsap.set(cards, {
+            rotationX: 0,
+            autoAlpha: 1,
+            willChange: "auto",
+          });
           setTheme("light");
         },
 
         onLeaveBack: () => {
           setProgress(0);
+          gsap.set(cards, {
+            willChange: "auto",
+          });
           setTheme("dark");
         },
       });
@@ -444,7 +359,7 @@ export function HomeKeyFacts() {
       <div className="min-h-[132svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
         <div
           data-keyfacts-header
-          className="text-center opacity-0"
+          className="text-center"
         >
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">
             Key facts
@@ -457,36 +372,41 @@ export function HomeKeyFacts() {
           </p>
         </div>
 
-        <div className="mx-auto mt-[6.3svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[20px] md:grid-cols-3">
+        <div
+          data-facts-grid
+          className="mx-auto mt-[4.8svh] grid w-full max-w-[1000px] grid-cols-1 items-start gap-[18px] md:grid-cols-3"
+        >
           <div
             data-card-shell
-            className="relative z-[30] origin-top opacity-0"
+            className="relative z-[30] origin-top"
           >
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
               <div
-                className="absolute inset-x-0 bottom-0 top-[56px] bg-cover bg-center"
+                className="absolute inset-x-0 bottom-0 top-[55px] bg-cover bg-center"
                 style={{
                   backgroundImage:
                     "url('https://images.unsplash.com/photo-1760719438551-6c5408b122e9?auto=format&fit=crop&q=82&w=900')",
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/25" />
 
-              <p className="absolute left-[31px] top-[34px] z-10 text-[12px] uppercase tracking-[-0.025em]">
+              <p className="absolute left-[31px] top-[33px] z-10 text-[12px] uppercase tracking-[-0.025em]">
                 Featured &amp; Awards
               </p>
 
-              <div className="absolute bottom-[91px] left-[31px] z-10 flex h-[22px] w-[54px] items-center justify-center rounded-full border border-white/50 text-[12px] font-semibold tracking-[-0.03em] text-white">
-                FWA
-              </div>
+              <img
+                src="https://trionn.com/images/thefwa.svg"
+                alt="FWA"
+                className="absolute bottom-[78px] left-[31px] z-10 h-[22px] w-[58px] object-contain brightness-0 invert"
+              />
 
-              <p className="absolute bottom-[32px] left-[31px] z-10 max-w-[172px] text-[13px] leading-[1.18] text-white/70">
+              <p className="absolute bottom-[30px] left-[31px] z-10 max-w-[176px] text-[13px] leading-[1.18] text-white/70">
                 Featured on top design
                 <br />
                 platforms worldwide.
               </p>
 
-              <div className="absolute bottom-[25px] right-[27px] z-10">
+              <div className="absolute bottom-[22px] right-[27px] z-10">
                 <Counter50 />
               </div>
             </article>
@@ -494,18 +414,18 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[10] origin-top opacity-0"
+            className="relative z-[20] origin-top"
           >
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e7e5e3] text-[#474747]">
-              <p className="absolute left-1/2 top-[34px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#e6e4e2] text-[#474747]">
+              <p className="absolute left-1/2 top-[33px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">
                 Projects completed
               </p>
 
-              <div className="absolute left-1/2 top-[108px] flex h-[170px] w-[170px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
+              <div className="absolute left-1/2 top-[104px] flex h-[166px] w-[166px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]">
                 <Counter15K />
               </div>
 
-              <p className="absolute bottom-[32px] left-1/2 w-[225px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">
+              <p className="absolute bottom-[30px] left-1/2 w-[232px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">
                 90% of our clients seek our
                 <br />
                 services for a second project.
@@ -515,35 +435,35 @@ export function HomeKeyFacts() {
 
           <div
             data-card-shell
-            className="relative z-[20] origin-top opacity-0"
+            className="relative z-[10] origin-top"
           >
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#414146] text-[#e7e6e3]">
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
               <div
-                className="absolute left-[30px] right-[30px] top-[80px] h-[220px] bg-cover bg-center"
+                className="absolute left-[30px] right-[30px] top-[79px] h-[212px] bg-cover bg-center"
                 style={{
                   backgroundImage:
                     "url('https://images.unsplash.com/photo-1562569633-622303bafef5?auto=format&fit=crop&q=82&w=900')",
                 }}
               />
 
-              <p className="absolute right-[29px] top-[34px] z-10 text-[12px] uppercase tracking-[-0.025em]">
+              <p className="absolute right-[29px] top-[33px] z-10 text-[12px] uppercase tracking-[-0.025em]">
                 Our team members
               </p>
 
-              <p className="absolute bottom-[36px] left-[31px] z-10 max-w-[145px] text-[13px] leading-[1.15] text-white/60">
+              <p className="absolute bottom-[34px] left-[31px] z-10 max-w-[150px] text-[13px] leading-[1.15] text-white/60">
                 Different skills.
                 <br />
                 One standard.
               </p>
 
-              <div className="absolute bottom-[25px] right-[28px] z-10">
+              <div className="absolute bottom-[22px] right-[28px] z-10">
                 <Counter20 />
               </div>
             </article>
           </div>
         </div>
 
-        <div className="mx-auto mt-[6.5svh] max-w-[760px]">
+        <div className="mx-auto mt-[7svh] max-w-[720px]">
           <p className="text-center text-[11px] uppercase tracking-[-0.02em]">
             Our business partners
           </p>
