@@ -51,14 +51,6 @@ function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
 function IntroPanel() {
   return (
     <section className="relative h-[100svh] w-[50vw] flex-none bg-transparent">
-      <span
-        data-opening-plus
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[-7px] top-[50.5%] z-[3] block text-[18px] font-light leading-none text-[#4d4d4b]"
-      >
-        +
-      </span>
-
       <div
         data-work-intro-rise
         className="absolute left-[2.1vw] top-[53.2%] -translate-y-1/2"
@@ -174,20 +166,13 @@ function ServicesContent() {
       <div className="absolute bottom-[7.7svh] right-[2.1vw]">
         <ArrowLink href="/services">View services</ArrowLink>
       </div>
-
-      <span
-        data-closing-plus
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-7px] top-[50.5%] block text-[18px] font-light leading-none text-[#3f3f3d]"
-      >
-        +
-      </span>
     </div>
   );
 }
 
 export function HomeSelectedWork() {
   const sectionRef = useRef<HTMLElement>(null);
+  const entryFrameRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const servicesBoundaryRef = useRef<HTMLDivElement>(null);
@@ -195,11 +180,12 @@ export function HomeSelectedWork() {
   useGSAP(
     () => {
       const section = sectionRef.current;
+      const entryFrame = entryFrameRef.current;
       const track = trackRef.current;
       const services = servicesRef.current;
       const servicesBoundary = servicesBoundaryRef.current;
 
-      if (!section || !track || !services || !servicesBoundary) {
+      if (!section || !entryFrame || !track || !services || !servicesBoundary) {
         return;
       }
 
@@ -215,14 +201,11 @@ export function HomeSelectedWork() {
       const servicesRise = section.querySelector<HTMLElement>(
         "[data-services-rise]",
       );
-      const openingPlus = section.querySelector<HTMLElement>(
-        "[data-opening-plus]",
+      const entryPlus = entryFrame.querySelector<HTMLElement>(
+        "[data-entry-plus]",
       );
       const boundaryPlus = servicesBoundary.querySelector<HTMLElement>(
         "[data-boundary-plus]",
-      );
-      const closingPlus = section.querySelector<HTMLElement>(
-        "[data-closing-plus]",
       );
 
       if (
@@ -230,12 +213,17 @@ export function HomeSelectedWork() {
         projectRises.length !== PROJECTS.length ||
         !collectionRise ||
         !servicesRise ||
-        !openingPlus ||
-        !boundaryPlus ||
-        !closingPlus
+        !entryPlus ||
+        !boundaryPlus
       ) {
         return;
       }
+
+      gsap.set(entryFrame, {
+        y: "54svh",
+        force3D: true,
+        willChange: "transform",
+      });
 
       gsap.set(track, {
         x: 0,
@@ -244,19 +232,19 @@ export function HomeSelectedWork() {
       });
 
       gsap.set(introRise, {
-        y: "10svh",
+        y: "8svh",
         force3D: true,
         willChange: "transform",
       });
 
       gsap.set(projectRises, {
-        y: "14svh",
+        y: "10svh",
         force3D: true,
         willChange: "transform",
       });
 
       gsap.set(collectionRise, {
-        y: "12svh",
+        y: "9svh",
         force3D: true,
         willChange: "transform",
       });
@@ -267,7 +255,7 @@ export function HomeSelectedWork() {
       });
 
       gsap.set(servicesRise, {
-        y: "14svh",
+        y: "18svh",
         force3D: true,
         willChange: "transform",
       });
@@ -278,20 +266,12 @@ export function HomeSelectedWork() {
         willChange: "transform",
       });
 
-      gsap.set([openingPlus, boundaryPlus, closingPlus], {
+      gsap.set([entryPlus, boundaryPlus], {
         rotation: 45,
         transformOrigin: "50% 50%",
         force3D: true,
       });
 
-      /*
-       * Reference motion:
-       * 1) project rail moves fairly quickly while each incoming card rises
-       *    from below into the shared final baseline;
-       * 2) Loftloom + collection settle side-by-side;
-       * 3) collection then travels into the left half while Services wipes
-       *    in from the right. The + marker lives on that moving wipe edge.
-       */
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: section,
@@ -302,11 +282,22 @@ export function HomeSelectedWork() {
         },
       });
 
+      /* Key facts -> selected work: the whole work scene rises from below. */
       timeline.to(
-        track,
+        entryFrame,
         {
-          x: () => -window.innerWidth * 1.5,
-          duration: 0.7,
+          y: 0,
+          duration: 0.18,
+          ease: "none",
+        },
+        0,
+      );
+
+      timeline.to(
+        entryPlus,
+        {
+          rotation: 765,
+          duration: 1,
           ease: "none",
         },
         0,
@@ -316,10 +307,21 @@ export function HomeSelectedWork() {
         introRise,
         {
           y: 0,
-          duration: 0.15,
+          duration: 0.13,
           ease: "power1.out",
         },
-        0,
+        0.03,
+      );
+
+      /* Horizontal rail: quick enough that every wheel/trackpad gesture moves. */
+      timeline.to(
+        track,
+        {
+          x: () => -window.innerWidth * 1.5,
+          duration: 0.6,
+          ease: "none",
+        },
+        0.16,
       );
 
       projectRises.forEach((projectRise, index) => {
@@ -327,10 +329,10 @@ export function HomeSelectedWork() {
           projectRise,
           {
             y: 0,
-            duration: 0.2,
+            duration: 0.16,
             ease: "power1.out",
           },
-          0.01 + index * 0.19,
+          0.17 + index * 0.17,
         );
       });
 
@@ -338,80 +340,61 @@ export function HomeSelectedWork() {
         collectionRise,
         {
           y: 0,
-          duration: 0.18,
+          duration: 0.15,
           ease: "power1.out",
         },
-        0.52,
+        0.62,
       );
 
-      timeline.to(
-        openingPlus,
-        {
-          rotation: 405,
-          duration: 0.7,
-          ease: "none",
-        },
-        0,
-      );
-
+      /* Collection -> services: both the wipe edge and type move together. */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 2,
-          duration: 0.3,
+          duration: 0.24,
           ease: "none",
         },
-        0.7,
+        0.76,
       );
 
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.3,
+          duration: 0.24,
           ease: "none",
         },
-        0.7,
+        0.76,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.3,
+          duration: 0.24,
           ease: "none",
         },
-        0.7,
+        0.76,
       );
 
       timeline.to(
         boundaryPlus,
         {
           rotation: 585,
-          duration: 0.3,
+          duration: 0.24,
           ease: "none",
         },
-        0.7,
+        0.76,
       );
 
       timeline.to(
         servicesRise,
         {
           y: 0,
-          duration: 0.24,
+          duration: 0.2,
           ease: "power1.out",
         },
-        0.7,
-      );
-
-      timeline.to(
-        closingPlus,
-        {
-          rotation: 405,
-          duration: 0.22,
-          ease: "none",
-        },
-        0.78,
+        0.77,
       );
 
       return () => {
@@ -425,50 +408,64 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[460svh] bg-[#d1d1d1]"
+      className="relative z-[52] -mt-[54svh] h-[410svh] bg-transparent"
     >
-      <div
-        className="sticky top-0 h-[100svh] overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(180deg, rgb(255 255 255) 0%, rgb(209 209 209) 100%)",
-        }}
-      >
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-transparent">
         <div
-          ref={trackRef}
-          className="absolute inset-y-0 left-0 flex w-max items-stretch"
+          ref={entryFrameRef}
+          className="absolute inset-0 overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(180deg, #dedddb 0%, #e8e8e6 45%, #d1d1d0 100%)",
+          }}
         >
-          <IntroPanel />
+          <div className="pointer-events-none absolute left-[2.1vw] right-[2.1vw] top-0 z-[8] h-px bg-black/[0.1]" />
+          <div className="pointer-events-none absolute bottom-0 left-1/2 top-0 z-[2] w-px bg-black/[0.09]" />
 
-          {PROJECTS.map((project, index) => (
-            <ProjectPanel
-              key={project.title}
-              project={project}
-              index={index}
-            />
-          ))}
-
-          <CollectionPanel />
-        </div>
-
-        <div
-          ref={servicesRef}
-          className="absolute inset-0 z-[5] overflow-hidden"
-        >
-          <ServicesContent />
-        </div>
-
-        <div
-          ref={servicesBoundaryRef}
-          className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.11]"
-        >
           <span
-            data-boundary-plus
+            data-entry-plus
             aria-hidden="true"
-            className="absolute left-1/2 top-[50.5%] block -translate-x-1/2 text-[18px] font-light leading-none text-[#424240]"
+            className="pointer-events-none absolute left-1/2 top-0 z-[9] block -translate-x-1/2 -translate-y-1/2 text-[18px] font-light leading-none text-[#424240]"
           >
             +
           </span>
+
+          <div
+            ref={trackRef}
+            className="absolute inset-y-0 left-0 flex w-max items-stretch"
+          >
+            <IntroPanel />
+
+            {PROJECTS.map((project, index) => (
+              <ProjectPanel
+                key={project.title}
+                project={project}
+                index={index}
+              />
+            ))}
+
+            <CollectionPanel />
+          </div>
+
+          <div
+            ref={servicesRef}
+            className="absolute inset-0 z-[5] overflow-hidden"
+          >
+            <ServicesContent />
+          </div>
+
+          <div
+            ref={servicesBoundaryRef}
+            className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px bg-black/[0.11]"
+          >
+            <span
+              data-boundary-plus
+              aria-hidden="true"
+              className="absolute left-1/2 top-[50.5%] block -translate-x-1/2 text-[18px] font-light leading-none text-[#424240]"
+            >
+              +
+            </span>
+          </div>
         </div>
       </div>
     </section>
