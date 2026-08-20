@@ -18,6 +18,10 @@ import {
   HomeKeyFacts,
 } from "@/features/home-about/HomeKeyFacts";
 
+import {
+  HomeSelectedWork,
+} from "@/features/home-work/HomeSelectedWork";
+
 export const metadata:
   Metadata = {
     title:
@@ -37,6 +41,8 @@ export default function HomePage() {
       <HomeStripeWipe />
 
       <HomeKeyFacts />
+
+      <HomeSelectedWork />
     </main>
   );
 }
