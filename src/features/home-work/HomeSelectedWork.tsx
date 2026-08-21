@@ -316,33 +316,17 @@ export function HomeSelectedWork() {
       );
 
       /*
-       * Phase A: move through the work rail normally until Loftloom sits in
-       * the left half and Collection sits in the right half. This keeps the
-       * project sequence readable without creating a long empty grey hold.
+       * The work rail consumes the first 68% of the normalized scroll range.
+       * It lands with Loftloom on the left and Collection on the right.
        */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.58,
+          duration: 0.68,
           ease: "none",
         },
         0,
-      );
-
-      /*
-       * Phase B: immediately finish the final half-panel travel. Collection
-       * lands in the full left half exactly as Services begins revealing on
-       * the right, matching the source split frame.
-       */
-      timeline.to(
-        track,
-        {
-          x: () => -window.innerWidth * 2,
-          duration: 0.08,
-          ease: "none",
-        },
-        0.58,
       );
 
       const projectStarts = [0.02, 0.2, 0.38];
@@ -366,78 +350,63 @@ export function HomeSelectedWork() {
           duration: 0.18,
           ease: "power1.out",
         },
-        0.46,
+        0.48,
       );
 
+      /*
+       * Trionn-style shared handoff: one continuous normalized window drives
+       * the rail, reveal mask and boundary together. Collection moves from the
+       * right half through the left half and then exits while Services follows
+       * directly behind its right edge. There is deliberately no midpoint hold.
+       */
       timeline.to(
-        services,
+        track,
         {
-          clipPath: "inset(0% 0% 0% 50%)",
-          duration: 0.12,
+          x: () => -window.innerWidth * 2.5,
+          duration: 0.30,
           ease: "none",
         },
-        0.66,
+        0.68,
       );
 
-      timeline.to(
-        servicesBoundary,
-        {
-          x: () => window.innerWidth * 0.5,
-          duration: 0.12,
-          ease: "none",
-        },
-        0.66,
-      );
-
-      timeline.to(
-        boundaryPlus,
-        {
-          rotation: 270,
-          duration: 0.12,
-          ease: "none",
-        },
-        0.66,
-      );
-
-      /* Brief split composition, then Services takes the full viewport. */
       timeline.to(
         services,
         {
           clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.14,
+          duration: 0.30,
           ease: "none",
         },
-        0.84,
+        0.68,
       );
 
       timeline.to(
         servicesBoundary,
         {
           x: 0,
-          duration: 0.14,
+          duration: 0.30,
           ease: "none",
         },
-        0.84,
+        0.68,
       );
 
       timeline.to(
         boundaryPlus,
         {
           rotation: 540,
-          duration: 0.14,
+          duration: 0.30,
           ease: "none",
         },
-        0.84,
+        0.68,
       );
 
       timeline.to(
         servicesBoundary,
         {
           autoAlpha: 0,
-          duration: 0.025,
+          duration: 0.02,
           ease: "none",
         },
-        0.975,
+        0.98,
       );
 
       return () => {
@@ -451,7 +420,7 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[680svh] bg-[#fbfbfb]"
+      className="relative z-[52] h-[640svh] bg-[#fbfbfb]"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
