@@ -320,24 +320,29 @@ export function HomeSelectedWork() {
         0,
       );
 
+      /*
+       * Complete the work rail before Services starts. At -2W the Collection
+       * panel occupies the left half of the viewport (0..50vw), matching the
+       * source transition composition instead of leaving a project fragment.
+       */
       timeline.to(
         track,
         {
-          x: () => -window.innerWidth * 1.5,
+          x: () => -window.innerWidth * 2,
           duration: 0.7,
           ease: "none",
         },
         0,
       );
 
-      const projectStarts = [0.02, 0.25, 0.48];
+      const projectStarts = [0.02, 0.2, 0.38];
 
       projectRises.forEach((projectRise, index) => {
         timeline.to(
           projectRise,
           {
             y: 0,
-            duration: 0.27,
+            duration: 0.24,
             ease: "power1.out",
           },
           projectStarts[index],
@@ -351,24 +356,15 @@ export function HomeSelectedWork() {
           duration: 0.2,
           ease: "power1.out",
         },
-        0.58,
+        0.46,
       );
 
-      timeline.to(
-        track,
-        {
-          x: () => -window.innerWidth * 2,
-          duration: 0.3,
-          ease: "none",
-        },
-        0.7,
-      );
-
+      /* Phase B: reveal only the right half of Services. */
       timeline.to(
         services,
         {
-          clipPath: "inset(0% 0% 0% 0%)",
-          duration: 0.3,
+          clipPath: "inset(0% 0% 0% 50%)",
+          duration: 0.12,
           ease: "none",
         },
         0.7,
@@ -377,8 +373,8 @@ export function HomeSelectedWork() {
       timeline.to(
         servicesBoundary,
         {
-          x: 0,
-          duration: 0.3,
+          x: () => window.innerWidth * 0.5,
+          duration: 0.12,
           ease: "none",
         },
         0.7,
@@ -387,31 +383,73 @@ export function HomeSelectedWork() {
       timeline.to(
         boundaryPlus,
         {
-          rotation: 540,
-          duration: 0.3,
+          rotation: 270,
+          duration: 0.12,
           ease: "none",
         },
         0.7,
+      );
+
+      /* Keep content moving during the center hold so scroll never feels dead. */
+      timeline.to(
+        servicesRise,
+        {
+          y: "7svh",
+          duration: 0.16,
+          ease: "power1.out",
+        },
+        0.7,
+      );
+
+      /* Phase C: after a short 50/50 composition, Services takes the viewport. */
+      timeline.to(
+        services,
+        {
+          clipPath: "inset(0% 0% 0% 0%)",
+          duration: 0.14,
+          ease: "none",
+        },
+        0.86,
+      );
+
+      timeline.to(
+        servicesBoundary,
+        {
+          x: 0,
+          duration: 0.14,
+          ease: "none",
+        },
+        0.86,
+      );
+
+      timeline.to(
+        boundaryPlus,
+        {
+          rotation: 540,
+          duration: 0.14,
+          ease: "none",
+        },
+        0.86,
       );
 
       timeline.to(
         servicesRise,
         {
           y: 0,
-          duration: 0.28,
+          duration: 0.14,
           ease: "power1.out",
         },
-        0.71,
+        0.86,
       );
 
       timeline.to(
         servicesBoundary,
         {
           autoAlpha: 0,
-          duration: 0.04,
+          duration: 0.035,
           ease: "none",
         },
-        0.96,
+        0.965,
       );
 
       return () => {
@@ -425,7 +463,7 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[620svh] bg-[#fbfbfb]"
+      className="relative z-[52] h-[760svh] bg-[#fbfbfb]"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
