@@ -6,7 +6,18 @@ export const revalidate = 60 * 60 * 24;
 
 function rewriteUri(uri: string) {
   const clean = uri.replace(/^\.\//, "");
-  return `/api/polyhaven/rock/file/${clean}`;
+
+  /*
+   * GLTFLoader resolves non-http dependency URLs against the model's base
+   * path. The model lives at /api/polyhaven/rock/model, whose base path is
+   * /api/polyhaven/rock/. Returning an app-root path here caused Three's
+   * LoaderUtils to concatenate both paths and request
+   * /api/polyhaven/rock/api/polyhaven/rock/file/....
+   *
+   * Keep dependencies relative to the model endpoint so they resolve to the
+   * intended /api/polyhaven/rock/file/... route.
+   */
+  return `file/${clean}`;
 }
 
 export async function GET() {
