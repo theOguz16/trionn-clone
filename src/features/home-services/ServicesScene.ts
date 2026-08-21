@@ -43,7 +43,7 @@ export class ServicesScene implements RuntimeScene {
 
   private readonly canvas: HTMLCanvasElement;
   private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  private readonly camera = new THREE.PerspectiveCamera(37, 1, 0.1, 100);
   private readonly renderer: THREE.WebGLRenderer;
   private readonly root = new THREE.Group();
   private readonly slabPivot = new THREE.Group();
@@ -59,7 +59,7 @@ export class ServicesScene implements RuntimeScene {
     this.canvas = canvas;
 
     qualityManager.init();
-    this.camera.position.set(0, 0.01, 6.35);
+    this.camera.position.set(0, 0.01, 6.6);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -72,7 +72,7 @@ export class ServicesScene implements RuntimeScene {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.78;
+    this.renderer.toneMappingExposure = 0.7;
 
     const room = new RoomEnvironment();
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -85,16 +85,16 @@ export class ServicesScene implements RuntimeScene {
     this.root.add(this.slabPivot);
     this.slabPivot.add(this.slab.root, this.markRoot);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.14);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.11);
 
-    const key = new THREE.DirectionalLight(0xf0efea, 3.1);
-    key.position.set(-3.6, 4.6, 5.8);
+    const key = new THREE.DirectionalLight(0xe8e9e6, 2.55);
+    key.position.set(-3.5, 4.5, 5.6);
 
-    const side = new THREE.DirectionalLight(0x8d9bac, 0.58);
-    side.position.set(3.4, 0.7, 3.2);
+    const side = new THREE.DirectionalLight(0x8290a2, 0.42);
+    side.position.set(3.2, 0.9, 3.0);
 
-    const rim = new THREE.DirectionalLight(0x617186, 0.7);
-    rim.position.set(1.2, -2.3, -4.2);
+    const rim = new THREE.DirectionalLight(0x68788b, 0.62);
+    rim.position.set(1.2, -2.2, -4.0);
 
     this.scene.add(ambient, key, side, rim);
 
@@ -107,9 +107,9 @@ export class ServicesScene implements RuntimeScene {
 
   private createSurfaceMarks() {
     const marks = [
-      { label: "M", x: -0.52, y: -0.14, z: 0.335, size: 0.32 },
-      { label: "N", x: 0.34, y: 0.44, z: 0.335, size: 0.3 },
-      { label: "B", x: 0.43, y: -0.36, z: 0.335, size: 0.28 },
+      { label: "M", x: -0.52, y: -0.14, z: 0.235, size: 0.32 },
+      { label: "N", x: 0.34, y: 0.44, z: 0.235, size: 0.3 },
+      { label: "B", x: 0.43, y: -0.36, z: 0.235, size: 0.28 },
     ];
 
     marks.forEach((mark) => {
@@ -168,9 +168,9 @@ export class ServicesScene implements RuntimeScene {
       this.markRoot.add(line);
     };
 
-    makeLine(0.68, 0.016, -0.1, 0.14, 0.338, -0.5);
-    makeLine(0.42, 0.014, 0.55, -0.07, 0.338, 0);
-    makeLine(0.014, 0.42, 0.55, -0.07, 0.338, 0);
+    makeLine(0.68, 0.016, -0.1, 0.14, 0.238, -0.5);
+    makeLine(0.42, 0.014, 0.55, -0.07, 0.238, 0);
+    makeLine(0.014, 0.42, 0.55, -0.07, 0.238, 0);
 
     this.markMaterials.push(lineMaterial);
     this.markRoot.visible = false;
@@ -185,17 +185,17 @@ export class ServicesScene implements RuntimeScene {
     );
 
     const progress = this.progressCurrent;
-    const breakProgress = smoothStep((progress - 0.12) / 0.5);
-    const settleProgress = smoothStep((progress - 0.62) / 0.18);
-    const finalProgress = smoothStep((progress - 0.76) / 0.2);
+    const breakProgress = smoothStep((progress - 0.12) / 0.48);
+    const settleProgress = smoothStep((progress - 0.6) / 0.18);
+    const finalProgress = smoothStep((progress - 0.75) / 0.2);
 
-    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.012;
-    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.022;
+    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.01;
+    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.018;
 
-    const introRotation = new THREE.Euler(-0.22, -0.4, -0.12);
-    const breakRotation = new THREE.Euler(0.58, 1.72, 0.2);
-    const settleRotation = new THREE.Euler(0.1, 0.3, 0.015);
-    const finalRotation = new THREE.Euler(-0.02, 0.035, -0.012);
+    const introRotation = new THREE.Euler(-0.18, -0.34, -0.1);
+    const breakRotation = new THREE.Euler(0.44, 1.46, 0.16);
+    const settleRotation = new THREE.Euler(0.08, 0.24, 0.01);
+    const finalRotation = new THREE.Euler(-0.045, -0.08, -0.014);
 
     const introQuaternion = new THREE.Quaternion().setFromEuler(introRotation);
     const breakQuaternion = new THREE.Quaternion().setFromEuler(breakRotation);
@@ -210,21 +210,21 @@ export class ServicesScene implements RuntimeScene {
     this.slabPivot.rotation.x += idleX;
     this.slabPivot.rotation.y += idleY;
 
-    const introScale = 0.47;
-    const breakScale = THREE.MathUtils.lerp(introScale, 0.72, breakProgress);
-    const settleScale = THREE.MathUtils.lerp(breakScale, 0.76, settleProgress);
-    const finalScale = THREE.MathUtils.lerp(settleScale, 0.78, finalProgress);
+    const introScale = 0.43;
+    const breakScale = THREE.MathUtils.lerp(introScale, 0.65, breakProgress);
+    const settleScale = THREE.MathUtils.lerp(breakScale, 0.67, settleProgress);
+    const finalScale = THREE.MathUtils.lerp(settleScale, 0.7, finalProgress);
 
     this.slabPivot.scale.set(
       finalScale,
-      finalScale * THREE.MathUtils.lerp(1, 1.02, finalProgress),
+      finalScale * THREE.MathUtils.lerp(1, 1.01, finalProgress),
       finalScale,
     );
 
-    const introPosition = new THREE.Vector3(0, 0.63, 0);
-    const breakPosition = new THREE.Vector3(0.08, 0.06, 0);
+    const introPosition = new THREE.Vector3(0, 0.6, 0);
+    const breakPosition = new THREE.Vector3(0.06, 0.04, 0);
     const settlePosition = new THREE.Vector3(0, -0.01, 0);
-    const finalPosition = new THREE.Vector3(0, -0.015, 0);
+    const finalPosition = new THREE.Vector3(0, -0.005, -0.06);
 
     const position = introPosition
       .clone()
@@ -234,9 +234,9 @@ export class ServicesScene implements RuntimeScene {
 
     this.slabPivot.position.copy(position);
 
-    const marksIn = smoothStep((progress - 0.31) / 0.24);
-    const marksOut = 1 - smoothStep((progress - 0.66) / 0.1);
-    const markOpacity = marksIn * marksOut * 0.9;
+    const marksIn = smoothStep((progress - 0.31) / 0.22);
+    const marksOut = 1 - smoothStep((progress - 0.63) / 0.1);
+    const markOpacity = marksIn * marksOut * 0.84;
 
     this.markRoot.visible = markOpacity > 0.002;
     this.markMaterials.forEach((material) => {
