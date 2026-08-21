@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 import type {
@@ -8,7 +7,7 @@ import type {
 } from "@/runtime/canvas/RuntimeScene";
 import { qualityManager } from "@/runtime/quality/QualityManager";
 
-const ROCK_MODEL_URL = "/api/polyhaven/rock/model?v=5";
+import { ServicesSlab } from "./ServicesSlab";
 
 function smoothStep(value: number) {
   const t = THREE.MathUtils.clamp(value, 0, 1);
@@ -44,18 +43,15 @@ export class ServicesScene implements RuntimeScene {
 
   private readonly canvas: HTMLCanvasElement;
   private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  private readonly camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
   private readonly renderer: THREE.WebGLRenderer;
   private readonly root = new THREE.Group();
-  private readonly rockPivot = new THREE.Group();
+  private readonly slabPivot = new THREE.Group();
   private readonly markRoot = new THREE.Group();
-  private readonly slashRoot = new THREE.Group();
   private readonly environmentTarget: THREE.WebGLRenderTarget;
   private readonly markMaterials: THREE.MeshBasicMaterial[] = [];
   private readonly markTextures: THREE.Texture[] = [];
-  private readonly slashMaterial: THREE.MeshBasicMaterial;
-  private rock: THREE.Object3D | null = null;
-  private destroyed = false;
+  private readonly slab = new ServicesSlab();
   private progressTarget = 0;
   private progressCurrent = 0;
 
@@ -63,7 +59,7 @@ export class ServicesScene implements RuntimeScene {
     this.canvas = canvas;
 
     qualityManager.init();
-    this.camera.position.set(0, 0.02, 5.35);
+    this.camera.position.set(0, 0.02, 5.55);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -76,7 +72,7 @@ export class ServicesScene implements RuntimeScene {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.62;
+    this.renderer.toneMappingExposure = 0.56;
 
     const room = new RoomEnvironment();
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -86,34 +82,23 @@ export class ServicesScene implements RuntimeScene {
     pmrem.dispose();
 
     this.scene.add(this.root);
-    this.root.add(this.rockPivot);
-    this.rockPivot.add(this.markRoot, this.slashRoot);
+    this.root.add(this.slabPivot);
+    this.slabPivot.add(this.slab.root, this.markRoot);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.12);
-    const key = new THREE.DirectionalLight(0xe7e8e5, 2.15);
-    key.position.set(-2.8, 3.8, 4.6);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.08);
 
-    const fill = new THREE.DirectionalLight(0x75879b, 0.48);
-    fill.position.set(3.4, 0.4, 2.4);
+    const key = new THREE.DirectionalLight(0xe8e8e3, 2.35);
+    key.position.set(-3.4, 4.8, 5.6);
 
-    const rim = new THREE.DirectionalLight(0x7f8b96, 0.72);
-    rim.position.set(0.8, -2.2, -3.2);
+    const side = new THREE.DirectionalLight(0x8390a0, 0.28);
+    side.position.set(3.1, 0.5, 2.6);
 
-    this.scene.add(ambient, key, fill, rim);
+    const rim = new THREE.DirectionalLight(0x586879, 0.48);
+    rim.position.set(1.5, -2.6, -4.2);
 
-    this.slashMaterial = new THREE.MeshBasicMaterial({
-      color: 0x080a0c,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      depthTest: false,
-      toneMapped: false,
-      side: THREE.DoubleSide,
-    });
+    this.scene.add(ambient, key, side, rim);
 
     this.createSurfaceMarks();
-    this.createFinalSlashes();
-    void this.loadRock();
   }
 
   setProgress(progress: number) {
@@ -122,9 +107,9 @@ export class ServicesScene implements RuntimeScene {
 
   private createSurfaceMarks() {
     const marks = [
-      { label: "M", x: -0.54, y: -0.15, z: 1.08, size: 0.34 },
-      { label: "N", x: 0.38, y: 0.43, z: 1.1, size: 0.32 },
-      { label: "B", x: 0.48, y: -0.39, z: 1.07, size: 0.3 },
+      { label: "M", x: -0.52, y: -0.14, z: 0.315, size: 0.32 },
+      { label: "N", x: 0.34, y: 0.44, z: 0.315, size: 0.3 },
+      { label: "B", x: 0.43, y: -0.36, z: 0.315, size: 0.28 },
     ];
 
     marks.forEach((mark) => {
@@ -136,7 +121,7 @@ export class ServicesScene implements RuntimeScene {
         transparent: true,
         opacity: 0,
         depthWrite: false,
-        depthTest: false,
+        depthTest: true,
         toneMapped: false,
         side: THREE.DoubleSide,
       });
@@ -147,8 +132,8 @@ export class ServicesScene implements RuntimeScene {
       );
 
       mesh.position.set(mark.x, mark.y, mark.z);
-      mesh.rotation.set(-0.04, 0.02, mark.x * -0.18);
-      mesh.renderOrder = 8;
+      mesh.rotation.z = mark.x * -0.18;
+      mesh.renderOrder = 5;
 
       this.markTextures.push(texture);
       this.markMaterials.push(material);
@@ -156,11 +141,11 @@ export class ServicesScene implements RuntimeScene {
     });
 
     const lineMaterial = new THREE.MeshBasicMaterial({
-      color: 0xf3f1eb,
+      color: 0xf1efe9,
       transparent: true,
       opacity: 0,
       depthWrite: false,
-      depthTest: false,
+      depthTest: true,
       toneMapped: false,
       side: THREE.DoubleSide,
     });
@@ -179,98 +164,16 @@ export class ServicesScene implements RuntimeScene {
       );
       line.position.set(x, y, z);
       line.rotation.z = rotation;
-      line.renderOrder = 8;
+      line.renderOrder = 5;
       this.markRoot.add(line);
     };
 
-    makeLine(0.72, 0.018, -0.1, 0.15, 1.09, -0.48);
-    makeLine(0.48, 0.016, 0.57, -0.08, 1.1, 0);
-    makeLine(0.016, 0.48, 0.57, -0.08, 1.1, 0);
+    makeLine(0.68, 0.016, -0.1, 0.14, 0.318, -0.5);
+    makeLine(0.42, 0.014, 0.55, -0.07, 0.318, 0);
+    makeLine(0.014, 0.42, 0.55, -0.07, 0.318, 0);
 
     this.markMaterials.push(lineMaterial);
     this.markRoot.visible = false;
-  }
-
-  private createFinalSlashes() {
-    const slashes = [
-      { x: -0.28, y: 0.27, width: 0.16, height: 0.86, rotation: -0.47 },
-      { x: 0.12, y: 0.22, width: 0.14, height: 0.7, rotation: -0.43 },
-      { x: -0.04, y: -0.42, width: 0.46, height: 0.11, rotation: 0.08 },
-    ];
-
-    slashes.forEach((slash) => {
-      const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(slash.width, slash.height),
-        this.slashMaterial,
-      );
-      mesh.position.set(slash.x, slash.y, 1.4);
-      mesh.rotation.z = slash.rotation;
-      mesh.renderOrder = 9;
-      this.slashRoot.add(mesh);
-    });
-
-    this.slashRoot.visible = false;
-  }
-
-  private async loadRock() {
-    try {
-      const loader = new GLTFLoader();
-      const gltf = await loader.loadAsync(ROCK_MODEL_URL);
-
-      if (this.destroyed) {
-        gltf.scene.traverse((object) => {
-          if (!(object instanceof THREE.Mesh)) return;
-          object.geometry.dispose();
-          const materials = Array.isArray(object.material)
-            ? object.material
-            : [object.material];
-          materials.forEach((material) => material.dispose());
-        });
-        return;
-      }
-
-      const rock = gltf.scene;
-      rock.updateMatrixWorld(true);
-
-      const box = new THREE.Box3().setFromObject(rock);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      const largestAxis = Math.max(size.x, size.y, size.z, 0.0001);
-      const scale = 3.05 / largestAxis;
-
-      rock.scale.setScalar(scale);
-      rock.position.set(
-        -center.x * scale,
-        -center.y * scale,
-        -center.z * scale,
-      );
-
-      rock.traverse((object) => {
-        if (!(object instanceof THREE.Mesh)) return;
-
-        object.castShadow = false;
-        object.receiveShadow = false;
-        object.frustumCulled = false;
-
-        const materials = Array.isArray(object.material)
-          ? object.material
-          : [object.material];
-
-        materials.forEach((material) => {
-          if (!(material instanceof THREE.MeshStandardMaterial)) return;
-          material.roughness = Math.max(material.roughness, 0.95);
-          material.metalness = 0;
-          material.envMapIntensity = 0.34;
-          material.color.multiplyScalar(0.58);
-          material.needsUpdate = true;
-        });
-      });
-
-      this.rock = rock;
-      this.rockPivot.add(rock);
-    } catch (error) {
-      console.error("Services rock model could not be loaded:", error);
-    }
   }
 
   update(frame: RuntimeFrame) {
@@ -282,59 +185,63 @@ export class ServicesScene implements RuntimeScene {
     );
 
     const progress = this.progressCurrent;
-    const breakProgress = smoothStep((progress - 0.12) / 0.52);
-    const settleProgress = smoothStep((progress - 0.66) / 0.22);
-    const finalProgress = smoothStep((progress - 0.78) / 0.2);
+    const breakProgress = smoothStep((progress - 0.12) / 0.5);
+    const settleProgress = smoothStep((progress - 0.62) / 0.18);
+    const finalProgress = smoothStep((progress - 0.76) / 0.2);
 
-    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.03;
-    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.012;
+    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.014;
+    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.028;
 
-    const breakX = THREE.MathUtils.lerp(-0.08, 0.72, breakProgress);
-    const breakY = THREE.MathUtils.lerp(-0.42, 2.18, breakProgress);
-    const breakZ = THREE.MathUtils.lerp(-0.13, 0.26, breakProgress);
+    const introRotation = new THREE.Euler(-0.28, -0.48, -0.16);
+    const breakRotation = new THREE.Euler(0.62, 2.05, 0.24);
+    const settleRotation = new THREE.Euler(0.12, 0.38, 0.02);
+    const finalRotation = new THREE.Euler(-0.035, 0.045, -0.018);
 
-    this.rockPivot.rotation.x =
-      THREE.MathUtils.lerp(breakX - settleProgress * 0.5, -0.03, finalProgress) +
-      idleX;
-    this.rockPivot.rotation.y =
-      THREE.MathUtils.lerp(breakY + settleProgress * 0.42, 0.06, finalProgress) +
-      idleY;
-    this.rockPivot.rotation.z = THREE.MathUtils.lerp(
-      breakZ - settleProgress * 0.12,
-      -0.025,
-      finalProgress,
+    const introQuaternion = new THREE.Quaternion().setFromEuler(introRotation);
+    const breakQuaternion = new THREE.Quaternion().setFromEuler(breakRotation);
+    const settleQuaternion = new THREE.Quaternion().setFromEuler(settleRotation);
+    const finalQuaternion = new THREE.Quaternion().setFromEuler(finalRotation);
+
+    const qA = introQuaternion.clone().slerp(breakQuaternion, breakProgress);
+    const qB = qA.clone().slerp(settleQuaternion, settleProgress);
+    const qFinal = qB.clone().slerp(finalQuaternion, finalProgress);
+
+    this.slabPivot.quaternion.copy(qFinal);
+    this.slabPivot.rotation.x += idleX;
+    this.slabPivot.rotation.y += idleY;
+
+    const introScale = 0.64;
+    const breakScale = THREE.MathUtils.lerp(introScale, 0.94, breakProgress);
+    const settleScale = THREE.MathUtils.lerp(breakScale, 1.03, settleProgress);
+    const finalScale = THREE.MathUtils.lerp(settleScale, 1.06, finalProgress);
+
+    this.slabPivot.scale.set(
+      finalScale,
+      finalScale * THREE.MathUtils.lerp(1, 1.035, finalProgress),
+      finalScale,
     );
 
-    const baseScale = THREE.MathUtils.lerp(0.8, 1.04, breakProgress);
-    const settledScale = baseScale - settleProgress * 0.03;
-    const scaleX = THREE.MathUtils.lerp(settledScale, 0.98, finalProgress);
-    const scaleY = THREE.MathUtils.lerp(settledScale, 1.18, finalProgress);
-    const scaleZ = THREE.MathUtils.lerp(settledScale, 0.9, finalProgress);
-    this.rockPivot.scale.set(scaleX, scaleY, scaleZ);
+    const introPosition = new THREE.Vector3(0, 0.74, 0);
+    const breakPosition = new THREE.Vector3(0.12, 0.1, 0);
+    const settlePosition = new THREE.Vector3(0, -0.02, 0);
+    const finalPosition = new THREE.Vector3(0, -0.04, 0);
 
-    this.rockPivot.position.x = THREE.MathUtils.lerp(
-      THREE.MathUtils.lerp(0, 0.14, breakProgress) - settleProgress * 0.14,
-      0,
-      finalProgress,
-    );
-    this.rockPivot.position.y = THREE.MathUtils.lerp(
-      Math.sin(frame.time * 0.55) * 0.03 * (1 - breakProgress) +
-        THREE.MathUtils.lerp(0.52, 0.02, breakProgress),
-      -0.03,
-      finalProgress,
-    );
+    const position = introPosition
+      .clone()
+      .lerp(breakPosition, breakProgress)
+      .lerp(settlePosition, settleProgress)
+      .lerp(finalPosition, finalProgress);
 
-    const marksProgress = smoothStep((progress - 0.34) / 0.28);
-    const marksFade = 1 - smoothStep((progress - 0.69) / 0.1);
-    const markOpacity = marksProgress * marksFade * 0.88;
+    this.slabPivot.position.copy(position);
+
+    const marksIn = smoothStep((progress - 0.31) / 0.24);
+    const marksOut = 1 - smoothStep((progress - 0.66) / 0.1);
+    const markOpacity = marksIn * marksOut * 0.9;
+
     this.markRoot.visible = markOpacity > 0.002;
     this.markMaterials.forEach((material) => {
       material.opacity = markOpacity;
     });
-
-    const slashProgress = smoothStep((progress - 0.79) / 0.12);
-    this.slashRoot.visible = slashProgress > 0.002;
-    this.slashMaterial.opacity = slashProgress * 0.96;
 
     this.renderer.render(this.scene, this.camera);
   }
@@ -349,9 +256,7 @@ export class ServicesScene implements RuntimeScene {
   }
 
   destroy() {
-    this.destroyed = true;
-
-    this.root.traverse((object) => {
+    this.markRoot.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
       object.geometry.dispose();
       const materials = Array.isArray(object.material)
@@ -361,6 +266,7 @@ export class ServicesScene implements RuntimeScene {
     });
 
     this.markTextures.forEach((texture) => texture.dispose());
+    this.slab.dispose();
     this.environmentTarget.dispose();
     this.renderer.dispose();
   }
