@@ -179,17 +179,17 @@ function CollectionPanel() {
 function ServicesContent() {
   return (
     <div className="relative h-[100svh] w-[100vw] bg-[#fbfbfb] text-[#202020]">
-      <p className="absolute left-1/2 top-[10.8svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.02em] text-[#30302e]">
+      <p className="absolute left-1/2 top-[11.8svh] -translate-x-1/2 text-[12px] font-normal uppercase leading-none tracking-[-0.018em] text-[#30302e]">
         Our services
       </p>
 
       <div
         data-services-rise
-        className="absolute left-1/2 top-1/2 w-[84vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
+        className="absolute left-1/2 top-1/2 w-[86vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
       >
         <div
-          className="text-[clamp(6.1rem,8.8vw,9.8rem)] font-normal leading-[0.715] tracking-[-0.072em]"
-          style={{ transform: "scaleX(1.018)" }}
+          className="text-[clamp(6.15rem,8.65vw,9.7rem)] font-normal leading-[0.72] tracking-[-0.073em]"
+          style={{ transform: "scaleX(1.015)" }}
         >
           <div>A.I.</div>
           <div>Design</div>
@@ -198,14 +198,14 @@ function ServicesContent() {
         </div>
       </div>
 
-      <p className="absolute bottom-[6.8svh] left-1/2 -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.02em] text-[#444442]">
+      <p className="absolute bottom-[8.8svh] left-1/2 -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.018em] text-[#3f3f3d]">
         ✦ Design with intent. Built to work.
       </p>
 
-      <div className="absolute bottom-[6.2svh] right-[2.1vw]">
+      <div className="absolute bottom-[7.15svh] right-[2.1vw]">
         <ArrowLink
           href="/services"
-          widthClassName="w-[164px]"
+          widthClassName="w-[214px]"
           textClassName="text-[11px]"
         >
           View services
@@ -315,10 +315,6 @@ export function HomeSelectedWork() {
         0,
       );
 
-      /*
-       * The work rail consumes the first 68% of the normalized scroll range.
-       * It lands with Loftloom on the left and Collection on the right.
-       */
       timeline.to(
         track,
         {
@@ -353,12 +349,6 @@ export function HomeSelectedWork() {
         0.48,
       );
 
-      /*
-       * Trionn-style shared handoff: one continuous normalized window drives
-       * the rail, reveal mask and boundary together. Collection moves from the
-       * right half through the left half and then exits while Services follows
-       * directly behind its right edge. There is deliberately no midpoint hold.
-       */
       timeline.to(
         track,
         {
