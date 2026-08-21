@@ -9,15 +9,6 @@ import { canvasManager } from "@/runtime/canvas/CanvasManager";
 
 const DIGITS = Array.from({ length: 10 }, (_, index) => index);
 
-const AWARDS = [
-  { src: "https://trionn.com/images/awwwards.svg", alt: "Awwwards" },
-  { src: "https://trionn.com/images/ccda.svg", alt: "CSS Design Awards" },
-  { src: "https://trionn.com/images/thefwa.svg", alt: "FWA" },
-  { src: "https://trionn.com/images/csswinner.svg", alt: "CSS Winner" },
-  { src: "https://trionn.com/images/adesignaward.svg", alt: "A' Design Award" },
-  { src: "https://trionn.com/images/gsap.svg", alt: "GSAP" },
-] as const;
-
 const PARTNERS = [
   { src: "https://trionn.com/images/partner1.svg", alt: "Credible", width: 88, height: 19 },
   { src: "https://trionn.com/images/partner2.svg", alt: "Yellowtail", width: 108, height: 18 },
@@ -43,38 +34,22 @@ function DigitReel({ target }: { target: number }) {
 }
 
 function Counter50() {
-  return <span data-counter className="inline-flex items-baseline text-[52px] font-normal leading-none tracking-[-0.075em]" aria-label="50 plus"><DigitReel target={5} /><DigitReel target={0} /><sup className="ml-[3px] text-[16px] leading-none">+</sup></span>;
+  return <span data-counter className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]" aria-label="50 plus"><DigitReel target={5} /><DigitReel target={0} /><sup className="ml-[3px] text-[15px] leading-none">+</sup></span>;
 }
 
 function Counter15K() {
-  return <span data-counter className="inline-flex items-baseline text-[52px] font-normal leading-none tracking-[-0.075em]" aria-label="1.5K plus"><DigitReel target={1} /><span className="mx-[1px]">.</span><DigitReel target={5} /><span className="ml-[2px] tracking-[-0.04em]">K</span><sup className="ml-[3px] text-[15px] leading-none">+</sup></span>;
+  return <span data-counter className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]" aria-label="1.5K plus"><DigitReel target={1} /><span className="mx-[1px]">.</span><DigitReel target={5} /><span className="ml-[2px] tracking-[-0.04em]">K</span><sup className="ml-[3px] text-[14px] leading-none">+</sup></span>;
 }
 
 function Counter20() {
-  return <span data-counter className="inline-flex items-baseline text-[52px] font-normal leading-none tracking-[-0.075em]" aria-label="20 plus"><DigitReel target={2} /><DigitReel target={0} /><sup className="ml-[3px] text-[16px] leading-none">+</sup></span>;
-}
-
-function AwardWordmarks() {
-  return (
-    <div className="absolute left-[29px] right-[29px] top-[91px] z-10 grid grid-cols-3 items-center gap-x-[16px] gap-y-[24px]">
-      {AWARDS.map((award) => (
-        <div key={award.src} className="flex h-[31px] items-center justify-center">
-          <img
-            src={award.src}
-            alt={award.alt}
-            className="block max-h-[28px] max-w-full object-contain brightness-0 invert opacity-[0.82]"
-          />
-        </div>
-      ))}
-    </div>
-  );
+  return <span data-counter className="inline-flex items-baseline text-[46px] font-normal leading-none tracking-[-0.07em]" aria-label="20 plus"><DigitReel target={2} /><DigitReel target={0} /><sup className="ml-[3px] text-[15px] leading-none">+</sup></span>;
 }
 
 function PartnerWordmarks() {
   return (
-    <div className="mt-[26px] grid grid-cols-5 items-center divide-x divide-black/[0.08]">
+    <div className="mt-[27px] grid grid-cols-5 items-center divide-x divide-black/[0.08]">
       {PARTNERS.map((partner) => (
-        <div key={partner.src} className="flex h-[40px] items-center justify-center px-5">
+        <div key={partner.src} className="flex h-[38px] items-center justify-center px-5">
           <img src={partner.src} alt={partner.alt} width={partner.width} height={partner.height} className="block h-auto max-h-[38px] max-w-full" />
         </div>
       ))}
@@ -160,46 +135,49 @@ export function HomeKeyFacts() {
 
   return (
     <section ref={sectionRef} className="relative z-[50] bg-[#dedddb] text-[#414141]">
-      <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[6.5svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">Key facts</h2>
-          <p className="mx-auto mt-[18px] max-w-[205px] text-[13px] leading-[1.18] tracking-[-0.025em]">A snapshot of our<br />experience and impact.</p>
+          <p className="mx-auto mt-[19px] max-w-[205px] text-[13px] leading-[1.18] tracking-[-0.025em]">A snapshot of our<br />experience and impact.</p>
         </div>
 
-        <div data-facts-grid className="mx-auto mt-[5.1svh] grid w-full max-w-[1040px] grid-cols-1 items-start gap-[16px] md:grid-cols-3" style={{ perspective: "1200px", perspectiveOrigin: "50% 0%", transformStyle: "preserve-3d" }}>
+        <div data-facts-grid className="mx-auto mt-[4.8svh] grid w-full max-w-[1000px] grid-cols-1 items-start gap-[18px] md:grid-cols-3" style={{ perspective: "1200px", perspectiveOrigin: "50% 0%", transformStyle: "preserve-3d" }}>
           <div data-card-shell className="relative z-[30] origin-top">
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
-              <div className="absolute inset-[1px] rounded-[5px] border border-white/[0.035]" />
-              <p className="absolute left-[29px] top-[31px] z-10 text-[12px] uppercase tracking-[-0.025em]">Featured &amp; Awards</p>
-              <AwardWordmarks />
-              <div className="absolute inset-x-[29px] bottom-[92px] h-px bg-white/[0.08]" />
-              <p className="absolute bottom-[29px] left-[29px] z-10 max-w-[176px] text-[13px] leading-[1.18] text-white/65">Featured on top design<br />platforms worldwide.</p>
-              <div className="absolute bottom-[19px] right-[25px] z-10"><Counter50 /></div>
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c]">
+              <img
+                src="/keyfacts-awards-card.svg"
+                alt="Featured and Awards card with lion holding a trophy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="pointer-events-none absolute left-0 top-0 opacity-0" aria-hidden="true">
+                <Counter50 />
+              </div>
             </article>
           </div>
 
           <div data-card-shell className="relative z-[10] origin-top">
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#e6e4e2] text-[#474747]">
-              <p className="absolute left-1/2 top-[31px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">Projects completed</p>
-              <div className="absolute left-1/2 top-[106px] flex h-[176px] w-[176px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]"><Counter15K /></div>
-              <p className="absolute bottom-[29px] left-1/2 w-[238px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">90% of our clients seek our<br />services for a second project.</p>
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#e6e4e2] text-[#474747]">
+              <p className="absolute left-1/2 top-[33px] -translate-x-1/2 whitespace-nowrap text-[12px] uppercase tracking-[-0.025em]">Projects completed</p>
+              <div className="absolute left-1/2 top-[104px] flex h-[166px] w-[166px] -translate-x-1/2 items-center justify-center rounded-full bg-[#f8f7f5]"><Counter15K /></div>
+              <p className="absolute bottom-[30px] left-1/2 w-[232px] -translate-x-1/2 text-center text-[13px] leading-[1.22] text-black/58">90% of our clients seek our<br />services for a second project.</p>
             </article>
           </div>
 
           <div data-card-shell className="relative z-[20] origin-top">
-            <article className="relative h-[410px] overflow-hidden rounded-[6px] bg-[#34343c] text-[#e7e6e3]">
-              <div className="absolute inset-[1px] rounded-[5px] border border-white/[0.035]" />
-              <p className="absolute right-[29px] top-[31px] z-10 text-[12px] uppercase tracking-[-0.025em]">Our team members</p>
-              <div className="absolute left-[29px] right-[29px] top-[89px] h-px bg-white/[0.08]" />
-              <div className="absolute left-[29px] top-[116px] h-[118px] w-[118px] rounded-full border border-white/[0.09]" />
-              <div className="absolute left-[58px] top-[145px] h-[60px] w-[60px] rounded-full border border-white/[0.12]" />
-              <p className="absolute bottom-[33px] left-[29px] z-10 max-w-[150px] text-[13px] leading-[1.15] text-white/58">Different skills.<br />One standard.</p>
-              <div className="absolute bottom-[19px] right-[25px] z-10"><Counter20 /></div>
+            <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c]">
+              <img
+                src="/keyfacts-team-card.svg"
+                alt="Our team members card with lion portrait"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="pointer-events-none absolute left-0 top-0 opacity-0" aria-hidden="true">
+                <Counter20 />
+              </div>
             </article>
           </div>
         </div>
 
-        <div className="mx-auto mt-[8.2svh] max-w-[740px]">
+        <div className="mx-auto mt-[7svh] max-w-[720px]">
           <p className="text-center text-[11px] uppercase tracking-[-0.02em]">Our business partners</p>
           <PartnerWordmarks />
         </div>
