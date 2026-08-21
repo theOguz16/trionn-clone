@@ -15,6 +15,10 @@ const STRIPE_COUNT = 6;
 const STRIPE_START = 0.015;
 const STRIPE_STEP = 0.095;
 const STRIPE_DURATION = 0.58;
+const STRIPE_SEQUENCE_END =
+  STRIPE_START +
+  (STRIPE_COUNT - 1) * STRIPE_STEP +
+  STRIPE_DURATION;
 
 const CAPTION_VIEWPORT_Y = 0.78;
 const CAPTION_CLEARANCE = 22;
@@ -137,6 +141,8 @@ export function HomeStripeWipe() {
         rawProgress: number,
       ) => {
         const progress = clamp01(rawProgress);
+        const visualProgress =
+          progress * STRIPE_SEQUENCE_END;
 
         setHeroPaused(progress > 0.1);
 
@@ -158,7 +164,7 @@ export function HomeStripeWipe() {
 
           const localProgress =
             getStripeProgress(
-              progress,
+              visualProgress,
               orderIndex,
             );
 
