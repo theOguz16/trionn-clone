@@ -1,40 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { ScrollTrigger, useGSAP } from "@/lib/gsap/client";
+import { canvasManager } from "@/runtime/canvas/CanvasManager";
+
+import { ServicesScene } from "./ServicesScene";
 
 const SERVICE_WORDS = ["A.I.", "Design", "Development", "Branding"] as const;
-
-function StoneSlab() {
-  return (
-    <div
-      data-services-stone
-      aria-hidden="true"
-      className="pointer-events-none absolute left-1/2 top-[34%] z-[2] h-[31vw] max-h-[455px] min-h-[300px] w-[28vw] min-w-[285px] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rotate-[-7deg]"
-    >
-      <div
-        className="absolute inset-0 overflow-hidden shadow-[0_42px_90px_rgba(0,0,0,0.58)]"
-        style={{
-          clipPath:
-            "polygon(9% 5%, 78% 0%, 96% 12%, 100% 72%, 86% 96%, 20% 100%, 4% 86%, 0% 19%)",
-          background:
-            "radial-gradient(circle at 34% 20%, rgba(238,235,226,.94) 0%, rgba(180,179,174,.9) 17%, transparent 38%), radial-gradient(circle at 72% 74%, rgba(31,34,36,.96) 0%, rgba(67,68,67,.92) 34%, transparent 64%), linear-gradient(142deg, #c8c6c0 0%, #858582 31%, #3c3f41 65%, #171b20 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-70 mix-blend-overlay"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 15% 25%, rgba(255,255,255,.42) 0 1px, transparent 1.7px), radial-gradient(circle at 72% 64%, rgba(0,0,0,.65) 0 1px, transparent 1.8px), radial-gradient(circle at 45% 78%, rgba(255,255,255,.24) 0 1px, transparent 1.6px)",
-            backgroundSize: "17px 19px, 23px 21px, 29px 31px",
-          }}
-        />
-        <div className="absolute inset-[5%] border border-white/5" />
-      </div>
-    </div>
-  );
-}
 
 function ServicesFooter() {
   return (
@@ -56,6 +29,33 @@ function ServicesFooter() {
 
 export function HomeServicesShowcase() {
   const sectionRef = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const canvas = canvasRef.current;
+
+    if (!section || !canvas) return;
+
+    const scene = new ServicesScene(canvas);
+    const unregister = canvasManager.register(scene, false);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        canvasManager.setActive(scene.id, entry.isIntersecting);
+      },
+      {
+        rootMargin: "25% 0px",
+      },
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      unregister();
+    };
+  }, []);
 
   useGSAP(
     () => {
@@ -121,11 +121,16 @@ export function HomeServicesShowcase() {
         }}
       />
 
+      <canvas
+        ref={canvasRef}
+        data-services-canvas
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-[2] h-full w-full"
+      />
+
       <p className="absolute left-1/2 top-[10.8svh] z-[5] -translate-x-1/2 whitespace-nowrap text-[11px] font-normal uppercase leading-none tracking-[-0.018em] text-[#eceae4] max-md:top-[12svh] max-md:text-[10px]">
         Our services
       </p>
-
-      <StoneSlab />
 
       <div
         data-services-dark-words
