@@ -33,11 +33,19 @@ const PROJECTS = [
 const GUIDE = "rgba(72, 72, 68, 0.16)";
 const PLUS_STROKE = "rgba(67, 67, 64, 0.72)";
 
-function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
+function ArrowLink({
+  href,
+  children,
+  widthClassName = "w-[214px]",
+}: {
+  href: string;
+  children: ReactNode;
+  widthClassName?: string;
+}) {
   return (
     <a
       href={href}
-      className="group flex w-[214px] items-center justify-between border-b pb-[8px] font-mono text-[10px] uppercase leading-none tracking-[-0.02em]"
+      className={`group flex ${widthClassName} items-center justify-between border-b pb-[8px] font-mono text-[10px] uppercase leading-none tracking-[-0.02em]`}
       style={{
         color: "#444442",
         borderColor: "rgba(50, 50, 48, 0.58)",
@@ -157,7 +165,9 @@ function CollectionPanel() {
         </h3>
 
         <div className="mt-[45px] flex justify-center">
-          <ArrowLink href="/work">View all projects</ArrowLink>
+          <ArrowLink href="/work" widthClassName="w-[168px]">
+            View all projects
+          </ArrowLink>
         </div>
       </div>
     </section>
@@ -178,7 +188,7 @@ function ServicesContent() {
 
       <div
         data-services-rise
-        className="absolute left-1/2 top-[50.2%] w-[84vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
+        className="absolute left-1/2 top-1/2 w-[84vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
       >
         <div
           className="text-[clamp(6.1rem,8.8vw,9.8rem)] font-normal leading-[0.715] tracking-[-0.072em]"
@@ -282,8 +292,14 @@ export function HomeSelectedWork() {
         willChange: "clip-path",
       });
 
+      /*
+       * Services stays vertically locked to the viewport center throughout
+       * the 50/50 handoff and full takeover. The previous y tween pushed the
+       * lower words into the footer area while the panel was being revealed.
+       */
+      servicesRise.style.setProperty("top", "50%", "important");
       gsap.set(servicesRise, {
-        y: "18svh",
+        y: 0,
         force3D: true,
       });
 
@@ -390,17 +406,6 @@ export function HomeSelectedWork() {
         0.7,
       );
 
-      /* Keep content moving during the center hold so scroll never feels dead. */
-      timeline.to(
-        servicesRise,
-        {
-          y: "7svh",
-          duration: 0.16,
-          ease: "power1.out",
-        },
-        0.7,
-      );
-
       /* Phase C: after a short 50/50 composition, Services takes the viewport. */
       timeline.to(
         services,
@@ -433,16 +438,6 @@ export function HomeSelectedWork() {
       );
 
       timeline.to(
-        servicesRise,
-        {
-          y: 0,
-          duration: 0.14,
-          ease: "power1.out",
-        },
-        0.86,
-      );
-
-      timeline.to(
         servicesBoundary,
         {
           autoAlpha: 0,
@@ -453,6 +448,7 @@ export function HomeSelectedWork() {
       );
 
       return () => {
+        servicesRise.style.removeProperty("top");
         timeline.scrollTrigger?.kill();
         timeline.kill();
       };
