@@ -22,6 +22,10 @@ import {
   HomeSelectedWork,
 } from "@/features/home-work/HomeSelectedWork";
 
+import {
+  HomeServicesShowcase,
+} from "@/features/home-services/HomeServicesShowcase";
+
 export const metadata:
   Metadata = {
     title:
@@ -43,6 +47,8 @@ export default function HomePage() {
       <HomeKeyFacts />
 
       <HomeSelectedWork />
+
+      <HomeServicesShowcase />
     </main>
   );
 }
