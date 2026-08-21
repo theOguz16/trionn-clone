@@ -322,6 +322,40 @@ html[data-page-theme="light"]
   transform: none !important;
 }
 
+/* About uses the same pixel-centered cross geometry as the Work handoffs.
+ * Replacing the font glyph avoids baseline and font-rendering drift. */
+[data-about-rule-plus] {
+  top: -7px !important;
+  display: block;
+  width: 15px;
+  height: 15px;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  transform-origin: 50% 50%;
+}
+
+[data-about-rule-plus]::before,
+[data-about-rule-plus]::after {
+  content: "";
+  position: absolute;
+  display: block;
+  background: currentColor;
+}
+
+[data-about-rule-plus]::before {
+  left: 7px;
+  top: 0;
+  width: 1px;
+  height: 15px;
+}
+
+[data-about-rule-plus]::after {
+  left: 0;
+  top: 7px;
+  width: 15px;
+  height: 1px;
+}
+
 /* While the shared Hero/About narrative is mounted, About owns the
  * perceptible canvas fade. Hero may still update its internal GSAP state,
  * but it cannot hide the canvas out from under the narrative controller. */
