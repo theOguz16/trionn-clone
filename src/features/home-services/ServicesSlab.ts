@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-const SLAB_WIDTH = 2.42;
-const SLAB_HEIGHT = 2.58;
-const SLAB_DEPTH = 0.62;
+const SLAB_WIDTH = 2.38;
+const SLAB_HEIGHT = 2.45;
+const SLAB_DEPTH = 0.42;
 
 function hash2(x: number, y: number) {
   const value = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
@@ -33,16 +33,16 @@ function fbm(x: number, y: number) {
   let amplitude = 0.56;
   let frequency = 1;
 
-  for (let octave = 0; octave < 4; octave += 1) {
+  for (let octave = 0; octave < 5; octave += 1) {
     value += valueNoise(x * frequency, y * frequency) * amplitude;
-    frequency *= 2.03;
-    amplitude *= 0.48;
+    frequency *= 2.07;
+    amplitude *= 0.46;
   }
 
   return value;
 }
 
-function createStoneCanvas(size = 384) {
+function createStoneCanvas(size = 512) {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
@@ -56,26 +56,26 @@ function createStoneCanvas(size = 384) {
     for (let x = 0; x < size; x += 1) {
       const u = x / size;
       const v = y / size;
-      const broad = fbm(u * 4.6 + 1.7, v * 4.6 + 3.1);
-      const medium = fbm(u * 11.5 + 9.4, v * 11.5 + 4.8);
-      const fine = fbm(u * 31 + 5.2, v * 31 + 8.6);
+      const broad = fbm(u * 4.2 + 1.8, v * 4.2 + 3.4);
+      const medium = fbm(u * 13.5 + 8.7, v * 13.5 + 5.6);
+      const fine = fbm(u * 43 + 4.2, v * 43 + 9.1);
+      const grain = hash2(x * 0.71, y * 0.71) - 0.5;
 
-      const softStrata =
-        Math.sin(v * 31 + broad * 6.2 + medium * 2.4) * 0.5 + 0.5;
-      const cloudy =
-        broad * 0.62 + medium * 0.27 + fine * 0.11;
+      const strata =
+        Math.sin(v * 27 + broad * 7.2 + medium * 3.1) * 0.5 + 0.5;
+      const stone = broad * 0.54 + medium * 0.32 + fine * 0.14;
 
       const tone = THREE.MathUtils.clamp(
-        64 + cloudy * 76 + softStrata * 7,
-        62,
-        151,
+        43 + stone * 72 + strata * 6 + grain * 7,
+        42,
+        119,
       );
 
-      const coolShift = (medium - 0.5) * 8;
+      const coolShift = (medium - 0.5) * 7;
       const index = (y * size + x) * 4;
 
-      image.data[index] = Math.round(tone * 0.91 + coolShift * 0.15);
-      image.data[index + 1] = Math.round(tone * 0.95 + coolShift * 0.55);
+      image.data[index] = Math.round(tone * 0.88 + coolShift * 0.1);
+      image.data[index + 1] = Math.round(tone * 0.93 + coolShift * 0.45);
       image.data[index + 2] = Math.round(tone + coolShift);
       image.data[index + 3] = 255;
     }
@@ -90,9 +90,9 @@ function createSlabGeometry() {
     SLAB_WIDTH,
     SLAB_HEIGHT,
     SLAB_DEPTH,
-    20,
     22,
-    8,
+    22,
+    6,
   );
 
   const positions = geometry.attributes.position;
@@ -112,42 +112,42 @@ function createSlabGeometry() {
     const normalizedY = Math.abs(y) / halfHeight;
 
     const surfaceNoise =
-      Math.sin(x * 3.45 + y * 2.35 + z * 1.7) * 0.026 +
-      Math.sin(y * 6.7 - x * 1.65) * 0.016 +
-      Math.sin((x + y) * 11.2) * 0.007;
+      Math.sin(x * 3.7 + y * 2.2 + z * 1.5) * 0.034 +
+      Math.sin(y * 7.6 - x * 1.8) * 0.019 +
+      Math.sin((x + y) * 14.2) * 0.009;
 
     if (Math.abs(normalZ) > 0.8) {
       const edgeLift =
-        Math.pow(Math.max(normalizedX, normalizedY), 3.2) *
-        Math.sin(y * 7.7 + x * 4.8) *
-        0.022;
+        Math.pow(Math.max(normalizedX, normalizedY), 3) *
+        Math.sin(y * 8.4 + x * 5.3) *
+        0.026;
 
       z += Math.sign(normalZ) * (surfaceNoise + edgeLift);
     }
 
     if (Math.abs(normalX) > 0.8) {
       const sideBreak =
-        Math.sin(y * 5.2 + z * 6.8) * 0.038 +
-        Math.sin(y * 11.7 - z * 3.9) * 0.015;
+        Math.sin(y * 4.7 + z * 8.1) * 0.054 +
+        Math.sin(y * 10.9 - z * 4.3) * 0.021;
       x += Math.sign(normalX) * sideBreak;
     }
 
     if (Math.abs(normalY) > 0.8) {
       const capBreak =
-        Math.sin(x * 5.8 + z * 5.2) * 0.035 +
-        Math.sin(x * 12.1 - z * 2.8) * 0.014;
+        Math.sin(x * 5.1 + z * 6.2) * 0.047 +
+        Math.sin(x * 11.4 - z * 3.7) * 0.019;
       y += Math.sign(normalY) * capBreak;
     }
 
     const corner = THREE.MathUtils.clamp(
-      (normalizedX + normalizedY - 1.5) / 0.5,
+      (normalizedX + normalizedY - 1.44) / 0.56,
       0,
       1,
     );
 
     if (corner > 0) {
       const chip =
-        1 - corner * (0.035 + 0.018 * Math.sin((x - y) * 8.6));
+        1 - corner * (0.052 + 0.022 * Math.sin((x - y) * 8.2));
       x *= chip;
       y *= chip;
     }
@@ -181,7 +181,7 @@ export class ServicesSlab {
     this.colorTexture.colorSpace = THREE.SRGBColorSpace;
     this.colorTexture.wrapS = THREE.RepeatWrapping;
     this.colorTexture.wrapT = THREE.RepeatWrapping;
-    this.colorTexture.repeat.set(1.08, 1.08);
+    this.colorTexture.repeat.set(1.12, 1.08);
 
     this.bumpTexture = new THREE.CanvasTexture(stoneCanvas);
     this.bumpTexture.colorSpace = THREE.NoColorSpace;
@@ -190,13 +190,13 @@ export class ServicesSlab {
     this.bumpTexture.repeat.copy(this.colorTexture.repeat);
 
     this.material = new THREE.MeshStandardMaterial({
-      color: 0xb9bcba,
+      color: 0x8b908f,
       map: this.colorTexture,
       bumpMap: this.bumpTexture,
-      bumpScale: 0.052,
-      roughness: 0.965,
+      bumpScale: 0.068,
+      roughness: 0.96,
       metalness: 0,
-      envMapIntensity: 0.28,
+      envMapIntensity: 0.24,
     });
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
