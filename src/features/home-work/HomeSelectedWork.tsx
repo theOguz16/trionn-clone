@@ -249,9 +249,6 @@ export function HomeSelectedWork() {
       const collectionRise = section.querySelector<HTMLElement>(
         "[data-collection-rise]",
       );
-      const servicesRise = section.querySelector<HTMLElement>(
-        "[data-services-rise]",
-      );
       const boundaryPlus = servicesBoundary.querySelector<HTMLElement>(
         '[data-transition-plus="services"]',
       );
@@ -260,7 +257,6 @@ export function HomeSelectedWork() {
         !introRise ||
         projectRises.length !== PROJECTS.length ||
         !collectionRise ||
-        !servicesRise ||
         !boundaryPlus
       ) {
         return;
@@ -293,15 +289,12 @@ export function HomeSelectedWork() {
       });
 
       /*
-       * Services stays vertically locked to the viewport center throughout
-       * the 50/50 handoff and full takeover. The previous y tween pushed the
-       * lower words into the footer area while the panel was being revealed.
+       * Do not animate or set transform on data-services-rise.
+       * Its Tailwind -translate-x/-translate-y transform is what keeps the
+       * word stack truly centered at 50%/50%. GSAP transform writes here
+       * previously replaced that centering transform and pushed the stack
+       * down into the footer area.
        */
-      servicesRise.style.setProperty("top", "50%", "important");
-      gsap.set(servicesRise, {
-        y: 0,
-        force3D: true,
-      });
 
       gsap.set(servicesBoundary, {
         x: () => window.innerWidth,
@@ -448,7 +441,6 @@ export function HomeSelectedWork() {
       );
 
       return () => {
-        servicesRise.style.removeProperty("top");
         timeline.scrollTrigger?.kill();
         timeline.kill();
       };
