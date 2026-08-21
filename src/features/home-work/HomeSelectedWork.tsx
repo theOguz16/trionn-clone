@@ -37,15 +37,17 @@ function ArrowLink({
   href,
   children,
   widthClassName = "w-[214px]",
+  textClassName = "text-[10px]",
 }: {
   href: string;
   children: ReactNode;
   widthClassName?: string;
+  textClassName?: string;
 }) {
   return (
     <a
       href={href}
-      className={`group flex ${widthClassName} items-center justify-between border-b pb-[8px] font-mono text-[10px] uppercase leading-none tracking-[-0.02em]`}
+      className={`group flex ${widthClassName} items-center justify-between border-b pb-[8px] font-mono ${textClassName} uppercase leading-none tracking-[-0.02em]`}
       style={{
         color: "#444442",
         borderColor: "rgba(50, 50, 48, 0.58)",
@@ -154,7 +156,7 @@ function CollectionPanel() {
     >
       <div
         data-collection-rise
-        className="absolute left-1/2 top-[54.8%] w-[84%] -translate-x-1/2 -translate-y-1/2 text-center"
+        className="absolute left-1/2 top-[51%] w-[84%] -translate-x-1/2 -translate-y-1/2 text-center"
       >
         <h3 className="mx-auto max-w-[500px] text-[31px] font-normal leading-[0.98] tracking-[-0.048em] text-[#474747]">
           Discover our complete collection
@@ -177,12 +179,7 @@ function CollectionPanel() {
 function ServicesContent() {
   return (
     <div className="relative h-[100svh] w-[100vw] bg-[#fbfbfb] text-[#202020]">
-      <div
-        className="pointer-events-none absolute inset-x-[2.1vw] top-[11.2svh] h-px"
-        style={{ backgroundColor: GUIDE }}
-      />
-
-      <p className="absolute left-1/2 top-[8.7svh] -translate-x-1/2 text-[10px] font-normal uppercase leading-none tracking-[-0.025em]">
+      <p className="absolute left-1/2 top-[10.8svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.02em] text-[#30302e]">
         Our services
       </p>
 
@@ -201,21 +198,18 @@ function ServicesContent() {
         </div>
       </div>
 
-      <div
-        className="pointer-events-none absolute inset-x-[2.1vw] bottom-[12.1svh] h-px"
-        style={{ backgroundColor: GUIDE }}
-      />
-
-      <p className="absolute bottom-[7.3svh] left-[2.1vw] text-[10px] font-normal uppercase leading-none tracking-[-0.025em] text-[#4e4e4b]">
-        Independent digital studio
-      </p>
-
-      <p className="absolute bottom-[7.3svh] left-1/2 -translate-x-1/2 text-[10px] font-normal uppercase leading-none tracking-[-0.025em] text-[#4e4e4b]">
+      <p className="absolute bottom-[6.8svh] left-1/2 -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.02em] text-[#444442]">
         ✦ Design with intent. Built to work.
       </p>
 
-      <div className="absolute bottom-[6.7svh] right-[2.1vw]">
-        <ArrowLink href="/services">View services</ArrowLink>
+      <div className="absolute bottom-[6.2svh] right-[2.1vw]">
+        <ArrowLink
+          href="/services"
+          widthClassName="w-[164px]"
+          textClassName="text-[11px]"
+        >
+          View services
+        </ArrowLink>
       </div>
     </div>
   );
@@ -290,10 +284,8 @@ export function HomeSelectedWork() {
 
       /*
        * Do not animate or set transform on data-services-rise.
-       * Its Tailwind -translate-x/-translate-y transform is what keeps the
-       * word stack truly centered at 50%/50%. GSAP transform writes here
-       * previously replaced that centering transform and pushed the stack
-       * down into the footer area.
+       * Its Tailwind translate transform keeps the word stack fixed at the
+       * viewport center during both the split handoff and full takeover.
        */
 
       gsap.set(servicesBoundary, {
@@ -330,15 +322,14 @@ export function HomeSelectedWork() {
       );
 
       /*
-       * Complete the work rail before Services starts. At -2W the Collection
-       * panel occupies the left half of the viewport (0..50vw), matching the
-       * source transition composition instead of leaving a project fragment.
+       * Stop the work rail with Loftloom in the left half and Collection in
+       * the right half, matching the source frame immediately before Services.
        */
       timeline.to(
         track,
         {
-          x: () => -window.innerWidth * 2,
-          duration: 0.7,
+          x: () => -window.innerWidth * 1.5,
+          duration: 0.66,
           ease: "none",
         },
         0,
@@ -362,13 +353,13 @@ export function HomeSelectedWork() {
         collectionRise,
         {
           y: 0,
-          duration: 0.2,
+          duration: 0.18,
           ease: "power1.out",
         },
         0.46,
       );
 
-      /* Phase B: reveal only the right half of Services. */
+      /* Reveal the right half as soon as the Loftloom + Collection frame lands. */
       timeline.to(
         services,
         {
@@ -376,7 +367,7 @@ export function HomeSelectedWork() {
           duration: 0.12,
           ease: "none",
         },
-        0.7,
+        0.66,
       );
 
       timeline.to(
@@ -386,7 +377,7 @@ export function HomeSelectedWork() {
           duration: 0.12,
           ease: "none",
         },
-        0.7,
+        0.66,
       );
 
       timeline.to(
@@ -396,10 +387,10 @@ export function HomeSelectedWork() {
           duration: 0.12,
           ease: "none",
         },
-        0.7,
+        0.66,
       );
 
-      /* Phase C: after a short 50/50 composition, Services takes the viewport. */
+      /* Brief split composition, then Services takes the full viewport. */
       timeline.to(
         services,
         {
@@ -407,7 +398,7 @@ export function HomeSelectedWork() {
           duration: 0.14,
           ease: "none",
         },
-        0.86,
+        0.84,
       );
 
       timeline.to(
@@ -417,7 +408,7 @@ export function HomeSelectedWork() {
           duration: 0.14,
           ease: "none",
         },
-        0.86,
+        0.84,
       );
 
       timeline.to(
@@ -427,17 +418,17 @@ export function HomeSelectedWork() {
           duration: 0.14,
           ease: "none",
         },
-        0.86,
+        0.84,
       );
 
       timeline.to(
         servicesBoundary,
         {
           autoAlpha: 0,
-          duration: 0.035,
+          duration: 0.025,
           ease: "none",
         },
-        0.965,
+        0.975,
       );
 
       return () => {
@@ -451,7 +442,7 @@ export function HomeSelectedWork() {
   return (
     <section
       ref={sectionRef}
-      className="relative z-[52] h-[760svh] bg-[#fbfbfb]"
+      className="relative z-[52] h-[680svh] bg-[#fbfbfb]"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
