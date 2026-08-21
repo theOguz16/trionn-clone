@@ -1,4 +1,4 @@
-const POLY_HAVEN_ASSET_ID = "rock_09";
+const POLY_HAVEN_ASSET_ID = "rock_face_01";
 const POLY_HAVEN_FILES_URL = `https://api.polyhaven.com/files/${POLY_HAVEN_ASSET_ID}`;
 const CACHE_SECONDS = 60 * 60 * 24;
 
@@ -95,7 +95,7 @@ export async function getRockGltfBundle(): Promise<RockGltfBundle> {
   )[0];
 
   if (!bundle) {
-    throw new Error("No usable Rock 09 glTF bundle was returned by Poly Haven.");
+    throw new Error("No usable Rock Face 01 glTF bundle was returned by Poly Haven.");
   }
 
   return {
