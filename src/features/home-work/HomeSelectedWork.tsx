@@ -51,7 +51,7 @@ function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
-function TransitionPlus({ marker }: { marker: "entry" | "services" }) {
+function TransitionPlus({ marker }: { marker: "services" }) {
   return (
     <span
       data-transition-plus={marker}
@@ -217,7 +217,6 @@ export function HomeSelectedWork() {
   const trackRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const servicesBoundaryRef = useRef<HTMLDivElement>(null);
-  const entryGuideRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
@@ -226,16 +225,8 @@ export function HomeSelectedWork() {
       const track = trackRef.current;
       const services = servicesRef.current;
       const servicesBoundary = servicesBoundaryRef.current;
-      const entryGuide = entryGuideRef.current;
 
-      if (
-        !section ||
-        !stage ||
-        !track ||
-        !services ||
-        !servicesBoundary ||
-        !entryGuide
-      ) {
+      if (!section || !stage || !track || !services || !servicesBoundary) {
         return;
       }
 
@@ -251,9 +242,6 @@ export function HomeSelectedWork() {
       const servicesRise = section.querySelector<HTMLElement>(
         "[data-services-rise]",
       );
-      const entryPlus = entryGuide.querySelector<HTMLElement>(
-        '[data-transition-plus="entry"]',
-      );
       const boundaryPlus = servicesBoundary.querySelector<HTMLElement>(
         '[data-transition-plus="services"]',
       );
@@ -263,7 +251,6 @@ export function HomeSelectedWork() {
         projectRises.length !== PROJECTS.length ||
         !collectionRise ||
         !servicesRise ||
-        !entryPlus ||
         !boundaryPlus
       ) {
         return;
@@ -290,10 +277,6 @@ export function HomeSelectedWork() {
         force3D: true,
       });
 
-      gsap.set(entryGuide, {
-        autoAlpha: 1,
-      });
-
       gsap.set(services, {
         clipPath: "inset(0% 0% 0% 100%)",
         willChange: "clip-path",
@@ -311,22 +294,10 @@ export function HomeSelectedWork() {
         willChange: "transform, opacity",
       });
 
-      gsap.set([entryPlus, boundaryPlus], {
+      gsap.set(boundaryPlus, {
         rotation: 0,
         transformOrigin: "50% 50%",
         force3D: true,
-      });
-
-      const entryTween = gsap.to(entryPlus, {
-        rotation: 360,
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "top top",
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
       });
 
       const timeline = gsap.timeline({
@@ -347,16 +318,6 @@ export function HomeSelectedWork() {
           ease: "power1.out",
         },
         0,
-      );
-
-      timeline.to(
-        entryGuide,
-        {
-          autoAlpha: 0,
-          duration: 0.055,
-          ease: "none",
-        },
-        0.07,
       );
 
       timeline.to(
@@ -454,8 +415,6 @@ export function HomeSelectedWork() {
       );
 
       return () => {
-        entryTween.scrollTrigger?.kill();
-        entryTween.kill();
         timeline.scrollTrigger?.kill();
         timeline.kill();
       };
@@ -477,25 +436,6 @@ export function HomeSelectedWork() {
               "linear-gradient(180deg, #fbfbfb 0%, #f4f4f4 48%, #dedddb 100%)",
           }}
         >
-          <div
-            ref={entryGuideRef}
-            className="pointer-events-none absolute inset-0 z-[20]"
-          >
-            <div
-              className="absolute inset-x-0 top-0 h-px"
-              style={{ backgroundColor: GUIDE }}
-            />
-
-            <div
-              className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2"
-              style={{ backgroundColor: GUIDE }}
-            />
-
-            <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-              <TransitionPlus marker="entry" />
-            </div>
-          </div>
-
           <div
             ref={trackRef}
             className="absolute inset-y-0 left-0 flex w-max items-stretch"
