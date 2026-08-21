@@ -43,7 +43,7 @@ export class ServicesScene implements RuntimeScene {
 
   private readonly canvas: HTMLCanvasElement;
   private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  private readonly camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
   private readonly renderer: THREE.WebGLRenderer;
   private readonly root = new THREE.Group();
   private readonly slabPivot = new THREE.Group();
@@ -59,7 +59,7 @@ export class ServicesScene implements RuntimeScene {
     this.canvas = canvas;
 
     qualityManager.init();
-    this.camera.position.set(0, 0.02, 5.55);
+    this.camera.position.set(0, 0.01, 6.35);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -72,7 +72,7 @@ export class ServicesScene implements RuntimeScene {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.56;
+    this.renderer.toneMappingExposure = 0.78;
 
     const room = new RoomEnvironment();
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -85,16 +85,16 @@ export class ServicesScene implements RuntimeScene {
     this.root.add(this.slabPivot);
     this.slabPivot.add(this.slab.root, this.markRoot);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.08);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.14);
 
-    const key = new THREE.DirectionalLight(0xe8e8e3, 2.35);
-    key.position.set(-3.4, 4.8, 5.6);
+    const key = new THREE.DirectionalLight(0xf0efea, 3.1);
+    key.position.set(-3.6, 4.6, 5.8);
 
-    const side = new THREE.DirectionalLight(0x8390a0, 0.28);
-    side.position.set(3.1, 0.5, 2.6);
+    const side = new THREE.DirectionalLight(0x8d9bac, 0.58);
+    side.position.set(3.4, 0.7, 3.2);
 
-    const rim = new THREE.DirectionalLight(0x586879, 0.48);
-    rim.position.set(1.5, -2.6, -4.2);
+    const rim = new THREE.DirectionalLight(0x617186, 0.7);
+    rim.position.set(1.2, -2.3, -4.2);
 
     this.scene.add(ambient, key, side, rim);
 
@@ -107,9 +107,9 @@ export class ServicesScene implements RuntimeScene {
 
   private createSurfaceMarks() {
     const marks = [
-      { label: "M", x: -0.52, y: -0.14, z: 0.315, size: 0.32 },
-      { label: "N", x: 0.34, y: 0.44, z: 0.315, size: 0.3 },
-      { label: "B", x: 0.43, y: -0.36, z: 0.315, size: 0.28 },
+      { label: "M", x: -0.52, y: -0.14, z: 0.335, size: 0.32 },
+      { label: "N", x: 0.34, y: 0.44, z: 0.335, size: 0.3 },
+      { label: "B", x: 0.43, y: -0.36, z: 0.335, size: 0.28 },
     ];
 
     marks.forEach((mark) => {
@@ -168,9 +168,9 @@ export class ServicesScene implements RuntimeScene {
       this.markRoot.add(line);
     };
 
-    makeLine(0.68, 0.016, -0.1, 0.14, 0.318, -0.5);
-    makeLine(0.42, 0.014, 0.55, -0.07, 0.318, 0);
-    makeLine(0.014, 0.42, 0.55, -0.07, 0.318, 0);
+    makeLine(0.68, 0.016, -0.1, 0.14, 0.338, -0.5);
+    makeLine(0.42, 0.014, 0.55, -0.07, 0.338, 0);
+    makeLine(0.014, 0.42, 0.55, -0.07, 0.338, 0);
 
     this.markMaterials.push(lineMaterial);
     this.markRoot.visible = false;
@@ -189,13 +189,13 @@ export class ServicesScene implements RuntimeScene {
     const settleProgress = smoothStep((progress - 0.62) / 0.18);
     const finalProgress = smoothStep((progress - 0.76) / 0.2);
 
-    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.014;
-    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.028;
+    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.012;
+    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.022;
 
-    const introRotation = new THREE.Euler(-0.28, -0.48, -0.16);
-    const breakRotation = new THREE.Euler(0.62, 2.05, 0.24);
-    const settleRotation = new THREE.Euler(0.12, 0.38, 0.02);
-    const finalRotation = new THREE.Euler(-0.035, 0.045, -0.018);
+    const introRotation = new THREE.Euler(-0.22, -0.4, -0.12);
+    const breakRotation = new THREE.Euler(0.58, 1.72, 0.2);
+    const settleRotation = new THREE.Euler(0.1, 0.3, 0.015);
+    const finalRotation = new THREE.Euler(-0.02, 0.035, -0.012);
 
     const introQuaternion = new THREE.Quaternion().setFromEuler(introRotation);
     const breakQuaternion = new THREE.Quaternion().setFromEuler(breakRotation);
@@ -210,21 +210,21 @@ export class ServicesScene implements RuntimeScene {
     this.slabPivot.rotation.x += idleX;
     this.slabPivot.rotation.y += idleY;
 
-    const introScale = 0.64;
-    const breakScale = THREE.MathUtils.lerp(introScale, 0.94, breakProgress);
-    const settleScale = THREE.MathUtils.lerp(breakScale, 1.03, settleProgress);
-    const finalScale = THREE.MathUtils.lerp(settleScale, 1.06, finalProgress);
+    const introScale = 0.47;
+    const breakScale = THREE.MathUtils.lerp(introScale, 0.72, breakProgress);
+    const settleScale = THREE.MathUtils.lerp(breakScale, 0.76, settleProgress);
+    const finalScale = THREE.MathUtils.lerp(settleScale, 0.78, finalProgress);
 
     this.slabPivot.scale.set(
       finalScale,
-      finalScale * THREE.MathUtils.lerp(1, 1.035, finalProgress),
+      finalScale * THREE.MathUtils.lerp(1, 1.02, finalProgress),
       finalScale,
     );
 
-    const introPosition = new THREE.Vector3(0, 0.74, 0);
-    const breakPosition = new THREE.Vector3(0.12, 0.1, 0);
-    const settlePosition = new THREE.Vector3(0, -0.02, 0);
-    const finalPosition = new THREE.Vector3(0, -0.04, 0);
+    const introPosition = new THREE.Vector3(0, 0.63, 0);
+    const breakPosition = new THREE.Vector3(0.08, 0.06, 0);
+    const settlePosition = new THREE.Vector3(0, -0.01, 0);
+    const finalPosition = new THREE.Vector3(0, -0.015, 0);
 
     const position = introPosition
       .clone()
