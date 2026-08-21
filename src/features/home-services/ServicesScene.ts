@@ -8,9 +8,7 @@ import type {
 } from "@/runtime/canvas/RuntimeScene";
 import { qualityManager } from "@/runtime/quality/QualityManager";
 
-type RockResolverResponse = {
-  modelUrl?: string;
-};
+const ROCK_MODEL_URL = "/api/polyhaven/rock/model?v=3";
 
 export class ServicesScene implements RuntimeScene {
   readonly id = "home-services";
@@ -70,23 +68,14 @@ export class ServicesScene implements RuntimeScene {
 
   private async loadRock() {
     try {
-      const resolverResponse = await fetch("/api/polyhaven/rock", {
-        cache: "force-cache",
-      });
-
-      if (!resolverResponse.ok) {
-        throw new Error(`Rock resolver returned ${resolverResponse.status}.`);
-      }
-
-      const payload = (await resolverResponse.json()) as RockResolverResponse;
-      const modelUrl = payload.modelUrl;
-
-      if (!modelUrl) {
-        throw new Error("Rock resolver did not return a model URL.");
-      }
-
       const loader = new GLTFLoader();
-      const gltf = await loader.loadAsync(modelUrl);
+
+      /*
+       * Always load the rewritten same-origin glTF directly. The previous
+       * resolver fetch used force-cache, so browsers could retain the old
+       * Poly Haven URL and bypass our texture/bin proxy entirely.
+       */
+      const gltf = await loader.loadAsync(ROCK_MODEL_URL);
 
       if (this.destroyed) {
         gltf.scene.traverse((object) => {
