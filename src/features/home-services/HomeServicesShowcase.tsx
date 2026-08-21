@@ -10,18 +10,18 @@ import { ServicesScene } from "./ServicesScene";
 const SERVICE_WORDS = ["A.I.", "Design", "Development", "Branding"] as const;
 
 const SCATTER_VECTORS = [
-  { x: -33, y: -16, r: -13, s: 1.0 },
-  { x: -23, y: 21, r: 9, s: 0.86 },
-  { x: 28, y: -19, r: 15, s: 0.92 },
-  { x: 37, y: 16, r: -10, s: 0.78 },
-  { x: -39, y: 8, r: 17, s: 0.72 },
-  { x: 18, y: 29, r: -15, s: 0.83 },
-  { x: -13, y: -30, r: 8, s: 0.88 },
-  { x: 43, y: -5, r: 12, s: 0.76 },
-  { x: -28, y: 30, r: -18, s: 0.8 },
-  { x: 8, y: -35, r: 19, s: 0.9 },
-  { x: 34, y: 28, r: -8, s: 0.74 },
-  { x: -43, y: -23, r: 14, s: 0.7 },
+  { x: -22, y: -11, r: -22, s: 0.76 },
+  { x: -16, y: 14, r: 15, s: 0.68 },
+  { x: 19, y: -13, r: 24, s: 0.72 },
+  { x: 25, y: 11, r: -17, s: 0.64 },
+  { x: -27, y: 6, r: 27, s: 0.6 },
+  { x: 13, y: 20, r: -24, s: 0.68 },
+  { x: -9, y: -21, r: 14, s: 0.7 },
+  { x: 29, y: -4, r: 19, s: 0.62 },
+  { x: -19, y: 20, r: -28, s: 0.64 },
+  { x: 6, y: -24, r: 30, s: 0.72 },
+  { x: 23, y: 19, r: -14, s: 0.61 },
+  { x: -29, y: -15, r: 22, s: 0.58 },
 ] as const;
 
 function WordChars({ word, wordIndex }: { word: string; wordIndex: number }) {
@@ -32,7 +32,7 @@ function WordChars({ word, wordIndex }: { word: string; wordIndex: number }) {
           key={`${word}-${charIndex}`}
           data-service-char
           data-service-char-index={charIndex}
-          className="inline-block will-change-transform"
+          className="inline-block origin-center will-change-transform"
         >
           {char === " " ? "\u00a0" : char}
         </span>
@@ -276,8 +276,8 @@ export function HomeServicesShowcase() {
       timeline.to(
         wordStack,
         {
-          scale: 0.985,
-          duration: 0.16,
+          scale: 0.99,
+          duration: 0.14,
           ease: "none",
         },
         0,
@@ -291,8 +291,8 @@ export function HomeServicesShowcase() {
         wordChars.forEach((char, charIndex) => {
           const vector =
             SCATTER_VECTORS[(wordIndex * 5 + charIndex) % SCATTER_VECTORS.length];
-          const depthFactor = 1 + wordIndex * 0.08;
-          const delay = wordIndex * 0.035 + charIndex * 0.006;
+          const depthFactor = 0.92 + wordIndex * 0.045;
+          const delay = wordIndex * 0.026 + charIndex * 0.004;
 
           timeline.to(
             char,
@@ -301,11 +301,11 @@ export function HomeServicesShowcase() {
               yPercent: vector.y * depthFactor,
               rotation: vector.r,
               scale: vector.s,
-              autoAlpha: 0.24 + ((charIndex + wordIndex) % 4) * 0.14,
-              duration: 0.42,
+              autoAlpha: 0.34 + ((charIndex + wordIndex) % 4) * 0.11,
+              duration: 0.34,
               ease: "power1.inOut",
             },
-            0.16 + delay,
+            0.17 + delay,
           );
         });
       });
@@ -313,46 +313,46 @@ export function HomeServicesShowcase() {
       timeline.to(
         wordStack,
         {
-          scale: 1.025,
-          duration: 0.18,
+          scale: 0.965,
+          duration: 0.16,
           ease: "none",
         },
-        0.58,
+        0.52,
       );
 
       timeline.to(
         chars,
         {
           autoAlpha: 0,
-          scale: 0.82,
-          duration: 0.18,
+          scale: 0.52,
+          duration: 0.14,
           stagger: {
-            each: 0.004,
+            each: 0.003,
             from: "random",
           },
           ease: "power1.in",
         },
-        0.68,
+        0.62,
       );
 
       timeline.to(
         wordStack,
         {
           autoAlpha: 0,
-          duration: 0.08,
+          duration: 0.06,
           ease: "none",
         },
-        0.72,
+        0.67,
       );
 
       timeline.to(
         detailStage,
         {
           autoAlpha: 1,
-          duration: 0.08,
+          duration: 0.07,
           ease: "none",
         },
-        0.72,
+        0.69,
       );
 
       timeline.to(
@@ -360,10 +360,10 @@ export function HomeServicesShowcase() {
         {
           xPercent: 0,
           autoAlpha: 1,
-          duration: 0.2,
+          duration: 0.19,
           ease: "power2.out",
         },
-        0.74,
+        0.71,
       );
 
       timeline.to(
@@ -371,10 +371,10 @@ export function HomeServicesShowcase() {
         {
           xPercent: 0,
           autoAlpha: 1,
-          duration: 0.2,
+          duration: 0.19,
           ease: "power2.out",
         },
-        0.77,
+        0.74,
       );
 
       timeline.to(
@@ -382,11 +382,11 @@ export function HomeServicesShowcase() {
         {
           scale: 1,
           autoAlpha: 0.68,
-          duration: 0.18,
-          stagger: 0.025,
+          duration: 0.17,
+          stagger: 0.02,
           ease: "power1.out",
         },
-        0.8,
+        0.78,
       );
 
       return () => {
