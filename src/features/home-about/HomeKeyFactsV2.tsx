@@ -143,7 +143,16 @@ export function HomeKeyFacts() {
     });
 
     return () => {
+      const ownsLightTheme =
+        document.documentElement.dataset.keyfactsActive === "true";
+
       delete document.documentElement.dataset.keyfactsActive;
+
+      if (ownsLightTheme) {
+        delete document.documentElement.dataset.pageTheme;
+        canvasManager.setActive("home-hero", true);
+      }
+
       trigger.kill();
       timeline.kill();
     };

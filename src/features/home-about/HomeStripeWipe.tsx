@@ -15,9 +15,14 @@ const STRIPE_COUNT = 6;
 const STRIPE_START = 0.015;
 const STRIPE_STEP = 0.095;
 const STRIPE_DURATION = 0.58;
+const STRIPE_SEQUENCE_END =
+  STRIPE_START +
+  (STRIPE_COUNT - 1) * STRIPE_STEP +
+  STRIPE_DURATION;
 
 const CAPTION_VIEWPORT_Y = 0.78;
 const CAPTION_CLEARANCE = 22;
+const LIGHT_SURFACE_EPSILON = 0.5;
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -137,6 +142,8 @@ export function HomeStripeWipe() {
         rawProgress: number,
       ) => {
         const progress = clamp01(rawProgress);
+        const visualProgress =
+          progress * STRIPE_SEQUENCE_END;
 
         setHeroPaused(progress > 0.1);
 
@@ -158,7 +165,7 @@ export function HomeStripeWipe() {
 
           const localProgress =
             getStripeProgress(
-              progress,
+              visualProgress,
               orderIndex,
             );
 
@@ -242,11 +249,18 @@ export function HomeStripeWipe() {
             `translate3d(-50%, ${y}px, 0)`;
         }
 
-        if (progress >= 0.95) {
-          changeTheme("light");
-        } else {
-          changeTheme("dark");
-        }
+        const lightSurfaceReady =
+          yPercents.every(
+            (yPercent) =>
+              yPercent <=
+              LIGHT_SURFACE_EPSILON,
+          );
+
+        changeTheme(
+          lightSurfaceReady
+            ? "light"
+            : "dark",
+        );
       };
 
       const trigger =

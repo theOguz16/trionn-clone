@@ -321,3 +321,157 @@ html[data-page-theme="light"]
   height: 1px !important;
   transform: none !important;
 }
+
+/* About uses the same pixel-centered cross geometry as the Work handoffs.
+ * Replacing the font glyph avoids baseline and font-rendering drift. */
+[data-about-rule-plus] {
+  top: -7px !important;
+  display: block;
+  width: 15px;
+  height: 15px;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  transform-origin: 50% 50%;
+}
+
+[data-about-rule-plus]::before,
+[data-about-rule-plus]::after {
+  content: "";
+  position: absolute;
+  display: block;
+  background: currentColor;
+}
+
+[data-about-rule-plus]::before {
+  left: 7px;
+  top: 0;
+  width: 1px;
+  height: 15px;
+}
+
+[data-about-rule-plus]::after {
+  left: 0;
+  top: 7px;
+  width: 15px;
+  height: 1px;
+}
+
+/* While the shared Hero/About narrative is mounted, About owns the
+ * perceptible canvas fade. Hero may still update its internal GSAP state,
+ * but it cannot hide the canvas out from under the narrative controller. */
+canvas[data-home-narrative-canvas] {
+  visibility: visible !important;
+}
+
+@media (max-width: 767px) {
+  [data-about-heading] {
+    left: 20px !important;
+    right: 20px !important;
+    top: 18svh !important;
+  }
+
+  [data-about-heading] > h2 {
+    max-width: none !important;
+    font-size: clamp(2.35rem, 10.8vw, 3.35rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.05em !important;
+  }
+
+  [data-about-rule-wrap] {
+    left: 20px !important;
+    right: 20px !important;
+  }
+
+  [data-about-left] {
+    left: 20px !important;
+    width: min(72vw, 290px) !important;
+  }
+
+  [data-about-right] {
+    left: auto !important;
+    right: 20px !important;
+    width: min(66vw, 280px) !important;
+  }
+
+  [data-focus-label] {
+    left: 20px !important;
+  }
+
+  [data-focus-marquee] > div {
+    font-size: clamp(3.6rem, 17vw, 5.4rem) !important;
+  }
+
+  [data-facts-grid] {
+    gap: 12px !important;
+  }
+
+  [data-card-shell] article {
+    min-height: 360px;
+  }
+
+  [data-work-intro-rise] {
+    left: 5vw !important;
+    top: 50% !important;
+  }
+
+  [data-work-intro-rise] h2 {
+    width: 42vw !important;
+    font-size: clamp(2rem, 9vw, 3rem) !important;
+    line-height: 0.94 !important;
+  }
+
+  [data-project-rise] {
+    left: 5% !important;
+    right: 5% !important;
+    top: 20svh !important;
+  }
+
+  [data-project-rise] > a:first-child {
+    height: 39svh !important;
+    min-height: 250px !important;
+    max-height: 380px !important;
+  }
+
+  [data-project-rise] > div {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  [data-project-rise] h3 {
+    font-size: 20px !important;
+  }
+
+  [data-project-rise] p {
+    max-width: 42vw !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+
+  [data-work-intro-rise] a.group,
+  [data-project-rise] a.group,
+  [data-collection-rise] a.group,
+  a[href="/services"].group {
+    width: min(150px, 42vw) !important;
+    font-size: 9px !important;
+  }
+
+  [data-collection-rise] {
+    top: 52% !important;
+    width: 90% !important;
+  }
+
+  [data-collection-rise] h3 {
+    font-size: 20px !important;
+    line-height: 1 !important;
+  }
+
+  [data-services-rise] {
+    width: 92vw !important;
+  }
+
+  [data-services-rise] > div {
+    font-size: clamp(3.4rem, 14vw, 6rem) !important;
+    line-height: 0.78 !important;
+    letter-spacing: -0.055em !important;
+  }
+}
