@@ -321,3 +321,10 @@ html[data-page-theme="light"]
   height: 1px !important;
   transform: none !important;
 }
+
+/* While the shared Hero/About narrative is mounted, About owns the
+ * perceptible canvas fade. Hero may still update its internal GSAP state,
+ * but it cannot hide the canvas out from under the narrative controller. */
+canvas[data-home-narrative-canvas] {
+  visibility: visible !important;
+}
