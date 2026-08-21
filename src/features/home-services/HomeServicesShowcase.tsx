@@ -46,14 +46,10 @@ function LeftLineMotif() {
     <div
       data-service-detail-motif
       aria-hidden="true"
-      className="absolute right-[7%] top-[12%] flex h-[82px] items-stretch gap-[7px] opacity-70 max-md:hidden"
+      className="absolute right-[7.5%] top-[13.5%] flex h-[80px] items-stretch gap-[6px] opacity-65 max-md:hidden"
     >
-      {Array.from({ length: 9 }).map((_, index) => (
-        <span
-          key={index}
-          className="block w-px bg-white/55"
-          style={{ transform: `translateY(${index % 2 === 0 ? 0 : 5}px)` }}
-        />
+      {Array.from({ length: 8 }).map((_, index) => (
+        <span key={index} className="block w-px bg-white/50" />
       ))}
     </div>
   );
@@ -64,29 +60,29 @@ function RightRingMotif() {
     <div
       data-service-detail-motif
       aria-hidden="true"
-      className="absolute right-[4%] top-[12%] h-[92px] w-[122px] overflow-hidden opacity-70 max-md:hidden"
+      className="absolute right-[4.5%] top-[13.5%] h-[88px] w-[112px] overflow-hidden opacity-65 max-md:hidden"
     >
-      {Array.from({ length: 5 }).map((_, index) => (
+      {Array.from({ length: 4 }).map((_, index) => (
         <span
           key={`left-${index}`}
-          className="absolute rounded-full border border-white/55"
+          className="absolute rounded-full border border-white/48"
           style={{
-            width: `${36 + index * 18}px`,
-            height: `${36 + index * 18}px`,
-            left: `${-20 - index * 9}px`,
-            top: `${46 - (36 + index * 18) / 2}px`,
+            width: `${38 + index * 17}px`,
+            height: `${38 + index * 17}px`,
+            left: `${-18 - index * 8}px`,
+            top: `${44 - (38 + index * 17) / 2}px`,
           }}
         />
       ))}
-      {Array.from({ length: 5 }).map((_, index) => (
+      {Array.from({ length: 4 }).map((_, index) => (
         <span
           key={`right-${index}`}
-          className="absolute rounded-full border border-white/55"
+          className="absolute rounded-full border border-white/48"
           style={{
-            width: `${36 + index * 18}px`,
-            height: `${36 + index * 18}px`,
-            right: `${-20 - index * 9}px`,
-            top: `${46 - (36 + index * 18) / 2}px`,
+            width: `${38 + index * 17}px`,
+            height: `${38 + index * 17}px`,
+            right: `${-18 - index * 8}px`,
+            top: `${44 - (38 + index * 17) / 2}px`,
           }}
         />
       ))}
@@ -102,9 +98,9 @@ function ServiceDetailPanels() {
     >
       <article
         data-service-detail-panel="left"
-        className="absolute left-[10.4vw] top-[52.8%] h-[25.5svh] min-h-[245px] w-[31.8vw] min-w-[390px] -translate-y-1/2 bg-[rgba(8,13,18,0.52)] px-[2.1vw] py-[4.1svh] backdrop-blur-[2px] max-md:left-5 max-md:top-[42%] max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5"
+        className="absolute left-[8.2vw] top-[52%] h-[26.5svh] min-h-[250px] w-[39vw] min-w-[500px] -translate-y-1/2 bg-[rgba(7,12,17,0.3)] px-[2.3vw] py-[4.4svh] backdrop-blur-[1px] max-md:left-5 max-md:top-[42%] max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5"
       >
-        <h3 className="max-w-[285px] text-[clamp(1.7rem,2vw,2.25rem)] font-normal leading-[0.95] tracking-[-0.05em] text-[#f0eee8] max-md:text-[1.55rem]">
+        <h3 className="max-w-[280px] text-[clamp(1.55rem,1.75vw,2rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
           AI &amp; Intelligent
           <br />
           Automation
@@ -112,7 +108,7 @@ function ServiceDetailPanels() {
 
         <LeftLineMotif />
 
-        <p className="absolute bottom-[3.6svh] left-[2.1vw] max-w-[292px] text-[12px] font-normal leading-[1.24] tracking-[-0.018em] text-[#dad8d2] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
+        <p className="absolute bottom-[3.7svh] left-[2.3vw] max-w-[300px] text-[11.5px] font-normal leading-[1.27] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
           AI-powered solutions designed to enhance products, automate workflows,
           and unlock smarter digital experiences.
         </p>
@@ -120,9 +116,9 @@ function ServiceDetailPanels() {
 
       <article
         data-service-detail-panel="right"
-        className="absolute right-[10.4vw] top-[43.6%] h-[25.5svh] min-h-[245px] w-[31.8vw] min-w-[390px] -translate-y-1/2 bg-[rgba(8,13,18,0.52)] px-[2.1vw] py-[4.1svh] backdrop-blur-[2px] max-md:bottom-[15svh] max-md:right-5 max-md:top-auto max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5 max-md:translate-y-0"
+        className="absolute right-[8.2vw] top-[49.2%] h-[24.8svh] min-h-[238px] w-[30vw] min-w-[390px] -translate-y-1/2 bg-[rgba(7,12,17,0.3)] px-[2.15vw] py-[4.1svh] backdrop-blur-[1px] max-md:bottom-[15svh] max-md:right-5 max-md:top-auto max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5 max-md:translate-y-0"
       >
-        <h3 className="max-w-[280px] text-[clamp(1.7rem,2vw,2.25rem)] font-normal leading-[0.95] tracking-[-0.05em] text-[#f0eee8] max-md:text-[1.55rem]">
+        <h3 className="max-w-[265px] text-[clamp(1.55rem,1.75vw,2rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
           Website &amp;
           <br />
           Mobile Design
@@ -130,7 +126,7 @@ function ServiceDetailPanels() {
 
         <RightRingMotif />
 
-        <p className="absolute bottom-[3.6svh] left-[2.1vw] max-w-[295px] text-[12px] font-normal leading-[1.24] tracking-[-0.018em] text-[#dad8d2] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
+        <p className="absolute bottom-[3.5svh] left-[2.15vw] max-w-[285px] text-[11.5px] font-normal leading-[1.27] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
           High-quality website and app experiences designed to attract users and
           keep them coming back.
         </p>
@@ -385,7 +381,7 @@ export function HomeServicesShowcase() {
         detailMotifs,
         {
           scale: 1,
-          autoAlpha: 0.72,
+          autoAlpha: 0.68,
           duration: 0.18,
           stagger: 0.025,
           ease: "power1.out",
@@ -407,7 +403,7 @@ export function HomeServicesShowcase() {
     <section
       ref={sectionRef}
       data-home-services-showcase
-      className="relative z-[54] h-[420svh] bg-[#0b1015] text-[#efede6]"
+      className="relative z-[54] h-[420svh] bg-[#070c11] text-[#efede6]"
     >
       <div className="sticky top-0 h-[100svh] min-h-[720px] overflow-hidden">
         <div
@@ -415,18 +411,18 @@ export function HomeServicesShowcase() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at 17% 48%, rgba(169,176,177,.34) 0%, rgba(88,98,103,.18) 28%, transparent 57%), radial-gradient(ellipse at 76% 30%, rgba(57,68,77,.44) 0%, rgba(12,18,24,.12) 45%, transparent 72%), radial-gradient(ellipse at 58% 86%, rgba(63,70,72,.28) 0%, transparent 55%), linear-gradient(112deg, #080d12 0%, #182129 42%, #060b10 100%)",
+              "radial-gradient(ellipse at 17% 50%, rgba(131,141,145,.34) 0%, rgba(68,78,83,.19) 29%, transparent 59%), radial-gradient(ellipse at 77% 34%, rgba(48,59,68,.46) 0%, rgba(8,14,19,.14) 47%, transparent 73%), radial-gradient(ellipse at 55% 82%, rgba(77,84,84,.24) 0%, transparent 53%), linear-gradient(112deg, #05090d 0%, #172027 43%, #04080c 100%)",
           }}
         />
 
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-60"
+          className="absolute inset-0 opacity-75"
           style={{
             background:
-              "radial-gradient(circle at 25% 55%, rgba(229,231,227,.12), transparent 19%), radial-gradient(circle at 49% 43%, rgba(255,255,255,.06), transparent 24%), radial-gradient(circle at 76% 68%, rgba(182,191,194,.1), transparent 22%)",
-            filter: "blur(28px)",
-            transform: "scale(1.1)",
+              "radial-gradient(circle at 23% 55%, rgba(219,222,218,.14), transparent 20%), radial-gradient(circle at 48% 45%, rgba(255,255,255,.075), transparent 27%), radial-gradient(circle at 76% 66%, rgba(169,181,184,.12), transparent 24%)",
+            filter: "blur(34px)",
+            transform: "scale(1.13)",
           }}
         />
 
@@ -435,7 +431,7 @@ export function HomeServicesShowcase() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(2,5,8,.18) 0%, transparent 24%, transparent 72%, rgba(1,4,7,.48) 100%), radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,.42) 100%)",
+              "linear-gradient(180deg, rgba(0,3,6,.23) 0%, transparent 25%, transparent 70%, rgba(0,2,5,.55) 100%), radial-gradient(ellipse at center, transparent 39%, rgba(0,0,0,.48) 100%)",
           }}
         />
 
