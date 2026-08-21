@@ -20,6 +20,15 @@ const STRIPE_SEQUENCE_END =
   (STRIPE_COUNT - 1) * STRIPE_STEP +
   STRIPE_DURATION;
 
+/*
+ * The Stripe section starts overlapping the Hero while the model is still
+ * returning. Keep the stripe surfaces transparent through that overlap so
+ * the Hero can finish its 0.52 -> 0.78 rejoin and briefly hold assembled.
+ * With the current section geometry, 0.39 maps to roughly Hero raw 0.80.
+ */
+const STRIPE_REVEAL_START = 0.39;
+const HERO_PAUSE_AFTER_WIPE_START = 0.12;
+
 const CAPTION_VIEWPORT_Y = 0.78;
 const CAPTION_CLEARANCE = 22;
 const LIGHT_SURFACE_EPSILON = 0.5;
@@ -82,6 +91,17 @@ export function HomeStripeWipe() {
           "[data-outcome]",
         );
 
+      const aboutSection =
+        section.previousElementSibling instanceof HTMLElement
+          ? section.previousElementSibling
+          : null;
+      const heroSection =
+        aboutSection?.previousElementSibling instanceof HTMLElement
+          ? aboutSection.previousElementSibling
+          : null;
+      const heroCanvas =
+        heroSection?.querySelector<HTMLCanvasElement>("canvas") ?? null;
+
       if (
         stripes.length !==
         STRIPE_COUNT
@@ -138,14 +158,44 @@ export function HomeStripeWipe() {
         setTheme(theme);
       };
 
+      const keepHeroVisibleBehindWipe = (
+        visible: boolean,
+      ) => {
+        if (!heroCanvas) {
+          return;
+        }
+
+        heroCanvas.style.setProperty(
+          "opacity",
+          visible ? "1" : "0",
+          "important",
+        );
+        heroCanvas.style.setProperty(
+          "visibility",
+          visible ? "visible" : "hidden",
+          "important",
+        );
+      };
+
       const update = (
         rawProgress: number,
       ) => {
         const progress = clamp01(rawProgress);
+        const wipeProgress = clamp01(
+          (progress - STRIPE_REVEAL_START) /
+            (1 - STRIPE_REVEAL_START),
+        );
         const visualProgress =
-          progress * STRIPE_SEQUENCE_END;
+          wipeProgress * STRIPE_SEQUENCE_END;
 
-        setHeroPaused(progress > 0.1);
+        /*
+         * Do not freeze the Hero during its rejoin. The previous section-based
+         * 0.10 threshold paused the renderer around Hero raw 0.69, leaving the
+         * machine visibly exploded underneath the incoming stripes.
+         */
+        setHeroPaused(
+          wipeProgress > HERO_PAUSE_AFTER_WIPE_START,
+        );
 
         const yPercents =
           new Array<number>(
@@ -222,14 +272,14 @@ export function HomeStripeWipe() {
             );
 
           const enter = smootherStep(
-            (progress - 0.09) /
+            (wipeProgress - 0.09) /
               0.15,
           );
 
           const phaseLeave =
             1 -
             smootherStep(
-              (progress - 0.45) /
+              (wipeProgress - 0.45) /
                 0.18,
             );
 
@@ -255,6 +305,15 @@ export function HomeStripeWipe() {
               yPercent <=
               LIGHT_SURFACE_EPSILON,
           );
+
+        /*
+         * Keep the fully assembled model opaque behind the moving stripes.
+         * The stripes physically occlude it; only retire the canvas after the
+         * light surface has genuinely covered the viewport.
+         */
+        keepHeroVisibleBehindWipe(
+          !lightSurfaceReady,
+        );
 
         changeTheme(
           lightSurfaceReady
@@ -299,6 +358,11 @@ export function HomeStripeWipe() {
 
       return () => {
         trigger.kill();
+
+        if (heroCanvas) {
+          heroCanvas.style.removeProperty("opacity");
+          heroCanvas.style.removeProperty("visibility");
+        }
       };
     },
     {
