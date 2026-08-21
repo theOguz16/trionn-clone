@@ -282,12 +282,6 @@ export function HomeSelectedWork() {
         willChange: "clip-path",
       });
 
-      /*
-       * Do not animate or set transform on data-services-rise.
-       * Its Tailwind translate transform keeps the word stack fixed at the
-       * viewport center during both the split handoff and full takeover.
-       */
-
       gsap.set(servicesBoundary, {
         x: () => window.innerWidth,
         autoAlpha: 1,
@@ -322,17 +316,33 @@ export function HomeSelectedWork() {
       );
 
       /*
-       * Stop the work rail with Loftloom in the left half and Collection in
-       * the right half, matching the source frame immediately before Services.
+       * Phase A: move through the work rail normally until Loftloom sits in
+       * the left half and Collection sits in the right half. This keeps the
+       * project sequence readable without creating a long empty grey hold.
        */
       timeline.to(
         track,
         {
           x: () => -window.innerWidth * 1.5,
-          duration: 0.66,
+          duration: 0.58,
           ease: "none",
         },
         0,
+      );
+
+      /*
+       * Phase B: immediately finish the final half-panel travel. Collection
+       * lands in the full left half exactly as Services begins revealing on
+       * the right, matching the source split frame.
+       */
+      timeline.to(
+        track,
+        {
+          x: () => -window.innerWidth * 2,
+          duration: 0.08,
+          ease: "none",
+        },
+        0.58,
       );
 
       const projectStarts = [0.02, 0.2, 0.38];
@@ -359,7 +369,6 @@ export function HomeSelectedWork() {
         0.46,
       );
 
-      /* Reveal the right half as soon as the Loftloom + Collection frame lands. */
       timeline.to(
         services,
         {
