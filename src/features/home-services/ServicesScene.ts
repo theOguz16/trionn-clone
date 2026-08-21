@@ -8,7 +8,7 @@ import type {
 } from "@/runtime/canvas/RuntimeScene";
 import { qualityManager } from "@/runtime/quality/QualityManager";
 
-const ROCK_MODEL_URL = "/api/polyhaven/rock/model?v=4";
+const ROCK_MODEL_URL = "/api/polyhaven/rock/model?v=5";
 
 function smoothStep(value: number) {
   const t = THREE.MathUtils.clamp(value, 0, 1);
@@ -21,10 +21,7 @@ function createMarkTexture(label: string) {
   canvas.height = 256;
 
   const context = canvas.getContext("2d");
-
-  if (!context) {
-    return null;
-  }
+  if (!context) return null;
 
   context.clearRect(0, 0, 256, 256);
   context.fillStyle = "rgba(247, 245, 238, 0.96)";
@@ -47,14 +44,16 @@ export class ServicesScene implements RuntimeScene {
 
   private readonly canvas: HTMLCanvasElement;
   private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  private readonly camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
   private readonly renderer: THREE.WebGLRenderer;
   private readonly root = new THREE.Group();
   private readonly rockPivot = new THREE.Group();
   private readonly markRoot = new THREE.Group();
+  private readonly slashRoot = new THREE.Group();
   private readonly environmentTarget: THREE.WebGLRenderTarget;
   private readonly markMaterials: THREE.MeshBasicMaterial[] = [];
   private readonly markTextures: THREE.Texture[] = [];
+  private readonly slashMaterial: THREE.MeshBasicMaterial;
   private rock: THREE.Object3D | null = null;
   private destroyed = false;
   private progressTarget = 0;
@@ -64,8 +63,7 @@ export class ServicesScene implements RuntimeScene {
     this.canvas = canvas;
 
     qualityManager.init();
-
-    this.camera.position.set(0, 0.08, 5.2);
+    this.camera.position.set(0, 0.02, 5.35);
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -78,7 +76,7 @@ export class ServicesScene implements RuntimeScene {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.78;
+    this.renderer.toneMappingExposure = 0.62;
 
     const room = new RoomEnvironment();
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -89,21 +87,32 @@ export class ServicesScene implements RuntimeScene {
 
     this.scene.add(this.root);
     this.root.add(this.rockPivot);
-    this.rockPivot.add(this.markRoot);
+    this.rockPivot.add(this.markRoot, this.slashRoot);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.22);
-    const key = new THREE.DirectionalLight(0xf2eee5, 3.1);
-    key.position.set(-2.4, 3.5, 4.8);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.12);
+    const key = new THREE.DirectionalLight(0xe7e8e5, 2.15);
+    key.position.set(-2.8, 3.8, 4.6);
 
-    const fill = new THREE.DirectionalLight(0x8695aa, 1.05);
-    fill.position.set(3.2, 0.6, 2.2);
+    const fill = new THREE.DirectionalLight(0x75879b, 0.48);
+    fill.position.set(3.4, 0.4, 2.4);
 
-    const rim = new THREE.DirectionalLight(0x596b80, 1.4);
-    rim.position.set(0.5, -2.2, -3.5);
+    const rim = new THREE.DirectionalLight(0x7f8b96, 0.72);
+    rim.position.set(0.8, -2.2, -3.2);
 
     this.scene.add(ambient, key, fill, rim);
 
+    this.slashMaterial = new THREE.MeshBasicMaterial({
+      color: 0x080a0c,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      depthTest: false,
+      toneMapped: false,
+      side: THREE.DoubleSide,
+    });
+
     this.createSurfaceMarks();
+    this.createFinalSlashes();
     void this.loadRock();
   }
 
@@ -127,7 +136,7 @@ export class ServicesScene implements RuntimeScene {
         transparent: true,
         opacity: 0,
         depthWrite: false,
-        depthTest: true,
+        depthTest: false,
         toneMapped: false,
         side: THREE.DoubleSide,
       });
@@ -139,7 +148,7 @@ export class ServicesScene implements RuntimeScene {
 
       mesh.position.set(mark.x, mark.y, mark.z);
       mesh.rotation.set(-0.04, 0.02, mark.x * -0.18);
-      mesh.renderOrder = 4;
+      mesh.renderOrder = 8;
 
       this.markTextures.push(texture);
       this.markMaterials.push(material);
@@ -151,7 +160,7 @@ export class ServicesScene implements RuntimeScene {
       transparent: true,
       opacity: 0,
       depthWrite: false,
-      depthTest: true,
+      depthTest: false,
       toneMapped: false,
       side: THREE.DoubleSide,
     });
@@ -170,7 +179,7 @@ export class ServicesScene implements RuntimeScene {
       );
       line.position.set(x, y, z);
       line.rotation.z = rotation;
-      line.renderOrder = 4;
+      line.renderOrder = 8;
       this.markRoot.add(line);
     };
 
@@ -180,6 +189,27 @@ export class ServicesScene implements RuntimeScene {
 
     this.markMaterials.push(lineMaterial);
     this.markRoot.visible = false;
+  }
+
+  private createFinalSlashes() {
+    const slashes = [
+      { x: -0.28, y: 0.27, width: 0.16, height: 0.86, rotation: -0.47 },
+      { x: 0.12, y: 0.22, width: 0.14, height: 0.7, rotation: -0.43 },
+      { x: -0.04, y: -0.42, width: 0.46, height: 0.11, rotation: 0.08 },
+    ];
+
+    slashes.forEach((slash) => {
+      const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(slash.width, slash.height),
+        this.slashMaterial,
+      );
+      mesh.position.set(slash.x, slash.y, 1.4);
+      mesh.rotation.z = slash.rotation;
+      mesh.renderOrder = 9;
+      this.slashRoot.add(mesh);
+    });
+
+    this.slashRoot.visible = false;
   }
 
   private async loadRock() {
@@ -206,7 +236,7 @@ export class ServicesScene implements RuntimeScene {
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
       const largestAxis = Math.max(size.x, size.y, size.z, 0.0001);
-      const scale = 2.9 / largestAxis;
+      const scale = 3.05 / largestAxis;
 
       rock.scale.setScalar(scale);
       rock.position.set(
@@ -228,9 +258,10 @@ export class ServicesScene implements RuntimeScene {
 
         materials.forEach((material) => {
           if (!(material instanceof THREE.MeshStandardMaterial)) return;
-          material.roughness = Math.max(material.roughness, 0.88);
+          material.roughness = Math.max(material.roughness, 0.95);
           material.metalness = 0;
-          material.envMapIntensity = 0.72;
+          material.envMapIntensity = 0.34;
+          material.color.multiplyScalar(0.58);
           material.needsUpdate = true;
         });
       });
@@ -251,55 +282,59 @@ export class ServicesScene implements RuntimeScene {
     );
 
     const progress = this.progressCurrent;
-    const breakProgress = smoothStep((progress - 0.12) / 0.58);
-    const settleProgress = smoothStep((progress - 0.66) / 0.34);
+    const breakProgress = smoothStep((progress - 0.12) / 0.52);
+    const settleProgress = smoothStep((progress - 0.66) / 0.22);
+    const finalProgress = smoothStep((progress - 0.78) / 0.2);
 
-    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.035;
-    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.015;
+    const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.03;
+    const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.012;
 
-    const breakRotationX = THREE.MathUtils.lerp(-0.08, 0.72, breakProgress);
-    const breakRotationY = THREE.MathUtils.lerp(-0.42, 2.22, breakProgress);
-    const breakRotationZ = THREE.MathUtils.lerp(-0.13, 0.28, breakProgress);
+    const breakX = THREE.MathUtils.lerp(-0.08, 0.72, breakProgress);
+    const breakY = THREE.MathUtils.lerp(-0.42, 2.18, breakProgress);
+    const breakZ = THREE.MathUtils.lerp(-0.13, 0.26, breakProgress);
 
     this.rockPivot.rotation.x =
-      THREE.MathUtils.lerp(breakRotationX, -0.05, settleProgress) + idleX;
+      THREE.MathUtils.lerp(breakX - settleProgress * 0.5, -0.03, finalProgress) +
+      idleX;
     this.rockPivot.rotation.y =
-      THREE.MathUtils.lerp(breakRotationY, 0.02, settleProgress) + idleY;
-    this.rockPivot.rotation.z =
-      THREE.MathUtils.lerp(breakRotationZ, -0.025, settleProgress);
+      THREE.MathUtils.lerp(breakY + settleProgress * 0.42, 0.06, finalProgress) +
+      idleY;
+    this.rockPivot.rotation.z = THREE.MathUtils.lerp(
+      breakZ - settleProgress * 0.12,
+      -0.025,
+      finalProgress,
+    );
 
-    const breakScale = THREE.MathUtils.lerp(0.82, 1.08, breakProgress);
-    const finalScale = THREE.MathUtils.lerp(breakScale, 1.18, settleProgress);
-    this.rockPivot.scale.setScalar(finalScale);
-
-    const breakX = THREE.MathUtils.lerp(0, 0.16, breakProgress);
-    const breakY =
-      Math.sin(frame.time * 0.55) * 0.035 * (1 - breakProgress) +
-      THREE.MathUtils.lerp(0.54, 0.02, breakProgress);
+    const baseScale = THREE.MathUtils.lerp(0.8, 1.04, breakProgress);
+    const settledScale = baseScale - settleProgress * 0.03;
+    const scaleX = THREE.MathUtils.lerp(settledScale, 0.98, finalProgress);
+    const scaleY = THREE.MathUtils.lerp(settledScale, 1.18, finalProgress);
+    const scaleZ = THREE.MathUtils.lerp(settledScale, 0.9, finalProgress);
+    this.rockPivot.scale.set(scaleX, scaleY, scaleZ);
 
     this.rockPivot.position.x = THREE.MathUtils.lerp(
-      breakX,
+      THREE.MathUtils.lerp(0, 0.14, breakProgress) - settleProgress * 0.14,
       0,
-      settleProgress,
+      finalProgress,
     );
     this.rockPivot.position.y = THREE.MathUtils.lerp(
-      breakY,
-      0.02,
-      settleProgress,
-    );
-    this.rockPivot.position.z = THREE.MathUtils.lerp(
-      0,
-      0.16,
-      settleProgress,
+      Math.sin(frame.time * 0.55) * 0.03 * (1 - breakProgress) +
+        THREE.MathUtils.lerp(0.52, 0.02, breakProgress),
+      -0.03,
+      finalProgress,
     );
 
-    const marksIn = smoothStep((progress - 0.34) / 0.28);
-    const marksOut = 1 - smoothStep((progress - 0.72) / 0.18);
-    const marksProgress = marksIn * marksOut;
-    this.markRoot.visible = marksProgress > 0.002;
+    const marksProgress = smoothStep((progress - 0.34) / 0.28);
+    const marksFade = 1 - smoothStep((progress - 0.69) / 0.1);
+    const markOpacity = marksProgress * marksFade * 0.88;
+    this.markRoot.visible = markOpacity > 0.002;
     this.markMaterials.forEach((material) => {
-      material.opacity = marksProgress * 0.88;
+      material.opacity = markOpacity;
     });
+
+    const slashProgress = smoothStep((progress - 0.79) / 0.12);
+    this.slashRoot.visible = slashProgress > 0.002;
+    this.slashMaterial.opacity = slashProgress * 0.96;
 
     this.renderer.render(this.scene, this.camera);
   }
