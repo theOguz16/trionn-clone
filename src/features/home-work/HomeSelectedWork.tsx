@@ -75,15 +75,15 @@ function IntroPanel() {
     <section className="relative h-[100svh] w-[50vw] flex-none bg-transparent">
       <div
         data-work-intro-rise
-        className="absolute left-[2.1vw] top-[53.2%] -translate-y-1/2"
+        className="absolute left-[2.1vw] top-[51.6%] -translate-y-1/2"
       >
-        <h2 className="w-[43vw] text-[clamp(4.2rem,5vw,6rem)] font-normal leading-[0.88] tracking-[-0.068em] text-[#454545]">
+        <h2 className="w-[44vw] text-[clamp(4.35rem,5.2vw,6.2rem)] font-normal leading-[0.9] tracking-[-0.064em] text-[#454545]">
           Selected work
           <br />
           &amp; explorations
         </h2>
 
-        <div className="mt-[64px]">
+        <div className="mt-[58px]">
           <ArrowLink href="/work">View all projects</ArrowLink>
         </div>
       </div>
@@ -106,30 +106,30 @@ function ProjectPanel({
       <div
         data-project-rise
         data-project-index={index}
-        className="absolute left-[8.45%] right-[8.45%] top-[19.5svh]"
+        className="absolute left-[6.8%] right-[6.8%] top-[16.8svh]"
       >
         <a
           href={project.href}
-          className="block h-[50.15svh] min-h-[410px] max-h-[610px] overflow-hidden rounded-[6px] bg-[#d8d8d6]"
+          className="block h-[53.5svh] min-h-[430px] max-h-[640px] overflow-hidden rounded-[5px] bg-[#d8d8d6]"
         >
           <img
             src={project.image}
             alt={project.title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-700 ease-out hover:scale-[1.015]"
           />
         </a>
 
-        <div className="mt-[16px] grid grid-cols-[1fr_auto] items-end gap-8">
+        <div className="mt-[18px] grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[30px]">
           <div>
-            <h3 className="text-[25px] font-normal leading-[0.96] tracking-[-0.055em] text-[#484848]">
+            <h3 className="text-[27px] font-normal leading-[0.95] tracking-[-0.05em] text-[#484848]">
               {project.title}
             </h3>
-            <p className="mt-[11px] max-w-[285px] text-[13px] font-normal leading-[1.25] tracking-[-0.027em] text-[#626262]">
+            <p className="mt-[9px] max-w-[292px] text-[12px] font-normal leading-[1.28] tracking-[-0.018em] text-[#626262]">
               {project.description}
             </p>
           </div>
 
-          <div className="pb-[1px]">
+          <div className="pb-[2px]">
             <ArrowLink href={project.href}>Explore project</ArrowLink>
           </div>
         </div>
@@ -146,9 +146,9 @@ function CollectionPanel() {
     >
       <div
         data-collection-rise
-        className="absolute left-1/2 top-[57.4%] w-[82%] -translate-x-1/2 -translate-y-1/2 text-center"
+        className="absolute left-1/2 top-[54.8%] w-[84%] -translate-x-1/2 -translate-y-1/2 text-center"
       >
-        <h3 className="mx-auto max-w-[470px] text-[30px] font-normal leading-[0.96] tracking-[-0.055em] text-[#474747]">
+        <h3 className="mx-auto max-w-[500px] text-[31px] font-normal leading-[0.98] tracking-[-0.048em] text-[#474747]">
           Discover our complete collection
           <br />
           of digital experiences, brands,
@@ -156,7 +156,7 @@ function CollectionPanel() {
           and platforms.
         </h3>
 
-        <div className="mt-[49px] flex justify-center">
+        <div className="mt-[45px] flex justify-center">
           <ArrowLink href="/work">View all projects</ArrowLink>
         </div>
       </div>
@@ -167,17 +167,22 @@ function CollectionPanel() {
 function ServicesContent() {
   return (
     <div className="relative h-[100svh] w-[100vw] bg-[#fbfbfb] text-[#202020]">
-      <p className="absolute left-1/2 top-[11.2svh] -translate-x-1/2 text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
+      <div
+        className="pointer-events-none absolute inset-x-[2.1vw] top-[11.2svh] h-px"
+        style={{ backgroundColor: GUIDE }}
+      />
+
+      <p className="absolute left-1/2 top-[8.7svh] -translate-x-1/2 text-[10px] font-normal uppercase leading-none tracking-[-0.025em]">
         Our services
       </p>
 
       <div
         data-services-rise
-        className="absolute left-1/2 top-[50.6%] w-[76vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
+        className="absolute left-1/2 top-[50.2%] w-[84vw] -translate-x-1/2 -translate-y-1/2 text-center uppercase"
       >
         <div
-          className="text-[clamp(5.8rem,8.25vw,9.1rem)] font-normal leading-[0.68] tracking-[-0.085em]"
-          style={{ transform: "scaleX(1.035)" }}
+          className="text-[clamp(6.1rem,8.8vw,9.8rem)] font-normal leading-[0.715] tracking-[-0.072em]"
+          style={{ transform: "scaleX(1.018)" }}
         >
           <div>A.I.</div>
           <div>Design</div>
@@ -186,11 +191,20 @@ function ServicesContent() {
         </div>
       </div>
 
-      <p className="absolute bottom-[7.7svh] left-[42vw] text-[11px] font-normal uppercase leading-none tracking-[-0.03em]">
+      <div
+        className="pointer-events-none absolute inset-x-[2.1vw] bottom-[12.1svh] h-px"
+        style={{ backgroundColor: GUIDE }}
+      />
+
+      <p className="absolute bottom-[7.3svh] left-[2.1vw] text-[10px] font-normal uppercase leading-none tracking-[-0.025em] text-[#4e4e4b]">
+        Independent digital studio
+      </p>
+
+      <p className="absolute bottom-[7.3svh] left-1/2 -translate-x-1/2 text-[10px] font-normal uppercase leading-none tracking-[-0.025em] text-[#4e4e4b]">
         ✦ Design with intent. Built to work.
       </p>
 
-      <div className="absolute bottom-[7.7svh] right-[2.1vw]">
+      <div className="absolute bottom-[6.7svh] right-[2.1vw]">
         <ArrowLink href="/services">View services</ArrowLink>
       </div>
     </div>
@@ -303,13 +317,6 @@ export function HomeSelectedWork() {
         force3D: true,
       });
 
-      /*
-       * The Key Facts -> Work handoff is deliberately NOT pinned.
-       * The whole work viewport enters naturally from below as the document
-       * scrolls, so Key Facts remains visible until it physically leaves the
-       * viewport. The + rides on the incoming top edge and rotates through
-       * that real vertical movement.
-       */
       const entryTween = gsap.to(entryPlus, {
         rotation: 360,
         ease: "none",
@@ -352,10 +359,6 @@ export function HomeSelectedWork() {
         0.07,
       );
 
-      /*
-       * Keep almost the same physical scroll distance for the horizontal
-       * work rail while reserving a larger, slower phase for Services.
-       */
       timeline.to(
         track,
         {
@@ -390,10 +393,6 @@ export function HomeSelectedWork() {
         0.58,
       );
 
-      /*
-       * Services owns the final 30% of a slightly longer section. This turns
-       * the wipe into a deliberate handoff instead of a compressed final beat.
-       */
       timeline.to(
         track,
         {
@@ -526,7 +525,7 @@ export function HomeSelectedWork() {
             className="pointer-events-none absolute bottom-0 left-0 top-0 z-[7] w-px"
             style={{ backgroundColor: GUIDE }}
           >
-            <div className="absolute left-1/2 top-[50.5%] -translate-x-1/2 -translate-y-1/2">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <TransitionPlus marker="services" />
             </div>
           </div>
