@@ -145,7 +145,7 @@ export function HomeKeyFacts() {
           <div data-card-shell className="relative z-[30] origin-top">
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c]">
               <img
-                src="/keyfacts-awards-card.svg"
+                src="/keyfacts-awards-card.png"
                 alt="Featured and Awards card with lion holding a trophy"
                 className="absolute inset-0 h-full w-full object-cover"
               />
@@ -166,7 +166,7 @@ export function HomeKeyFacts() {
           <div data-card-shell className="relative z-[20] origin-top">
             <article className="relative h-[395px] overflow-hidden rounded-[6px] bg-[#34343c]">
               <img
-                src="/keyfacts-team-card.svg"
+                src="/keyfacts-team-card.png"
                 alt="Our team members card with lion portrait"
                 className="absolute inset-0 h-full w-full object-cover"
               />
