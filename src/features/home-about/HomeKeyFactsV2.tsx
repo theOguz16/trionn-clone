@@ -17,6 +17,10 @@ const PARTNERS = [
   { src: "https://trionn.com/images/partner5.svg", alt: "Ockto", width: 91, height: 26 },
 ] as const;
 
+const GUIDE = "rgba(65, 65, 62, 0.16)";
+const GUIDE_STEM = "rgba(65, 65, 62, 0.12)";
+const GUIDE_PLUS = "rgba(63, 63, 60, 0.72)";
+
 function setTheme(theme: "dark" | "light") {
   document.documentElement.dataset.pageTheme = theme;
 }
@@ -57,6 +61,42 @@ function PartnerWordmarks() {
   );
 }
 
+function KeyFactsGuide() {
+  return (
+    <div
+      data-keyfacts-guide
+      aria-hidden="true"
+      className="relative mx-auto mt-[9svh] h-[18svh] min-h-[132px] max-h-[190px] w-full"
+    >
+      <div
+        data-keyfacts-guide-horizontal
+        className="absolute left-1/2 top-0 h-px w-[32vw] min-w-[320px] max-w-[500px] -translate-x-1/2 origin-center max-md:w-[66vw] max-md:min-w-0"
+        style={{ backgroundColor: GUIDE }}
+      />
+
+      <div
+        data-keyfacts-guide-stem
+        className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 origin-top"
+        style={{ backgroundColor: GUIDE_STEM }}
+      />
+
+      <span
+        data-keyfacts-guide-plus
+        className="absolute left-1/2 top-0 block h-[15px] w-[15px] -translate-x-1/2 -translate-y-1/2"
+      >
+        <span
+          className="absolute left-[7px] top-0 h-[15px] w-px"
+          style={{ backgroundColor: GUIDE_PLUS }}
+        />
+        <span
+          className="absolute left-0 top-[7px] h-px w-[15px]"
+          style={{ backgroundColor: GUIDE_PLUS }}
+        />
+      </span>
+    </div>
+  );
+}
+
 export function HomeKeyFacts() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -67,7 +107,20 @@ export function HomeKeyFacts() {
     const grid = section.querySelector<HTMLElement>("[data-facts-grid]");
     const cards = Array.from(section.querySelectorAll<HTMLElement>("[data-card-shell]"));
     const counters = Array.from(section.querySelectorAll<HTMLElement>("[data-counter]"));
-    if (!grid || cards.length !== 3 || counters.length !== 3) return;
+    const guide = section.querySelector<HTMLElement>("[data-keyfacts-guide]");
+    const guideHorizontal = section.querySelector<HTMLElement>("[data-keyfacts-guide-horizontal]");
+    const guideStem = section.querySelector<HTMLElement>("[data-keyfacts-guide-stem]");
+    const guidePlus = section.querySelector<HTMLElement>("[data-keyfacts-guide-plus]");
+
+    if (
+      !grid ||
+      cards.length !== 3 ||
+      counters.length !== 3 ||
+      !guide ||
+      !guideHorizontal ||
+      !guideStem ||
+      !guidePlus
+    ) return;
 
     const tracks = counters.map((counter) =>
       Array.from(counter.querySelectorAll<HTMLElement>("[data-counter-digit]"))
@@ -97,6 +150,25 @@ export function HomeKeyFacts() {
       });
     });
     timeline.to({}, { duration: 0.12 }, 1.42);
+
+    gsap.set(guideHorizontal, { scaleX: 0, transformOrigin: "50% 50%" });
+    gsap.set(guideStem, { scaleY: 0, transformOrigin: "50% 0%" });
+    gsap.set(guidePlus, { autoAlpha: 0, rotation: 0, transformOrigin: "50% 50%" });
+
+    const guideTimeline = gsap.timeline({
+      scrollTrigger: {
+        trigger: guide,
+        start: "top 92%",
+        end: "top 72%",
+        scrub: true,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    guideTimeline
+      .to(guideHorizontal, { scaleX: 1, duration: 0.48, ease: "none" }, 0)
+      .to(guidePlus, { autoAlpha: 1, rotation: 45, duration: 0.34, ease: "none" }, 0.08)
+      .to(guideStem, { scaleY: 1, duration: 0.52, ease: "none" }, 0.32);
 
     const activateLightSection = () => {
       document.documentElement.dataset.keyfactsActive = "true";
@@ -128,6 +200,8 @@ export function HomeKeyFacts() {
         canvasManager.setActive("home-hero", true);
       }
 
+      guideTimeline.scrollTrigger?.kill();
+      guideTimeline.kill();
       trigger.kill();
       timeline.kill();
     };
@@ -135,7 +209,7 @@ export function HomeKeyFacts() {
 
   return (
     <section ref={sectionRef} className="relative z-[50] bg-[#dedddb] text-[#414141]">
-      <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pb-[7svh] pt-[7svh] max-md:px-5">
+      <div className="min-h-[100svh] overflow-hidden bg-[#dedddb] px-[2.1vw] pt-[7svh] max-md:px-5">
         <div data-keyfacts-header className="text-center">
           <h2 className="text-[clamp(4rem,5vw,5.75rem)] font-normal leading-[0.95] tracking-[-0.062em]">Key facts</h2>
           <p className="mx-auto mt-[19px] max-w-[205px] text-[13px] leading-[1.18] tracking-[-0.025em]">A snapshot of our<br />experience and impact.</p>
@@ -181,6 +255,8 @@ export function HomeKeyFacts() {
           <p className="text-center text-[11px] uppercase tracking-[-0.02em]">Our business partners</p>
           <PartnerWordmarks />
         </div>
+
+        <KeyFactsGuide />
       </div>
     </section>
   );
