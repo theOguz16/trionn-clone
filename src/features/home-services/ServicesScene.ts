@@ -252,37 +252,50 @@ export class ServicesScene implements RuntimeScene {
 
     const progress = this.progressCurrent;
     const breakProgress = smoothStep((progress - 0.12) / 0.58);
-    const settleProgress = smoothStep((progress - 0.64) / 0.36);
+    const settleProgress = smoothStep((progress - 0.66) / 0.34);
 
     const idleY = Math.sin(frame.time * 0.45) * (1 - breakProgress) * 0.035;
     const idleX = Math.cos(frame.time * 0.31) * (1 - breakProgress) * 0.015;
 
+    const breakRotationX = THREE.MathUtils.lerp(-0.08, 0.72, breakProgress);
+    const breakRotationY = THREE.MathUtils.lerp(-0.42, 2.22, breakProgress);
+    const breakRotationZ = THREE.MathUtils.lerp(-0.13, 0.28, breakProgress);
+
     this.rockPivot.rotation.x =
-      THREE.MathUtils.lerp(-0.08, 0.72, breakProgress) -
-      settleProgress * 0.56 +
-      idleX;
+      THREE.MathUtils.lerp(breakRotationX, -0.05, settleProgress) + idleX;
     this.rockPivot.rotation.y =
-      THREE.MathUtils.lerp(-0.42, 2.22, breakProgress) +
-      settleProgress * 0.5 +
-      idleY;
+      THREE.MathUtils.lerp(breakRotationY, 0.02, settleProgress) + idleY;
     this.rockPivot.rotation.z =
-      THREE.MathUtils.lerp(-0.13, 0.28, breakProgress) -
-      settleProgress * 0.12;
+      THREE.MathUtils.lerp(breakRotationZ, -0.025, settleProgress);
 
-    const scale =
-      THREE.MathUtils.lerp(0.82, 1.08, breakProgress) -
-      settleProgress * 0.05;
-    this.rockPivot.scale.setScalar(scale);
+    const breakScale = THREE.MathUtils.lerp(0.82, 1.08, breakProgress);
+    const finalScale = THREE.MathUtils.lerp(breakScale, 1.18, settleProgress);
+    this.rockPivot.scale.setScalar(finalScale);
 
-    this.rockPivot.position.x =
-      THREE.MathUtils.lerp(0, 0.16, breakProgress) -
-      settleProgress * 0.16;
-    this.rockPivot.position.y =
+    const breakX = THREE.MathUtils.lerp(0, 0.16, breakProgress);
+    const breakY =
       Math.sin(frame.time * 0.55) * 0.035 * (1 - breakProgress) +
-      THREE.MathUtils.lerp(0.54, 0.02, breakProgress) -
-      settleProgress * 0.05;
+      THREE.MathUtils.lerp(0.54, 0.02, breakProgress);
 
-    const marksProgress = smoothStep((progress - 0.34) / 0.28);
+    this.rockPivot.position.x = THREE.MathUtils.lerp(
+      breakX,
+      0,
+      settleProgress,
+    );
+    this.rockPivot.position.y = THREE.MathUtils.lerp(
+      breakY,
+      0.02,
+      settleProgress,
+    );
+    this.rockPivot.position.z = THREE.MathUtils.lerp(
+      0,
+      0.16,
+      settleProgress,
+    );
+
+    const marksIn = smoothStep((progress - 0.34) / 0.28);
+    const marksOut = 1 - smoothStep((progress - 0.72) / 0.18);
+    const marksProgress = marksIn * marksOut;
     this.markRoot.visible = marksProgress > 0.002;
     this.markMaterials.forEach((material) => {
       material.opacity = marksProgress * 0.88;
