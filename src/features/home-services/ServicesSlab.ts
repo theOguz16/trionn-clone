@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-const SLAB_WIDTH = 2.28;
-const SLAB_HEIGHT = 2.72;
-const SLAB_DEPTH = 0.58;
+const SLAB_WIDTH = 2.42;
+const SLAB_HEIGHT = 2.58;
+const SLAB_DEPTH = 0.62;
 
 function hash2(x: number, y: number) {
   const value = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
@@ -56,24 +56,27 @@ function createStoneCanvas(size = 384) {
     for (let x = 0; x < size; x += 1) {
       const u = x / size;
       const v = y / size;
-      const broad = fbm(u * 5.2, v * 5.2);
-      const fine = fbm(u * 19.5 + 7.1, v * 19.5 + 2.8);
-      const strata = Math.sin(v * 49 + broad * 8.5) * 0.5 + 0.5;
-      const fissureSignal = Math.abs(
-        Math.sin(u * 22.5 + v * 8.4 + broad * 12.5),
-      );
-      const fissure = fissureSignal < 0.045 ? 0.5 : 1;
+      const broad = fbm(u * 4.6 + 1.7, v * 4.6 + 3.1);
+      const medium = fbm(u * 11.5 + 9.4, v * 11.5 + 4.8);
+      const fine = fbm(u * 31 + 5.2, v * 31 + 8.6);
+
+      const softStrata =
+        Math.sin(v * 31 + broad * 6.2 + medium * 2.4) * 0.5 + 0.5;
+      const cloudy =
+        broad * 0.62 + medium * 0.27 + fine * 0.11;
 
       const tone = THREE.MathUtils.clamp(
-        41 + broad * 41 + fine * 13 + strata * 5,
-        32,
-        102,
-      ) * fissure;
+        64 + cloudy * 76 + softStrata * 7,
+        62,
+        151,
+      );
 
+      const coolShift = (medium - 0.5) * 8;
       const index = (y * size + x) * 4;
-      image.data[index] = Math.round(tone * 0.91);
-      image.data[index + 1] = Math.round(tone * 0.96);
-      image.data[index + 2] = Math.round(tone);
+
+      image.data[index] = Math.round(tone * 0.91 + coolShift * 0.15);
+      image.data[index + 1] = Math.round(tone * 0.95 + coolShift * 0.55);
+      image.data[index + 2] = Math.round(tone + coolShift);
       image.data[index + 3] = 255;
     }
   }
@@ -87,9 +90,9 @@ function createSlabGeometry() {
     SLAB_WIDTH,
     SLAB_HEIGHT,
     SLAB_DEPTH,
-    18,
+    20,
     22,
-    7,
+    8,
   );
 
   const positions = geometry.attributes.position;
@@ -108,42 +111,43 @@ function createSlabGeometry() {
     const normalizedX = Math.abs(x) / halfWidth;
     const normalizedY = Math.abs(y) / halfHeight;
 
-    const broad =
-      Math.sin(x * 3.9 + y * 2.1 + z * 1.7) * 0.031 +
-      Math.sin(y * 7.2 - x * 1.8) * 0.019 +
-      Math.sin((x + y) * 12.6) * 0.008;
+    const surfaceNoise =
+      Math.sin(x * 3.45 + y * 2.35 + z * 1.7) * 0.026 +
+      Math.sin(y * 6.7 - x * 1.65) * 0.016 +
+      Math.sin((x + y) * 11.2) * 0.007;
 
     if (Math.abs(normalZ) > 0.8) {
       const edgeLift =
-        Math.pow(Math.max(normalizedX, normalizedY), 3.4) *
-        Math.sin(y * 8.7 + x * 5.1) *
-        0.024;
+        Math.pow(Math.max(normalizedX, normalizedY), 3.2) *
+        Math.sin(y * 7.7 + x * 4.8) *
+        0.022;
 
-      z += Math.sign(normalZ) * (broad + edgeLift);
+      z += Math.sign(normalZ) * (surfaceNoise + edgeLift);
     }
 
     if (Math.abs(normalX) > 0.8) {
       const sideBreak =
-        Math.sin(y * 5.8 + z * 7.1) * 0.032 +
-        Math.sin(y * 12.7 - z * 4.2) * 0.014;
+        Math.sin(y * 5.2 + z * 6.8) * 0.038 +
+        Math.sin(y * 11.7 - z * 3.9) * 0.015;
       x += Math.sign(normalX) * sideBreak;
     }
 
     if (Math.abs(normalY) > 0.8) {
       const capBreak =
-        Math.sin(x * 6.4 + z * 5.6) * 0.029 +
-        Math.sin(x * 13.2 - z * 3.1) * 0.012;
+        Math.sin(x * 5.8 + z * 5.2) * 0.035 +
+        Math.sin(x * 12.1 - z * 2.8) * 0.014;
       y += Math.sign(normalY) * capBreak;
     }
 
     const corner = THREE.MathUtils.clamp(
-      (normalizedX + normalizedY - 1.58) / 0.42,
+      (normalizedX + normalizedY - 1.5) / 0.5,
       0,
       1,
     );
 
     if (corner > 0) {
-      const chip = 1 - corner * (0.025 + 0.018 * Math.sin((x - y) * 9.4));
+      const chip =
+        1 - corner * (0.035 + 0.018 * Math.sin((x - y) * 8.6));
       x *= chip;
       y *= chip;
     }
@@ -177,7 +181,7 @@ export class ServicesSlab {
     this.colorTexture.colorSpace = THREE.SRGBColorSpace;
     this.colorTexture.wrapS = THREE.RepeatWrapping;
     this.colorTexture.wrapT = THREE.RepeatWrapping;
-    this.colorTexture.repeat.set(1.05, 1.18);
+    this.colorTexture.repeat.set(1.08, 1.08);
 
     this.bumpTexture = new THREE.CanvasTexture(stoneCanvas);
     this.bumpTexture.colorSpace = THREE.NoColorSpace;
@@ -186,13 +190,13 @@ export class ServicesSlab {
     this.bumpTexture.repeat.copy(this.colorTexture.repeat);
 
     this.material = new THREE.MeshStandardMaterial({
-      color: 0x777b7a,
+      color: 0xb9bcba,
       map: this.colorTexture,
       bumpMap: this.bumpTexture,
-      bumpScale: 0.085,
-      roughness: 0.97,
+      bumpScale: 0.052,
+      roughness: 0.965,
       metalness: 0,
-      envMapIntensity: 0.2,
+      envMapIntensity: 0.28,
     });
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
