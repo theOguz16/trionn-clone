@@ -22,6 +22,7 @@ const STRIPE_SEQUENCE_END =
 
 const CAPTION_VIEWPORT_Y = 0.78;
 const CAPTION_CLEARANCE = 22;
+const LIGHT_SURFACE_EPSILON = 0.5;
 
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
@@ -248,11 +249,18 @@ export function HomeStripeWipe() {
             `translate3d(-50%, ${y}px, 0)`;
         }
 
-        if (progress >= 0.95) {
-          changeTheme("light");
-        } else {
-          changeTheme("dark");
-        }
+        const lightSurfaceReady =
+          yPercents.every(
+            (yPercent) =>
+              yPercent <=
+              LIGHT_SURFACE_EPSILON,
+          );
+
+        changeTheme(
+          lightSurfaceReady
+            ? "light"
+            : "dark",
+        );
       };
 
       const trigger =
