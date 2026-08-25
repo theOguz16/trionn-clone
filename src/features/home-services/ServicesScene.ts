@@ -226,7 +226,7 @@ export class ServicesScene implements RuntimeScene {
     const group = new THREE.Group();
 
     const lipMaterial = new THREE.MeshBasicMaterial({
-      color: 0x2b2d2d,
+      color: 0x202222,
       transparent: true,
       opacity: 0,
       depthWrite: false,
@@ -236,7 +236,7 @@ export class ServicesScene implements RuntimeScene {
     });
 
     const coreMaterial = new THREE.MeshBasicMaterial({
-      color: 0x020303,
+      color: 0x010202,
       transparent: true,
       opacity: 0,
       depthWrite: false,
@@ -246,13 +246,13 @@ export class ServicesScene implements RuntimeScene {
     });
 
     const lip = new THREE.Mesh(geometry, lipMaterial);
-    lip.position.z = 0.273;
-    lip.scale.set(1.13, 1.08, 1);
+    lip.position.z = 0.286;
+    lip.scale.set(1.16, 1.1, 1);
     lip.renderOrder = 8;
 
     const core = new THREE.Mesh(geometry, coreMaterial);
-    core.position.set(0.012, -0.008, 0.279);
-    core.scale.set(0.93, 0.96, 1);
+    core.position.set(0.014, -0.012, 0.294);
+    core.scale.set(0.91, 0.95, 1);
     core.renderOrder = 9;
 
     group.add(lip, core);
@@ -274,58 +274,58 @@ export class ServicesScene implements RuntimeScene {
   private createCarvedSlashes() {
     this.addSlashCut({
       points: [
-        [-0.12, -0.57],
-        [-0.045, -0.47],
-        [0.01, -0.27],
-        [0.085, 0.04],
-        [0.17, 0.43],
-        [0.12, 0.58],
-        [0.035, 0.49],
-        [-0.025, 0.25],
-        [-0.105, -0.03],
-        [-0.17, -0.35],
+        [-0.18, -0.82],
+        [-0.06, -0.7],
+        [0.015, -0.41],
+        [0.12, 0.02],
+        [0.24, 0.61],
+        [0.18, 0.84],
+        [0.055, 0.71],
+        [-0.025, 0.38],
+        [-0.14, -0.04],
+        [-0.24, -0.5],
       ],
-      x: -0.16,
-      y: 0.12,
+      x: -0.19,
+      y: 0.11,
       rotation: -0.34,
       axis: "y",
     });
 
     this.addSlashCut({
       points: [
-        [-0.1, -0.49],
-        [-0.025, -0.4],
-        [0.025, -0.22],
-        [0.09, 0.04],
-        [0.145, 0.35],
-        [0.095, 0.5],
-        [0.02, 0.42],
-        [-0.035, 0.21],
-        [-0.095, -0.05],
-        [-0.145, -0.33],
+        [-0.16, -0.68],
+        [-0.05, -0.57],
+        [0.025, -0.32],
+        [0.12, 0.03],
+        [0.21, 0.5],
+        [0.15, 0.71],
+        [0.035, 0.6],
+        [-0.045, 0.31],
+        [-0.14, -0.05],
+        [-0.22, -0.46],
       ],
-      x: 0.23,
-      y: 0.16,
+      x: 0.28,
+      y: 0.15,
       rotation: -0.46,
       axis: "y",
     });
 
     this.addSlashCut({
       points: [
-        [-0.43, -0.08],
-        [-0.31, -0.12],
-        [-0.08, -0.1],
-        [0.16, -0.07],
-        [0.41, -0.02],
-        [0.46, 0.07],
-        [0.29, 0.11],
-        [0.03, 0.1],
-        [-0.22, 0.08],
-        [-0.4, 0.04],
+        [-0.62, -0.12],
+        [-0.45, -0.17],
+        [-0.13, -0.14],
+        [0.22, -0.1],
+        [0.6, -0.03],
+        [0.66, 0.1],
+        [0.42, 0.16],
+        [0.05, 0.14],
+        [-0.31, 0.11],
+        [-0.58, 0.06],
       ],
       x: -0.04,
-      y: -0.4,
-      rotation: -0.03,
+      y: -0.48,
+      rotation: -0.025,
       axis: "x",
     });
 
@@ -337,29 +337,29 @@ export class ServicesScene implements RuntimeScene {
     const movement = 1 - alpha;
 
     cut.group.visible = alpha > 0.002;
-    cut.coreMaterial.opacity = alpha * 0.98;
-    cut.lipMaterial.opacity = alpha * 0.72;
+    cut.coreMaterial.opacity = alpha;
+    cut.lipMaterial.opacity = alpha * 0.76;
 
     if (cut.axis === "y") {
       cut.group.scale.set(
-        THREE.MathUtils.lerp(0.86, 1, alpha),
-        THREE.MathUtils.lerp(0.06, 1, alpha),
+        THREE.MathUtils.lerp(0.93, 1, alpha),
+        THREE.MathUtils.lerp(0.12, 1, alpha),
         1,
       );
     } else {
       cut.group.scale.set(
-        THREE.MathUtils.lerp(0.06, 1, alpha),
-        THREE.MathUtils.lerp(0.82, 1, alpha),
+        THREE.MathUtils.lerp(0.12, 1, alpha),
+        THREE.MathUtils.lerp(0.9, 1, alpha),
         1,
       );
     }
 
     cut.group.position.set(
-      cut.basePosition.x + movement * 0.025,
-      cut.basePosition.y + movement * 0.035,
+      cut.basePosition.x + movement * 0.018,
+      cut.basePosition.y + movement * 0.026,
       0,
     );
-    cut.group.rotation.z = cut.baseRotation + movement * 0.08;
+    cut.group.rotation.z = cut.baseRotation + movement * 0.045;
   }
 
   update(frame: RuntimeFrame) {
@@ -429,9 +429,9 @@ export class ServicesScene implements RuntimeScene {
       material.opacity = markOpacity;
     });
 
-    const firstSlash = THREE.MathUtils.clamp((progress - 0.69) / 0.065, 0, 1);
-    const secondSlash = THREE.MathUtils.clamp((progress - 0.78) / 0.065, 0, 1);
-    const thirdSlash = THREE.MathUtils.clamp((progress - 0.87) / 0.065, 0, 1);
+    const firstSlash = THREE.MathUtils.clamp((progress - 0.61) / 0.055, 0, 1);
+    const secondSlash = THREE.MathUtils.clamp((progress - 0.7) / 0.055, 0, 1);
+    const thirdSlash = THREE.MathUtils.clamp((progress - 0.79) / 0.055, 0, 1);
     const slashProgress = [firstSlash, secondSlash, thirdSlash];
 
     this.slashRoot.visible = slashProgress.some((value) => value > 0.002);
