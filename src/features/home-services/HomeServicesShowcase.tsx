@@ -454,7 +454,7 @@ export function HomeServicesShowcase() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at 18% 47%, rgba(116,127,132,.26) 0%, rgba(48,58,64,.14) 34%, transparent 64%), radial-gradient(ellipse at 78% 36%, rgba(56,68,76,.34) 0%, rgba(8,14,19,.1) 45%, transparent 72%), linear-gradient(112deg, #03070a 0%, #111a21 43%, #03070a 100%)",
+              "radial-gradient(ellipse at 18% 47%, rgba(126,137,142,.28) 0%, rgba(52,62,68,.15) 32%, transparent 61%), radial-gradient(ellipse at 78% 36%, rgba(62,74,82,.38) 0%, rgba(6,12,17,.13) 43%, transparent 70%), linear-gradient(112deg, #020609 0%, #0d151b 42%, #020609 100%)",
           }}
         />
 
@@ -464,7 +464,7 @@ export function HomeServicesShowcase() {
           className="absolute -inset-[18%] opacity-80 will-change-transform"
           style={{
             background:
-              "radial-gradient(ellipse at 15% 48%, rgba(217,222,219,.27) 0%, rgba(133,143,145,.17) 15%, rgba(64,72,77,.09) 31%, transparent 55%), radial-gradient(ellipse at 34% 27%, rgba(196,202,200,.2) 0%, rgba(85,94,99,.12) 22%, transparent 49%), radial-gradient(ellipse at 30% 77%, rgba(181,190,190,.14) 0%, transparent 44%)",
+              "radial-gradient(ellipse at 15% 48%, rgba(225,230,227,.31) 0%, rgba(142,152,154,.21) 14%, rgba(67,76,81,.11) 29%, transparent 53%), radial-gradient(ellipse at 34% 27%, rgba(207,213,210,.24) 0%, rgba(88,98,103,.15) 21%, transparent 47%), radial-gradient(ellipse at 30% 77%, rgba(190,199,198,.17) 0%, rgba(69,79,84,.07) 26%, transparent 43%)",
             filter: "blur(30px)",
           }}
         />
@@ -475,7 +475,7 @@ export function HomeServicesShowcase() {
           className="absolute -inset-[20%] opacity-75 will-change-transform"
           style={{
             background:
-              "radial-gradient(ellipse at 79% 38%, rgba(204,211,210,.16) 0%, rgba(77,87,93,.15) 22%, transparent 50%), radial-gradient(ellipse at 66% 71%, rgba(168,179,182,.18) 0%, rgba(65,76,82,.1) 27%, transparent 54%), radial-gradient(ellipse at 94% 24%, rgba(112,123,127,.13) 0%, transparent 38%)",
+              "radial-gradient(ellipse at 79% 38%, rgba(211,218,216,.19) 0%, rgba(78,89,95,.17) 21%, rgba(25,33,39,.08) 36%, transparent 49%), radial-gradient(ellipse at 66% 71%, rgba(178,188,191,.21) 0%, rgba(67,78,84,.12) 25%, transparent 52%), radial-gradient(ellipse at 94% 24%, rgba(122,133,137,.15) 0%, transparent 36%)",
             filter: "blur(38px)",
           }}
         />
@@ -486,7 +486,7 @@ export function HomeServicesShowcase() {
           className="absolute -inset-[14%] opacity-70 will-change-transform"
           style={{
             background:
-              "radial-gradient(ellipse at 48% 42%, rgba(232,233,226,.13) 0%, rgba(118,127,129,.085) 21%, transparent 43%), radial-gradient(ellipse at 52% 78%, rgba(191,196,193,.11) 0%, transparent 40%), radial-gradient(ellipse at 7% 73%, rgba(150,160,163,.12) 0%, transparent 36%)",
+              "radial-gradient(ellipse at 48% 42%, rgba(236,237,231,.15) 0%, rgba(121,130,133,.1) 20%, transparent 41%), radial-gradient(ellipse at 52% 78%, rgba(196,202,198,.13) 0%, rgba(73,82,86,.06) 22%, transparent 39%), radial-gradient(ellipse at 7% 73%, rgba(158,168,171,.14) 0%, transparent 35%)",
             filter: "blur(24px)",
           }}
         />
@@ -496,7 +496,7 @@ export function HomeServicesShowcase() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(0,3,6,.29) 0%, transparent 24%, transparent 68%, rgba(0,2,5,.6) 100%), radial-gradient(ellipse at center, transparent 31%, rgba(0,0,0,.54) 100%)",
+              "linear-gradient(180deg, rgba(0,3,6,.32) 0%, transparent 23%, transparent 67%, rgba(0,2,5,.64) 100%), radial-gradient(ellipse at center, transparent 29%, rgba(0,0,0,.58) 100%), radial-gradient(ellipse at 72% 26%, rgba(0,0,0,.22) 0%, transparent 36%), radial-gradient(ellipse at 26% 72%, rgba(0,0,0,.18) 0%, transparent 34%)",
           }}
         />
 
