@@ -38,33 +38,6 @@ function createMarkTexture(label: string) {
   return texture;
 }
 
-type SlashAxis = "x" | "y";
-
-type SlashCut = {
-  group: THREE.Group;
-  coreMaterial: THREE.MeshBasicMaterial;
-  lipMaterial: THREE.MeshBasicMaterial;
-  basePosition: THREE.Vector3;
-  baseRotation: number;
-  axis: SlashAxis;
-};
-
-function createIrregularShape(points: Array<[number, number]>) {
-  const shape = new THREE.Shape();
-
-  points.forEach(([x, y], index) => {
-    if (index === 0) {
-      shape.moveTo(x, y);
-      return;
-    }
-
-    shape.lineTo(x, y);
-  });
-
-  shape.closePath();
-  return new THREE.ShapeGeometry(shape);
-}
-
 export class ServicesScene implements RuntimeScene {
   readonly id = "home-services";
 
@@ -75,12 +48,9 @@ export class ServicesScene implements RuntimeScene {
   private readonly root = new THREE.Group();
   private readonly slabPivot = new THREE.Group();
   private readonly markRoot = new THREE.Group();
-  private readonly slashRoot = new THREE.Group();
   private readonly environmentTarget: THREE.WebGLRenderTarget;
   private readonly markMaterials: THREE.MeshBasicMaterial[] = [];
   private readonly markTextures: THREE.Texture[] = [];
-  private readonly slashCuts: SlashCut[] = [];
-  private readonly slashGeometries: THREE.BufferGeometry[] = [];
   private readonly slab = new ServicesSlab();
   private progressTarget = 0;
   private progressCurrent = 0;
@@ -113,8 +83,7 @@ export class ServicesScene implements RuntimeScene {
 
     this.scene.add(this.root);
     this.root.add(this.slabPivot);
-    this.slabPivot.add(this.slab.root, this.markRoot, this.slashRoot);
-    this.slashRoot.position.z = 0.065;
+    this.slabPivot.add(this.slab.root, this.markRoot);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.12);
 
@@ -130,7 +99,6 @@ export class ServicesScene implements RuntimeScene {
     this.scene.add(ambient, key, side, rim);
 
     this.createSurfaceMarks();
-    this.createCarvedSlashes();
   }
 
   setProgress(progress: number) {
@@ -208,161 +176,6 @@ export class ServicesScene implements RuntimeScene {
     this.markRoot.visible = false;
   }
 
-  private addSlashCut({
-    points,
-    x,
-    y,
-    rotation,
-    axis,
-  }: {
-    points: Array<[number, number]>;
-    x: number;
-    y: number;
-    rotation: number;
-    axis: SlashAxis;
-  }) {
-    const geometry = createIrregularShape(points);
-    this.slashGeometries.push(geometry);
-
-    const group = new THREE.Group();
-
-    const lipMaterial = new THREE.MeshBasicMaterial({
-      color: 0x242626,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      depthTest: false,
-      toneMapped: false,
-      side: THREE.DoubleSide,
-    });
-
-    const coreMaterial = new THREE.MeshBasicMaterial({
-      color: 0x000101,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      depthTest: false,
-      toneMapped: false,
-      side: THREE.DoubleSide,
-    });
-
-    const lip = new THREE.Mesh(geometry, lipMaterial);
-    lip.position.z = 0.286;
-    lip.scale.set(1.18, 1.12, 1);
-    lip.renderOrder = 20;
-
-    const core = new THREE.Mesh(geometry, coreMaterial);
-    core.position.set(0.014, -0.012, 0.294);
-    core.scale.set(0.91, 0.95, 1);
-    core.renderOrder = 21;
-
-    group.add(lip, core);
-    group.position.set(x, y, 0);
-    group.rotation.z = rotation;
-    group.visible = false;
-
-    this.slashRoot.add(group);
-    this.slashCuts.push({
-      group,
-      coreMaterial,
-      lipMaterial,
-      basePosition: new THREE.Vector3(x, y, 0),
-      baseRotation: rotation,
-      axis,
-    });
-  }
-
-  private createCarvedSlashes() {
-    this.addSlashCut({
-      points: [
-        [-0.2, -0.86],
-        [-0.065, -0.72],
-        [0.02, -0.42],
-        [0.13, 0.03],
-        [0.26, 0.64],
-        [0.19, 0.87],
-        [0.055, 0.73],
-        [-0.03, 0.39],
-        [-0.15, -0.05],
-        [-0.26, -0.52],
-      ],
-      x: -0.2,
-      y: 0.11,
-      rotation: -0.34,
-      axis: "y",
-    });
-
-    this.addSlashCut({
-      points: [
-        [-0.17, -0.72],
-        [-0.055, -0.59],
-        [0.03, -0.33],
-        [0.13, 0.04],
-        [0.23, 0.53],
-        [0.16, 0.75],
-        [0.035, 0.62],
-        [-0.05, 0.32],
-        [-0.15, -0.06],
-        [-0.24, -0.49],
-      ],
-      x: 0.3,
-      y: 0.15,
-      rotation: -0.46,
-      axis: "y",
-    });
-
-    this.addSlashCut({
-      points: [
-        [-0.66, -0.13],
-        [-0.47, -0.18],
-        [-0.14, -0.15],
-        [0.24, -0.11],
-        [0.63, -0.03],
-        [0.7, 0.11],
-        [0.44, 0.17],
-        [0.05, 0.15],
-        [-0.33, 0.12],
-        [-0.62, 0.06],
-      ],
-      x: -0.04,
-      y: -0.49,
-      rotation: -0.025,
-      axis: "x",
-    });
-
-    this.slashRoot.visible = false;
-  }
-
-  private updateSlashCut(cut: SlashCut, progress: number) {
-    const alpha = smoothStep(progress);
-    const movement = 1 - alpha;
-
-    cut.group.visible = alpha > 0.002;
-    cut.coreMaterial.opacity = alpha;
-    cut.lipMaterial.opacity = alpha * 0.8;
-
-    if (cut.axis === "y") {
-      cut.group.scale.set(
-        THREE.MathUtils.lerp(0.97, 1, alpha),
-        THREE.MathUtils.lerp(0.82, 1, alpha),
-        1,
-      );
-    } else {
-      cut.group.scale.set(
-        THREE.MathUtils.lerp(0.82, 1, alpha),
-        THREE.MathUtils.lerp(0.96, 1, alpha),
-        1,
-      );
-    }
-
-    cut.group.position.set(
-      cut.basePosition.x + movement * 0.012,
-      cut.basePosition.y + movement * 0.018,
-      0,
-    );
-    cut.group.rotation.z = cut.baseRotation + movement * 0.025;
-  }
-
   update(frame: RuntimeFrame) {
     const ease = 1 - Math.exp(-8 * frame.delta);
     this.progressCurrent = THREE.MathUtils.lerp(
@@ -400,7 +213,7 @@ export class ServicesScene implements RuntimeScene {
     const introScale = 0.43;
     const breakScale = THREE.MathUtils.lerp(introScale, 0.65, breakProgress);
     const settleScale = THREE.MathUtils.lerp(breakScale, 0.67, settleProgress);
-    const finalScale = THREE.MathUtils.lerp(settleScale, 0.7, finalProgress);
+    const finalScale = THREE.MathUtils.lerp(settleScale, 0.72, finalProgress);
 
     this.slabPivot.scale.set(
       finalScale,
@@ -430,15 +243,10 @@ export class ServicesScene implements RuntimeScene {
       material.opacity = markOpacity;
     });
 
-    const firstSlash = THREE.MathUtils.clamp((progress - 0.56) / 0.045, 0, 1);
-    const secondSlash = THREE.MathUtils.clamp((progress - 0.66) / 0.045, 0, 1);
-    const thirdSlash = THREE.MathUtils.clamp((progress - 0.76) / 0.045, 0, 1);
-    const slashProgress = [firstSlash, secondSlash, thirdSlash];
-
-    this.slashRoot.visible = slashProgress.some((value) => value > 0.002);
-    this.slashCuts.forEach((cut, index) => {
-      this.updateSlashCut(cut, slashProgress[index] ?? 0);
-    });
+    const firstCut = smoothStep((progress - 0.68) / 0.075);
+    const secondCut = smoothStep((progress - 0.78) / 0.075);
+    const thirdCut = smoothStep((progress - 0.86) / 0.075);
+    this.slab.setCutProgress(firstCut, secondCut, thirdCut);
 
     this.renderer.render(this.scene, this.camera);
   }
@@ -461,12 +269,6 @@ export class ServicesScene implements RuntimeScene {
         : [object.material];
       materials.forEach((material) => material.dispose());
     });
-
-    this.slashCuts.forEach((cut) => {
-      cut.coreMaterial.dispose();
-      cut.lipMaterial.dispose();
-    });
-    this.slashGeometries.forEach((geometry) => geometry.dispose());
 
     this.markTextures.forEach((texture) => texture.dispose());
     this.slab.dispose();
