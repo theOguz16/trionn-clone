@@ -26,6 +26,10 @@ import {
   HomeServicesShowcase,
 } from "@/features/home-services/HomeServicesShowcase";
 
+import {
+  ServicesDebugHud,
+} from "@/features/home-services/ServicesDebugHud";
+
 export const metadata:
   Metadata = {
     title:
@@ -49,6 +53,8 @@ export default function HomePage() {
       <HomeSelectedWork />
 
       <HomeServicesShowcase />
+
+      <ServicesDebugHud />
     </main>
   );
 }
