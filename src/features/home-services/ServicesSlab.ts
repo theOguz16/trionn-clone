@@ -255,6 +255,11 @@ export class ServicesSlab {
   private readonly colorTexture: THREE.CanvasTexture;
   private readonly bumpTexture: THREE.CanvasTexture;
   private readonly roughnessTexture: THREE.CanvasTexture;
+  private readonly cutUniforms = {
+    first: { value: 0 },
+    second: { value: 0 },
+    third: { value: 0 },
+  };
 
   constructor() {
     this.geometry = createSlabGeometry();
@@ -293,6 +298,146 @@ export class ServicesSlab {
       envMapIntensity: 0.31,
     });
 
+    this.material.onBeforeCompile = (shader) => {
+      shader.uniforms.uServicesCut1 = this.cutUniforms.first;
+      shader.uniforms.uServicesCut2 = this.cutUniforms.second;
+      shader.uniforms.uServicesCut3 = this.cutUniforms.third;
+
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          "#include <common>",
+          `#include <common>\nvarying vec3 vServicesObjectNormal;`,
+        )
+        .replace(
+          "#include <beginnormal_vertex>",
+          `#include <beginnormal_vertex>\nvServicesObjectNormal = objectNormal;`,
+        );
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          "#include <common>",
+          `#include <common>
+varying vec3 vServicesObjectNormal;
+uniform float uServicesCut1;
+uniform float uServicesCut2;
+uniform float uServicesCut3;
+
+float servicesHash(float value) {
+  return fract(sin(value * 91.173) * 43758.5453123);
+}
+
+float servicesSegmentDistance(vec2 point, vec2 startPoint, vec2 endPoint) {
+  vec2 pa = point - startPoint;
+  vec2 ba = endPoint - startPoint;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h);
+}
+
+float servicesSegmentPosition(vec2 point, vec2 startPoint, vec2 endPoint) {
+  vec2 pa = point - startPoint;
+  vec2 ba = endPoint - startPoint;
+  return clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+}
+
+float servicesStroke(
+  vec2 uv,
+  vec2 startPoint,
+  vec2 endPoint,
+  float width,
+  float seed,
+  float reveal
+) {
+  vec2 direction = normalize(endPoint - startPoint);
+  vec2 perpendicular = vec2(-direction.y, direction.x);
+  float segmentPosition = servicesSegmentPosition(uv, startPoint, endPoint);
+  float cell = floor(segmentPosition * 34.0);
+  float jagged = (servicesHash(cell + seed) - 0.5) * 0.018;
+  vec2 roughUv = uv + perpendicular * jagged;
+  float distanceToStroke = servicesSegmentDistance(roughUv, startPoint, endPoint);
+  float body = 1.0 - smoothstep(width * 0.7, width, distanceToStroke);
+  float draw = smoothstep(0.0, 0.075, reveal * 1.08 - segmentPosition);
+  return body * draw;
+}
+
+float servicesCutCore(vec2 uv) {
+  float first = servicesStroke(
+    uv,
+    vec2(0.56, 0.79),
+    vec2(0.37, 0.36),
+    0.047,
+    7.0,
+    uServicesCut1
+  );
+  float second = servicesStroke(
+    uv,
+    vec2(0.72, 0.73),
+    vec2(0.55, 0.39),
+    0.043,
+    19.0,
+    uServicesCut2
+  );
+  float third = servicesStroke(
+    uv,
+    vec2(0.34, 0.31),
+    vec2(0.61, 0.28),
+    0.052,
+    31.0,
+    uServicesCut3
+  );
+  return clamp(max(max(first, second), third), 0.0, 1.0);
+}
+
+float servicesCutOuter(vec2 uv) {
+  float first = servicesStroke(
+    uv,
+    vec2(0.56, 0.79),
+    vec2(0.37, 0.36),
+    0.071,
+    7.0,
+    uServicesCut1
+  );
+  float second = servicesStroke(
+    uv,
+    vec2(0.72, 0.73),
+    vec2(0.55, 0.39),
+    0.066,
+    19.0,
+    uServicesCut2
+  );
+  float third = servicesStroke(
+    uv,
+    vec2(0.34, 0.31),
+    vec2(0.61, 0.28),
+    0.078,
+    31.0,
+    uServicesCut3
+  );
+  return clamp(max(max(first, second), third), 0.0, 1.0);
+}`,
+        )
+        .replace(
+          "#include <map_fragment>",
+          `#include <map_fragment>
+float servicesFrontFace = smoothstep(0.72, 0.96, vServicesObjectNormal.z);
+float servicesCore = servicesCutCore(vMapUv) * servicesFrontFace;
+float servicesOuter = servicesCutOuter(vMapUv) * servicesFrontFace;
+float servicesLip = clamp(servicesOuter - servicesCore, 0.0, 1.0);
+
+vec3 servicesCavity = vec3(0.006, 0.008, 0.009);
+vec3 servicesBrokenEdge = diffuseColor.rgb * 0.46 + vec3(0.025, 0.027, 0.028);
+diffuseColor.rgb = mix(diffuseColor.rgb, servicesBrokenEdge, servicesLip * 0.78);
+diffuseColor.rgb = mix(diffuseColor.rgb, servicesCavity, servicesCore * 0.97);`,
+        )
+        .replace(
+          "#include <roughnessmap_fragment>",
+          `#include <roughnessmap_fragment>
+roughnessFactor = mix(roughnessFactor, 1.0, servicesCore * 0.92);
+roughnessFactor = mix(roughnessFactor, 0.78, servicesLip * 0.34);`,
+        );
+    };
+
+    this.material.customProgramCacheKey = () => "services-stone-cuts-v1";
+
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.castShadow = false;
     this.mesh.receiveShadow = false;
@@ -300,6 +445,12 @@ export class ServicesSlab {
     this.mesh.renderOrder = 2;
 
     this.root.add(this.mesh);
+  }
+
+  setCutProgress(first: number, second: number, third: number) {
+    this.cutUniforms.first.value = THREE.MathUtils.clamp(first, 0, 1);
+    this.cutUniforms.second.value = THREE.MathUtils.clamp(second, 0, 1);
+    this.cutUniforms.third.value = THREE.MathUtils.clamp(third, 0, 1);
   }
 
   dispose() {
