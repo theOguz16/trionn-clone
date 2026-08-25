@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-const SLAB_WIDTH = 2.36;
-const SLAB_HEIGHT = 2.44;
-const SLAB_DEPTH = 0.48;
+const SLAB_WIDTH = 2.34;
+const SLAB_HEIGHT = 2.46;
+const SLAB_DEPTH = 0.5;
 
 function hash2(x: number, y: number) {
   const value = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
@@ -44,9 +44,26 @@ function fbm(x: number, y: number, octaves = 5) {
   return normalization > 0 ? value / normalization : value;
 }
 
-function ridgedNoise(x: number, y: number) {
-  const noise = fbm(x, y, 4);
-  return 1 - Math.abs(noise * 2 - 1);
+function ridgedNoise(x: number, y: number, octaves = 4) {
+  let value = 0;
+  let amplitude = 0.55;
+  let frequency = 1;
+  let normalization = 0;
+
+  for (let octave = 0; octave < octaves; octave += 1) {
+    const noise = valueNoise(x * frequency, y * frequency);
+    value += (1 - Math.abs(noise * 2 - 1)) * amplitude;
+    normalization += amplitude;
+    frequency *= 2.03;
+    amplitude *= 0.48;
+  }
+
+  return normalization > 0 ? value / normalization : value;
+}
+
+function smoothThreshold(value: number, low: number, high: number) {
+  const t = THREE.MathUtils.clamp((value - low) / (high - low), 0, 1);
+  return t * t * (3 - 2 * t);
 }
 
 function createStoneCanvases(size = 512) {
@@ -78,57 +95,49 @@ function createStoneCanvases(size = 512) {
       const u = x / size;
       const v = y / size;
 
-      const broad = fbm(u * 4.2 + 1.8, v * 4.2 + 3.4, 5);
-      const medium = fbm(u * 13.5 + 7.7, v * 13.5 + 5.1, 5);
-      const fine = fbm(u * 43 + 4.2, v * 43 + 9.1, 4);
-      const micro = hash2(x * 0.91 + 3.2, y * 0.91 + 7.7);
-      const ridge = ridgedNoise(u * 18 + 2.8, v * 18 + 8.3);
-
-      const fractureBand = Math.pow(
-        THREE.MathUtils.clamp(
-          1 - Math.abs(Math.sin((u * 1.7 + v * 1.05) * 15 + medium * 7)),
-          0,
-          1,
-        ),
-        8,
-      );
-
-      const mineral = Math.pow(
-        THREE.MathUtils.clamp(fine * 0.74 + micro * 0.26, 0, 1),
-        5,
+      const broad = fbm(u * 3.5 + 1.6, v * 3.5 + 3.8, 5);
+      const medium = fbm(u * 14.5 + 7.2, v * 14.5 + 5.6, 5);
+      const grit = ridgedNoise(u * 48 + 2.7, v * 48 + 8.8, 3);
+      const micro = valueNoise(u * 112 + 4.3, v * 112 + 9.6);
+      const mineral = fbm(u * 9.4 + 21.1, v * 9.4 - 3.7, 3);
+      const pitField = fbm(u * 31 + 15.4, v * 31 + 7.1, 3);
+      const pits = smoothThreshold(pitField, 0.66, 0.84);
+      const brightGrain = smoothThreshold(
+        valueNoise(u * 86 + 4.8, v * 86 + 12.2),
+        0.76,
+        0.94,
       );
 
       const stone =
-        broad * 0.43 +
-        medium * 0.31 +
-        fine * 0.16 +
-        ridge * 0.1;
+        broad * 0.21 +
+        medium * 0.34 +
+        grit * 0.27 +
+        micro * 0.18;
 
       const tone = THREE.MathUtils.clamp(
-        42 + stone * 96 + mineral * 21 - fractureBand * 24,
-        39,
-        158,
+        45 + stone * 101 + mineral * 9 + brightGrain * 11 - pits * 24,
+        42,
+        149,
       );
 
-      const warmShift = (broad - 0.5) * 7 + mineral * 5;
-      const coolShift = (medium - 0.5) * 8;
+      const coolShift = (medium - 0.5) * 7;
+      const warmShift = (mineral - 0.5) * 5;
       const index = (y * size + x) * 4;
 
-      colorImage.data[index] = Math.round(tone * 0.91 + warmShift);
-      colorImage.data[index + 1] = Math.round(tone * 0.93 + warmShift * 0.45);
-      colorImage.data[index + 2] = Math.round(tone * 0.95 + coolShift);
+      colorImage.data[index] = Math.round(tone * 0.92 + warmShift);
+      colorImage.data[index + 1] = Math.round(tone * 0.94 + warmShift * 0.35);
+      colorImage.data[index + 2] = Math.round(tone * 0.97 + coolShift);
       colorImage.data[index + 3] = 255;
 
       const heightValue = THREE.MathUtils.clamp(
-        77 +
-          broad * 48 +
-          medium * 54 +
-          fine * 39 +
-          ridge * 33 +
-          micro * 12 -
-          fractureBand * 50,
-        18,
-        236,
+        72 +
+          medium * 49 +
+          grit * 75 +
+          micro * 42 +
+          brightGrain * 18 -
+          pits * 68,
+        22,
+        238,
       );
 
       bumpImage.data[index] = Math.round(heightValue);
@@ -137,8 +146,8 @@ function createStoneCanvases(size = 512) {
       bumpImage.data[index + 3] = 255;
 
       const roughnessValue = THREE.MathUtils.clamp(
-        224 + medium * 20 + ridge * 13 - mineral * 27 + fractureBand * 10,
-        176,
+        220 + medium * 17 + grit * 18 + pits * 13 - brightGrain * 24,
+        182,
         252,
       );
 
@@ -161,8 +170,8 @@ function createSlabGeometry() {
     SLAB_WIDTH,
     SLAB_HEIGHT,
     SLAB_DEPTH,
-    30,
-    30,
+    32,
+    34,
     8,
   );
 
@@ -183,45 +192,45 @@ function createSlabGeometry() {
     const normalizedY = Math.abs(y) / halfHeight;
 
     if (Math.abs(normalZ) > 0.8) {
-      const broadRelief =
-        (valueNoise(x * 1.8 + 11.4, y * 1.8 + 4.2) - 0.5) * 0.105;
       const mediumRelief =
-        (valueNoise(x * 5.6 + 2.4, y * 5.6 + 9.1) - 0.5) * 0.052;
+        (valueNoise(x * 6.8 + 2.7, y * 6.8 + 9.3) - 0.5) * 0.038;
+      const fineRelief =
+        (valueNoise(x * 15.4 + 8.4, y * 15.4 + 3.1) - 0.5) * 0.017;
       const edgeRelief =
         Math.pow(Math.max(normalizedX, normalizedY), 5) *
-        (valueNoise(x * 8.2 + 5.4, y * 8.2 + 2.8) - 0.5) *
-        0.075;
+        (valueNoise(x * 10.2 + 4.2, y * 10.2 + 6.7) - 0.5) *
+        0.058;
 
-      z += Math.sign(normalZ) * (broadRelief + mediumRelief + edgeRelief);
+      z += Math.sign(normalZ) * (mediumRelief + fineRelief + edgeRelief);
     }
 
     if (Math.abs(normalX) > 0.8) {
       const sideChunk =
-        (valueNoise(y * 4.3 + 4.9, z * 9.2 + 2.7) - 0.5) * 0.095;
+        (valueNoise(y * 4.7 + 4.9, z * 8.8 + 2.7) - 0.5) * 0.108;
       const sideChip =
-        (valueNoise(y * 11.2 + 1.3, z * 14.1 + 8.6) - 0.5) * 0.037;
+        (valueNoise(y * 13.4 + 1.3, z * 16.2 + 8.6) - 0.5) * 0.042;
 
       x += Math.sign(normalX) * (sideChunk + sideChip);
     }
 
     if (Math.abs(normalY) > 0.8) {
       const capChunk =
-        (valueNoise(x * 4.1 + 7.2, z * 9.6 + 3.4) - 0.5) * 0.072;
+        (valueNoise(x * 4.5 + 7.2, z * 9.1 + 3.4) - 0.5) * 0.084;
       const capChip =
-        (valueNoise(x * 12.7 + 2.1, z * 13.6 + 6.8) - 0.5) * 0.03;
+        (valueNoise(x * 13.8 + 2.1, z * 15.1 + 6.8) - 0.5) * 0.038;
 
       y += Math.sign(normalY) * (capChunk + capChip);
     }
 
     const corner = THREE.MathUtils.clamp(
-      (normalizedX + normalizedY - 1.42) / 0.58,
+      (normalizedX + normalizedY - 1.38) / 0.62,
       0,
       1,
     );
 
     if (corner > 0) {
-      const chipNoise = valueNoise(x * 7.3 + 2.1, y * 7.3 + 6.9);
-      const chip = 1 - corner * (0.035 + chipNoise * 0.055);
+      const chipNoise = valueNoise(x * 8.4 + 2.1, y * 8.4 + 6.9);
+      const chip = 1 - corner * (0.045 + chipNoise * 0.068);
       x *= chip;
       y *= chip;
     }
@@ -256,7 +265,7 @@ export class ServicesSlab {
     this.colorTexture.colorSpace = THREE.SRGBColorSpace;
     this.colorTexture.wrapS = THREE.RepeatWrapping;
     this.colorTexture.wrapT = THREE.RepeatWrapping;
-    this.colorTexture.repeat.set(1.08, 1.08);
+    this.colorTexture.repeat.set(1.06, 1.06);
     this.colorTexture.anisotropy = 4;
 
     this.bumpTexture = new THREE.CanvasTexture(bumpCanvas);
@@ -274,14 +283,14 @@ export class ServicesSlab {
     this.roughnessTexture.anisotropy = 4;
 
     this.material = new THREE.MeshStandardMaterial({
-      color: 0xc1c0bb,
+      color: 0x929691,
       map: this.colorTexture,
       bumpMap: this.bumpTexture,
-      bumpScale: 0.13,
-      roughness: 0.9,
+      bumpScale: 0.105,
+      roughness: 0.94,
       roughnessMap: this.roughnessTexture,
       metalness: 0,
-      envMapIntensity: 0.34,
+      envMapIntensity: 0.31,
     });
 
     this.mesh = new THREE.Mesh(this.geometry, this.material);
