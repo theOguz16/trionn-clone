@@ -212,6 +212,9 @@ export function HomeServicesShowcase() {
       const detailMotifs = Array.from(
         section.querySelectorAll<HTMLElement>("[data-service-detail-motif]"),
       );
+      const smokeLayers = Array.from(
+        section.querySelectorAll<HTMLElement>("[data-services-smoke]"),
+      );
 
       if (
         words.length !== SERVICE_WORDS.length ||
@@ -262,6 +265,44 @@ export function HomeServicesShowcase() {
       gsap.set(leftPanel, { xPercent: -7, autoAlpha: 0 });
       gsap.set(rightPanel, { xPercent: 7, autoAlpha: 0 });
       gsap.set(detailMotifs, { scale: 0.9, autoAlpha: 0 });
+      gsap.set(smokeLayers, { transformOrigin: "50% 50%" });
+
+      const smokeTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1.4,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      if (smokeLayers[0]) {
+        smokeTimeline.fromTo(
+          smokeLayers[0],
+          { xPercent: -4, yPercent: 2, scale: 1.1, rotation: -1.5 },
+          { xPercent: 5, yPercent: -3, scale: 1.18, rotation: 1.2, ease: "none" },
+          0,
+        );
+      }
+
+      if (smokeLayers[1]) {
+        smokeTimeline.fromTo(
+          smokeLayers[1],
+          { xPercent: 5, yPercent: -2, scale: 1.06, rotation: 1.2 },
+          { xPercent: -6, yPercent: 4, scale: 1.16, rotation: -1, ease: "none" },
+          0,
+        );
+      }
+
+      if (smokeLayers[2]) {
+        smokeTimeline.fromTo(
+          smokeLayers[2],
+          { xPercent: -2, yPercent: 3, scale: 1.02 },
+          { xPercent: 3, yPercent: -4, scale: 1.12, ease: "none" },
+          0,
+        );
+      }
 
       const timeline = gsap.timeline({
         scrollTrigger: {
@@ -392,6 +433,8 @@ export function HomeServicesShowcase() {
       return () => {
         themeTrigger.kill();
         progressTrigger.kill();
+        smokeTimeline.scrollTrigger?.kill();
+        smokeTimeline.kill();
         timeline.scrollTrigger?.kill();
         timeline.kill();
       };
@@ -403,7 +446,7 @@ export function HomeServicesShowcase() {
     <section
       ref={sectionRef}
       data-home-services-showcase
-      className="relative z-[54] h-[420svh] bg-[#070c11] text-[#efede6]"
+      className="relative z-[54] h-[420svh] bg-[#05090d] text-[#efede6]"
     >
       <div className="sticky top-0 h-[100svh] min-h-[720px] overflow-hidden">
         <div
@@ -411,18 +454,40 @@ export function HomeServicesShowcase() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at 17% 50%, rgba(131,141,145,.34) 0%, rgba(68,78,83,.19) 29%, transparent 59%), radial-gradient(ellipse at 77% 34%, rgba(48,59,68,.46) 0%, rgba(8,14,19,.14) 47%, transparent 73%), radial-gradient(ellipse at 55% 82%, rgba(77,84,84,.24) 0%, transparent 53%), linear-gradient(112deg, #05090d 0%, #172027 43%, #04080c 100%)",
+              "radial-gradient(ellipse at 18% 47%, rgba(116,127,132,.26) 0%, rgba(48,58,64,.14) 34%, transparent 64%), radial-gradient(ellipse at 78% 36%, rgba(56,68,76,.34) 0%, rgba(8,14,19,.1) 45%, transparent 72%), linear-gradient(112deg, #03070a 0%, #111a21 43%, #03070a 100%)",
           }}
         />
 
         <div
+          data-services-smoke
           aria-hidden="true"
-          className="absolute inset-0 opacity-75"
+          className="absolute -inset-[18%] opacity-80 will-change-transform"
           style={{
             background:
-              "radial-gradient(circle at 23% 55%, rgba(219,222,218,.14), transparent 20%), radial-gradient(circle at 48% 45%, rgba(255,255,255,.075), transparent 27%), radial-gradient(circle at 76% 66%, rgba(169,181,184,.12), transparent 24%)",
-            filter: "blur(34px)",
-            transform: "scale(1.13)",
+              "radial-gradient(ellipse at 15% 48%, rgba(217,222,219,.27) 0%, rgba(133,143,145,.17) 15%, rgba(64,72,77,.09) 31%, transparent 55%), radial-gradient(ellipse at 34% 27%, rgba(196,202,200,.2) 0%, rgba(85,94,99,.12) 22%, transparent 49%), radial-gradient(ellipse at 30% 77%, rgba(181,190,190,.14) 0%, transparent 44%)",
+            filter: "blur(30px)",
+          }}
+        />
+
+        <div
+          data-services-smoke
+          aria-hidden="true"
+          className="absolute -inset-[20%] opacity-75 will-change-transform"
+          style={{
+            background:
+              "radial-gradient(ellipse at 79% 38%, rgba(204,211,210,.16) 0%, rgba(77,87,93,.15) 22%, transparent 50%), radial-gradient(ellipse at 66% 71%, rgba(168,179,182,.18) 0%, rgba(65,76,82,.1) 27%, transparent 54%), radial-gradient(ellipse at 94% 24%, rgba(112,123,127,.13) 0%, transparent 38%)",
+            filter: "blur(38px)",
+          }}
+        />
+
+        <div
+          data-services-smoke
+          aria-hidden="true"
+          className="absolute -inset-[14%] opacity-70 will-change-transform"
+          style={{
+            background:
+              "radial-gradient(ellipse at 48% 42%, rgba(232,233,226,.13) 0%, rgba(118,127,129,.085) 21%, transparent 43%), radial-gradient(ellipse at 52% 78%, rgba(191,196,193,.11) 0%, transparent 40%), radial-gradient(ellipse at 7% 73%, rgba(150,160,163,.12) 0%, transparent 36%)",
+            filter: "blur(24px)",
           }}
         />
 
@@ -431,7 +496,7 @@ export function HomeServicesShowcase() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(0,3,6,.23) 0%, transparent 25%, transparent 70%, rgba(0,2,5,.55) 100%), radial-gradient(ellipse at center, transparent 39%, rgba(0,0,0,.48) 100%)",
+              "linear-gradient(180deg, rgba(0,3,6,.29) 0%, transparent 24%, transparent 68%, rgba(0,2,5,.6) 100%), radial-gradient(ellipse at center, transparent 31%, rgba(0,0,0,.54) 100%)",
           }}
         />
 
