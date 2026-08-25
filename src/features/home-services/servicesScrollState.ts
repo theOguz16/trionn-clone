@@ -13,13 +13,13 @@ type ProgressRange = {
 };
 
 export const SERVICES_SCROLL_PHASES = {
-  intro: { start: 0, end: 0.16 },
-  breakup: { start: 0.16, end: 0.38 },
-  transition: { start: 0.38, end: 0.52 },
-  detailA: { start: 0.52, end: 0.64 },
-  detailB: { start: 0.64, end: 0.76 },
-  detailC: { start: 0.76, end: 0.88 },
-  final: { start: 0.88, end: 1 },
+  intro: { start: 0, end: 0.15 },
+  breakup: { start: 0.15, end: 0.36 },
+  transition: { start: 0.36, end: 0.5 },
+  detailA: { start: 0.5, end: 0.6 },
+  detailB: { start: 0.6, end: 0.7 },
+  detailC: { start: 0.7, end: 0.82 },
+  final: { start: 0.82, end: 1 },
 } as const satisfies Record<ServicesScrollPhase, ProgressRange>;
 
 export type ServicesScrollState = {
