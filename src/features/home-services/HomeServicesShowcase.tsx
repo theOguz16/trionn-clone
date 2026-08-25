@@ -6,6 +6,11 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap/client";
 import { canvasManager } from "@/runtime/canvas/CanvasManager";
 
 import { ServicesScene } from "./ServicesScene";
+import {
+  getServicesScrollState,
+  mapMasterToSceneProgress,
+  SERVICES_SCROLL_PHASES,
+} from "./servicesScrollState";
 
 const SERVICE_WORDS = ["A.I.", "Design", "Development", "Branding"] as const;
 
@@ -243,17 +248,6 @@ export function HomeServicesShowcase() {
         onLeaveBack: restoreLightTheme,
       });
 
-      const progressTrigger = ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: true,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          sceneRef.current?.setProgress(self.progress);
-        },
-      });
-
       gsap.set(chars, {
         xPercent: 0,
         yPercent: 0,
@@ -267,21 +261,13 @@ export function HomeServicesShowcase() {
       gsap.set(detailMotifs, { scale: 0.9, autoAlpha: 0 });
       gsap.set(smokeLayers, { transformOrigin: "50% 50%" });
 
-      const smokeTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 1.4,
-          invalidateOnRefresh: true,
-        },
-      });
+      const smokeTimeline = gsap.timeline({ paused: true });
 
       if (smokeLayers[0]) {
         smokeTimeline.fromTo(
           smokeLayers[0],
           { xPercent: -4, yPercent: 2, scale: 1.1, rotation: -1.5 },
-          { xPercent: 5, yPercent: -3, scale: 1.18, rotation: 1.2, ease: "none" },
+          { xPercent: 5, yPercent: -3, scale: 1.18, rotation: 1.2, ease: "none", duration: 1 },
           0,
         );
       }
@@ -290,7 +276,7 @@ export function HomeServicesShowcase() {
         smokeTimeline.fromTo(
           smokeLayers[1],
           { xPercent: 5, yPercent: -2, scale: 1.06, rotation: 1.2 },
-          { xPercent: -6, yPercent: 4, scale: 1.16, rotation: -1, ease: "none" },
+          { xPercent: -6, yPercent: 4, scale: 1.16, rotation: -1, ease: "none", duration: 1 },
           0,
         );
       }
@@ -299,26 +285,18 @@ export function HomeServicesShowcase() {
         smokeTimeline.fromTo(
           smokeLayers[2],
           { xPercent: -2, yPercent: 3, scale: 1.02 },
-          { xPercent: 3, yPercent: -4, scale: 1.12, ease: "none" },
+          { xPercent: 3, yPercent: -4, scale: 1.12, ease: "none", duration: 1 },
           0,
         );
       }
 
-      const timeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      });
+      const timeline = gsap.timeline({ paused: true });
 
       timeline.to(
         wordStack,
         {
           scale: 0.99,
-          duration: 0.14,
+          duration: SERVICES_SCROLL_PHASES.intro.end,
           ease: "none",
         },
         0,
@@ -333,7 +311,7 @@ export function HomeServicesShowcase() {
           const vector =
             SCATTER_VECTORS[(wordIndex * 5 + charIndex) % SCATTER_VECTORS.length];
           const depthFactor = 0.92 + wordIndex * 0.045;
-          const delay = wordIndex * 0.026 + charIndex * 0.004;
+          const staggerOffset = wordIndex * 0.012 + charIndex * 0.0025;
 
           timeline.to(
             char,
@@ -343,10 +321,10 @@ export function HomeServicesShowcase() {
               rotation: vector.r,
               scale: vector.s,
               autoAlpha: 0.34 + ((charIndex + wordIndex) % 4) * 0.11,
-              duration: 0.34,
+              duration: 0.16,
               ease: "power1.inOut",
             },
-            0.17 + delay,
+            SERVICES_SCROLL_PHASES.breakup.start + staggerOffset,
           );
         });
       });
@@ -355,10 +333,10 @@ export function HomeServicesShowcase() {
         wordStack,
         {
           scale: 0.965,
-          duration: 0.16,
+          duration: 0.1,
           ease: "none",
         },
-        0.52,
+        SERVICES_SCROLL_PHASES.transition.start,
       );
 
       timeline.to(
@@ -366,34 +344,34 @@ export function HomeServicesShowcase() {
         {
           autoAlpha: 0,
           scale: 0.52,
-          duration: 0.14,
+          duration: 0.08,
           stagger: {
-            each: 0.003,
+            each: 0.002,
             from: "random",
           },
           ease: "power1.in",
         },
-        0.62,
+        0.43,
       );
 
       timeline.to(
         wordStack,
         {
           autoAlpha: 0,
-          duration: 0.06,
+          duration: 0.04,
           ease: "none",
         },
-        0.67,
+        0.49,
       );
 
       timeline.to(
         detailStage,
         {
           autoAlpha: 1,
-          duration: 0.07,
+          duration: 0.035,
           ease: "none",
         },
-        0.69,
+        SERVICES_SCROLL_PHASES.detailA.start,
       );
 
       timeline.to(
@@ -401,10 +379,10 @@ export function HomeServicesShowcase() {
         {
           xPercent: 0,
           autoAlpha: 1,
-          duration: 0.19,
+          duration: 0.07,
           ease: "power2.out",
         },
-        0.71,
+        0.535,
       );
 
       timeline.to(
@@ -412,10 +390,10 @@ export function HomeServicesShowcase() {
         {
           xPercent: 0,
           autoAlpha: 1,
-          duration: 0.19,
+          duration: 0.07,
           ease: "power2.out",
         },
-        0.74,
+        0.555,
       );
 
       timeline.to(
@@ -423,20 +401,49 @@ export function HomeServicesShowcase() {
         {
           scale: 1,
           autoAlpha: 0.68,
-          duration: 0.17,
-          stagger: 0.02,
+          duration: 0.07,
+          stagger: 0.01,
           ease: "power1.out",
         },
-        0.78,
+        0.58,
       );
+
+      // Reserve the remaining normalized timeline for detailB, detailC and final.
+      timeline.to({}, { duration: 1 - SERVICES_SCROLL_PHASES.detailA.end }, SERVICES_SCROLL_PHASES.detailA.end);
+
+      const progressTrigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: true,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const state = getServicesScrollState(self.progress);
+
+          section.dataset.servicesPhase = state.phase;
+          section.style.setProperty("--services-progress", state.master.toFixed(4));
+          section.style.setProperty("--services-detail-a", state.detailA.toFixed(4));
+          section.style.setProperty("--services-detail-b", state.detailB.toFixed(4));
+          section.style.setProperty("--services-detail-c", state.detailC.toFixed(4));
+          section.style.setProperty("--services-final", state.final.toFixed(4));
+
+          timeline.progress(state.master, false);
+          smokeTimeline.progress(state.master, false);
+          sceneRef.current?.setProgress(mapMasterToSceneProgress(state.master));
+        },
+      });
 
       return () => {
         themeTrigger.kill();
         progressTrigger.kill();
-        smokeTimeline.scrollTrigger?.kill();
         smokeTimeline.kill();
-        timeline.scrollTrigger?.kill();
         timeline.kill();
+        delete section.dataset.servicesPhase;
+        section.style.removeProperty("--services-progress");
+        section.style.removeProperty("--services-detail-a");
+        section.style.removeProperty("--services-detail-b");
+        section.style.removeProperty("--services-detail-c");
+        section.style.removeProperty("--services-final");
       };
     },
     { scope: sectionRef },
@@ -446,7 +453,8 @@ export function HomeServicesShowcase() {
     <section
       ref={sectionRef}
       data-home-services-showcase
-      className="relative z-[54] h-[420svh] bg-[#05090d] text-[#efede6]"
+      data-services-phase="intro"
+      className="relative z-[54] h-[700svh] bg-[#05090d] text-[#efede6]"
     >
       <div className="sticky top-0 h-[100svh] min-h-[720px] overflow-hidden">
         <div
