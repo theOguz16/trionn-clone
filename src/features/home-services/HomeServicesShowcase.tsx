@@ -46,7 +46,7 @@ function LeftLineMotif() {
     <div
       data-service-detail-motif
       aria-hidden="true"
-      className="absolute right-[7.5%] top-[13.5%] flex h-[80px] items-stretch gap-[6px] opacity-65 max-md:hidden"
+      className="absolute right-[8.5%] top-[14%] flex h-[82px] items-stretch gap-[6px] opacity-60 max-md:hidden"
     >
       {Array.from({ length: 8 }).map((_, index) => (
         <span key={index} className="block w-px bg-white/50" />
@@ -60,7 +60,7 @@ function RightRingMotif() {
     <div
       data-service-detail-motif
       aria-hidden="true"
-      className="absolute right-[4.5%] top-[13.5%] h-[88px] w-[112px] overflow-hidden opacity-65 max-md:hidden"
+      className="absolute right-[4.5%] top-[14%] h-[88px] w-[112px] overflow-hidden opacity-60 max-md:hidden"
     >
       {Array.from({ length: 4 }).map((_, index) => (
         <span
@@ -98,9 +98,9 @@ function ServiceDetailPanels() {
     >
       <article
         data-service-detail-panel="left"
-        className="absolute left-[8.2vw] top-[52%] h-[26.5svh] min-h-[250px] w-[39vw] min-w-[500px] -translate-y-1/2 bg-[rgba(7,12,17,0.3)] px-[2.3vw] py-[4.4svh] backdrop-blur-[1px] max-md:left-5 max-md:top-[42%] max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5"
+        className="absolute left-[9.8vw] top-[57.5%] h-[25.5svh] min-h-[242px] w-[37vw] min-w-[480px] -translate-y-1/2 bg-[rgba(6,11,16,0.24)] px-[2.15vw] py-[4svh] backdrop-blur-[1px] max-md:left-5 max-md:top-[42%] max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5"
       >
-        <h3 className="max-w-[280px] text-[clamp(1.55rem,1.75vw,2rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
+        <h3 className="max-w-[270px] text-[clamp(1.55rem,1.72vw,1.95rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
           AI &amp; Intelligent
           <br />
           Automation
@@ -108,7 +108,7 @@ function ServiceDetailPanels() {
 
         <LeftLineMotif />
 
-        <p className="absolute bottom-[3.7svh] left-[2.3vw] max-w-[300px] text-[11.5px] font-normal leading-[1.27] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
+        <p className="absolute bottom-[3.45svh] left-[2.15vw] max-w-[285px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
           AI-powered solutions designed to enhance products, automate workflows,
           and unlock smarter digital experiences.
         </p>
@@ -116,9 +116,9 @@ function ServiceDetailPanels() {
 
       <article
         data-service-detail-panel="right"
-        className="absolute right-[8.2vw] top-[49.2%] h-[24.8svh] min-h-[238px] w-[30vw] min-w-[390px] -translate-y-1/2 bg-[rgba(7,12,17,0.3)] px-[2.15vw] py-[4.1svh] backdrop-blur-[1px] max-md:bottom-[15svh] max-md:right-5 max-md:top-auto max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5 max-md:translate-y-0"
+        className="absolute right-[6.6vw] top-[45.5%] h-[25.5svh] min-h-[242px] w-[30.8vw] min-w-[408px] -translate-y-1/2 bg-[rgba(6,11,16,0.24)] pb-[3.8svh] pl-[4.8vw] pr-[1.8vw] pt-[4svh] backdrop-blur-[1px] max-md:bottom-[15svh] max-md:right-5 max-md:top-auto max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5 max-md:translate-y-0"
       >
-        <h3 className="max-w-[265px] text-[clamp(1.55rem,1.75vw,2rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
+        <h3 className="max-w-[240px] text-[clamp(1.5rem,1.68vw,1.9rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
           Website &amp;
           <br />
           Mobile Design
@@ -126,7 +126,7 @@ function ServiceDetailPanels() {
 
         <RightRingMotif />
 
-        <p className="absolute bottom-[3.5svh] left-[2.15vw] max-w-[285px] text-[11.5px] font-normal leading-[1.27] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
+        <p className="absolute bottom-[3.45svh] left-[4.8vw] max-w-[255px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
           High-quality website and app experiences designed to attract users and
           keep them coming back.
         </p>
