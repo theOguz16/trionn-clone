@@ -46,94 +46,174 @@ function WordChars({ word, wordIndex }: { word: string; wordIndex: number }) {
   );
 }
 
-function LeftLineMotif() {
+function VerticalLineMotif() {
   return (
     <div
       data-service-detail-motif
       aria-hidden="true"
-      className="absolute right-[8.5%] top-[14%] flex h-[82px] items-stretch gap-[6px] opacity-60 max-md:hidden"
+      className="absolute right-[8%] top-[14%] flex h-[82px] items-stretch gap-[6px] opacity-60 max-md:hidden"
     >
-      {Array.from({ length: 8 }).map((_, index) => (
-        <span key={index} className="block w-px bg-white/50" />
+      {Array.from({ length: 9 }).map((_, index) => (
+        <span key={index} className="block w-px bg-white/52" />
       ))}
     </div>
   );
 }
 
-function RightRingMotif() {
+function SplitRingMotif() {
   return (
     <div
       data-service-detail-motif
       aria-hidden="true"
       className="absolute right-[4.5%] top-[14%] h-[88px] w-[112px] overflow-hidden opacity-60 max-md:hidden"
     >
-      {Array.from({ length: 4 }).map((_, index) => (
-        <span
-          key={`left-${index}`}
-          className="absolute rounded-full border border-white/48"
-          style={{
-            width: `${38 + index * 17}px`,
-            height: `${38 + index * 17}px`,
-            left: `${-18 - index * 8}px`,
-            top: `${44 - (38 + index * 17) / 2}px`,
-          }}
-        />
-      ))}
-      {Array.from({ length: 4 }).map((_, index) => (
-        <span
-          key={`right-${index}`}
-          className="absolute rounded-full border border-white/48"
-          style={{
-            width: `${38 + index * 17}px`,
-            height: `${38 + index * 17}px`,
-            right: `${-18 - index * 8}px`,
-            top: `${44 - (38 + index * 17) / 2}px`,
-          }}
-        />
-      ))}
+      {Array.from({ length: 4 }).map((_, index) => {
+        const size = 38 + index * 17;
+        return (
+          <span
+            key={`left-${index}`}
+            className="absolute rounded-full border border-white/48"
+            style={{
+              width: `${size}px`,
+              height: `${size}px`,
+              left: `${-18 - index * 8}px`,
+              top: `${44 - size / 2}px`,
+            }}
+          />
+        );
+      })}
+      {Array.from({ length: 4 }).map((_, index) => {
+        const size = 38 + index * 17;
+        return (
+          <span
+            key={`right-${index}`}
+            className="absolute rounded-full border border-white/48"
+            style={{
+              width: `${size}px`,
+              height: `${size}px`,
+              right: `${-18 - index * 8}px`,
+              top: `${44 - size / 2}px`,
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
 
-function ServiceDetailPanels() {
+function ConcentricCircleMotif() {
+  return (
+    <div
+      data-service-detail-motif
+      aria-hidden="true"
+      className="absolute right-[8%] top-[13%] h-[92px] w-[92px] max-md:hidden"
+    >
+      {Array.from({ length: 5 }).map((_, index) => {
+        const inset = index * 9;
+        return (
+          <span
+            key={index}
+            className="absolute rounded-full border border-white/52"
+            style={{ inset: `${inset}px` }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function WordPressMotif() {
+  return (
+    <div
+      data-service-detail-motif
+      aria-hidden="true"
+      className="absolute right-[7%] top-[12%] h-[94px] w-[94px] opacity-70 max-md:hidden"
+    >
+      {Array.from({ length: 5 }).map((_, index) => {
+        const inset = index * 9;
+        return (
+          <span
+            key={index}
+            className="absolute rounded-[30%] border border-white/52"
+            style={{
+              inset: `${inset}px`,
+              borderLeftColor: "transparent",
+              transform: `rotate(${index * 5 - 10}deg)`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function ServiceDetailCards() {
   return (
     <div
       data-service-detail-stage
       className="pointer-events-none absolute inset-0 z-[3] opacity-0"
     >
       <article
-        data-service-detail-panel="left"
-        className="absolute left-[9.8vw] top-[57.5%] h-[25.5svh] min-h-[242px] w-[37vw] min-w-[480px] -translate-y-1/2 bg-[rgba(6,11,16,0.24)] px-[2.15vw] py-[4svh] backdrop-blur-[1px] max-md:left-5 max-md:top-[42%] max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5"
+        data-service-card="ai"
+        className="absolute left-[9.8vw] top-[57.5%] h-[25.5svh] min-h-[242px] w-[31.8vw] min-w-[430px] -translate-y-1/2 bg-[rgba(6,11,16,0.25)] px-[2.15vw] py-[4svh] backdrop-blur-[1px] will-change-[top,transform,opacity] max-md:left-5 max-md:top-[38%] max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%_-_40px)] max-md:min-w-0 max-md:px-5 max-md:py-5"
       >
         <h3 className="max-w-[270px] text-[clamp(1.55rem,1.72vw,1.95rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
           AI &amp; Intelligent
           <br />
           Automation
         </h3>
-
-        <LeftLineMotif />
-
-        <p className="absolute bottom-[3.45svh] left-[2.15vw] max-w-[285px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
+        <VerticalLineMotif />
+        <p className="absolute bottom-[3.45svh] left-[2.15vw] max-w-[285px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px]">
           AI-powered solutions designed to enhance products, automate workflows,
           and unlock smarter digital experiences.
         </p>
       </article>
 
       <article
-        data-service-detail-panel="right"
-        className="absolute right-[6.6vw] top-[45.5%] h-[25.5svh] min-h-[242px] w-[30.8vw] min-w-[408px] -translate-y-1/2 bg-[rgba(6,11,16,0.24)] pb-[3.8svh] pl-[4.8vw] pr-[1.8vw] pt-[4svh] backdrop-blur-[1px] max-md:bottom-[15svh] max-md:right-5 max-md:top-auto max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%-40px)] max-md:min-w-0 max-md:px-5 max-md:py-5 max-md:translate-y-0"
+        data-service-card="website"
+        className="absolute right-[6.6vw] top-[45.5%] h-[25.5svh] min-h-[242px] w-[30.8vw] min-w-[408px] -translate-y-1/2 bg-[rgba(6,11,16,0.25)] pb-[3.8svh] pl-[4.8vw] pr-[1.8vw] pt-[4svh] backdrop-blur-[1px] will-change-[top,transform,opacity] max-md:bottom-[13svh] max-md:right-5 max-md:top-auto max-md:h-auto max-md:min-h-0 max-md:w-[calc(100%_-_40px)] max-md:min-w-0 max-md:translate-y-0 max-md:px-5 max-md:py-5"
       >
         <h3 className="max-w-[240px] text-[clamp(1.5rem,1.68vw,1.9rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8] max-md:text-[1.5rem]">
           Website &amp;
           <br />
           Mobile Design
         </h3>
-
-        <RightRingMotif />
-
-        <p className="absolute bottom-[3.45svh] left-[4.8vw] max-w-[255px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px] max-md:text-[11px]">
+        <SplitRingMotif />
+        <p className="absolute bottom-[3.45svh] left-[4.8vw] max-w-[255px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1] max-md:static max-md:mt-8 max-md:max-w-[310px]">
           High-quality website and app experiences designed to attract users and
           keep them coming back.
+        </p>
+      </article>
+
+      <article
+        data-service-card="web"
+        className="absolute left-[2.5vw] top-[108%] h-[25svh] min-h-[236px] w-[25.5vw] min-w-[360px] -translate-y-1/2 bg-[rgba(6,11,16,0.27)] px-[2.15vw] py-[3.8svh] opacity-0 backdrop-blur-[1px] will-change-[top,transform,opacity] max-md:hidden"
+      >
+        <h3 className="max-w-[220px] text-[clamp(1.55rem,1.72vw,1.95rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8]">
+          Web
+          <br />
+          Development
+        </h3>
+        <ConcentricCircleMotif />
+        <p className="absolute bottom-[3.4svh] left-[2.15vw] max-w-[260px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1]">
+          Custom web development delivered with a product-focused,
+          design-conscious approach.
+        </p>
+      </article>
+
+      <article
+        data-service-card="wordpress"
+        className="absolute right-[2.5vw] top-[-18%] h-[25svh] min-h-[236px] w-[25.5vw] min-w-[360px] -translate-y-1/2 bg-[rgba(6,11,16,0.27)] px-[2.15vw] py-[3.8svh] opacity-0 backdrop-blur-[1px] will-change-[top,transform,opacity] max-md:hidden"
+      >
+        <h3 className="max-w-[240px] text-[clamp(1.5rem,1.68vw,1.9rem)] font-normal leading-[0.98] tracking-[-0.045em] text-[#f0eee8]">
+          WordPress
+          <br />
+          Development
+        </h3>
+        <WordPressMotif />
+        <p className="absolute bottom-[3.4svh] left-[2.15vw] max-w-[265px] text-[11px] font-normal leading-[1.3] tracking-[-0.015em] text-[#d7d6d1]">
+          WordPress development focused on performance, clarity, and experiences
+          that convert visitors into loyal users.
         </p>
       </article>
     </div>
@@ -146,7 +226,6 @@ function ServicesFooter() {
       <p className="absolute bottom-[7.2svh] left-1/2 z-[6] -translate-x-1/2 whitespace-nowrap text-[10px] font-normal uppercase leading-none tracking-[-0.02em] text-[#e6e4df] max-md:bottom-[9svh] max-md:text-[9px]">
         ✦ Different disciplines. One standard of craft.
       </p>
-
       <a
         href="/services"
         className="group absolute bottom-[6.55svh] right-[2.1vw] z-[6] flex w-[214px] items-center justify-between border-b border-white/38 pb-[8px] font-mono text-[10px] uppercase leading-none tracking-[-0.02em] text-[#eceae4] max-md:right-5 max-md:w-[150px] max-md:text-[9px]"
@@ -166,7 +245,6 @@ export function HomeServicesShowcase() {
   useEffect(() => {
     const section = sectionRef.current;
     const canvas = canvasRef.current;
-
     if (!section || !canvas) return;
 
     const scene = new ServicesScene(canvas);
@@ -174,14 +252,9 @@ export function HomeServicesShowcase() {
     const unregister = canvasManager.register(scene, false);
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        canvasManager.setActive(scene.id, entry.isIntersecting);
-      },
-      {
-        rootMargin: "25% 0px",
-      },
+      ([entry]) => canvasManager.setActive(scene.id, entry.isIntersecting),
+      { rootMargin: "25% 0px" },
     );
-
     observer.observe(section);
 
     return () => {
@@ -208,14 +281,13 @@ export function HomeServicesShowcase() {
       const detailStage = section.querySelector<HTMLElement>(
         "[data-service-detail-stage]",
       );
-      const leftPanel = section.querySelector<HTMLElement>(
-        '[data-service-detail-panel="left"]',
+      const aiCard = section.querySelector<HTMLElement>('[data-service-card="ai"]');
+      const websiteCard = section.querySelector<HTMLElement>(
+        '[data-service-card="website"]',
       );
-      const rightPanel = section.querySelector<HTMLElement>(
-        '[data-service-detail-panel="right"]',
-      );
-      const detailMotifs = Array.from(
-        section.querySelectorAll<HTMLElement>("[data-service-detail-motif]"),
+      const webCard = section.querySelector<HTMLElement>('[data-service-card="web"]');
+      const wordpressCard = section.querySelector<HTMLElement>(
+        '[data-service-card="wordpress"]',
       );
       const smokeLayers = Array.from(
         section.querySelectorAll<HTMLElement>("[data-services-smoke]"),
@@ -225,16 +297,30 @@ export function HomeServicesShowcase() {
         words.length !== SERVICE_WORDS.length ||
         !wordStack ||
         !detailStage ||
-        !leftPanel ||
-        !rightPanel
+        !aiCard ||
+        !websiteCard ||
+        !webCard ||
+        !wordpressCard
       ) {
         return;
       }
 
+      const aiMotifs = Array.from(
+        aiCard.querySelectorAll<HTMLElement>("[data-service-detail-motif]"),
+      );
+      const websiteMotifs = Array.from(
+        websiteCard.querySelectorAll<HTMLElement>("[data-service-detail-motif]"),
+      );
+      const webMotifs = Array.from(
+        webCard.querySelectorAll<HTMLElement>("[data-service-detail-motif]"),
+      );
+      const wordpressMotifs = Array.from(
+        wordpressCard.querySelectorAll<HTMLElement>("[data-service-detail-motif]"),
+      );
+
       const setDarkTheme = () => {
         document.documentElement.dataset.pageTheme = "dark";
       };
-
       const restoreLightTheme = () => {
         document.documentElement.dataset.pageTheme = "light";
       };
@@ -256,36 +342,58 @@ export function HomeServicesShowcase() {
         autoAlpha: 1,
       });
       gsap.set(detailStage, { autoAlpha: 0 });
-      gsap.set(leftPanel, { xPercent: -7, autoAlpha: 0 });
-      gsap.set(rightPanel, { xPercent: 7, autoAlpha: 0 });
-      gsap.set(detailMotifs, { scale: 0.9, autoAlpha: 0 });
+      gsap.set(aiCard, { xPercent: -7, autoAlpha: 0 });
+      gsap.set(websiteCard, { xPercent: 7, autoAlpha: 0 });
+      gsap.set(webCard, { xPercent: -5, autoAlpha: 0 });
+      gsap.set(wordpressCard, { xPercent: 5, autoAlpha: 0 });
+      gsap.set([...aiMotifs, ...websiteMotifs, ...webMotifs, ...wordpressMotifs], {
+        scale: 0.9,
+        autoAlpha: 0,
+      });
       gsap.set(smokeLayers, { transformOrigin: "50% 50%" });
 
       const smokeTimeline = gsap.timeline({ paused: true });
-
       if (smokeLayers[0]) {
         smokeTimeline.fromTo(
           smokeLayers[0],
           { xPercent: -4, yPercent: 2, scale: 1.1, rotation: -1.5 },
-          { xPercent: 5, yPercent: -3, scale: 1.18, rotation: 1.2, ease: "none", duration: 1 },
+          {
+            xPercent: 5,
+            yPercent: -3,
+            scale: 1.18,
+            rotation: 1.2,
+            ease: "none",
+            duration: 1,
+          },
           0,
         );
       }
-
       if (smokeLayers[1]) {
         smokeTimeline.fromTo(
           smokeLayers[1],
           { xPercent: 5, yPercent: -2, scale: 1.06, rotation: 1.2 },
-          { xPercent: -6, yPercent: 4, scale: 1.16, rotation: -1, ease: "none", duration: 1 },
+          {
+            xPercent: -6,
+            yPercent: 4,
+            scale: 1.16,
+            rotation: -1,
+            ease: "none",
+            duration: 1,
+          },
           0,
         );
       }
-
       if (smokeLayers[2]) {
         smokeTimeline.fromTo(
           smokeLayers[2],
           { xPercent: -2, yPercent: 3, scale: 1.02 },
-          { xPercent: 3, yPercent: -4, scale: 1.12, ease: "none", duration: 1 },
+          {
+            xPercent: 3,
+            yPercent: -4,
+            scale: 1.12,
+            ease: "none",
+            duration: 1,
+          },
           0,
         );
       }
@@ -331,85 +439,150 @@ export function HomeServicesShowcase() {
 
       timeline.to(
         wordStack,
-        {
-          scale: 0.965,
-          duration: 0.1,
-          ease: "none",
-        },
+        { scale: 0.965, duration: 0.1, ease: "none" },
         SERVICES_SCROLL_PHASES.transition.start,
       );
-
       timeline.to(
         chars,
         {
           autoAlpha: 0,
           scale: 0.52,
           duration: 0.08,
-          stagger: {
-            each: 0.002,
-            from: "random",
-          },
+          stagger: { each: 0.002, from: "random" },
           ease: "power1.in",
         },
         0.43,
       );
-
       timeline.to(
         wordStack,
-        {
-          autoAlpha: 0,
-          duration: 0.04,
-          ease: "none",
-        },
+        { autoAlpha: 0, duration: 0.04, ease: "none" },
         0.49,
       );
 
+      // detailA: AI lower-left + Website upper-right.
       timeline.to(
         detailStage,
-        {
-          autoAlpha: 1,
-          duration: 0.035,
-          ease: "none",
-        },
+        { autoAlpha: 1, duration: 0.035, ease: "none" },
         SERVICES_SCROLL_PHASES.detailA.start,
       );
-
       timeline.to(
-        leftPanel,
-        {
-          xPercent: 0,
-          autoAlpha: 1,
-          duration: 0.07,
-          ease: "power2.out",
-        },
+        aiCard,
+        { xPercent: 0, autoAlpha: 1, duration: 0.07, ease: "power2.out" },
         0.535,
       );
-
       timeline.to(
-        rightPanel,
-        {
-          xPercent: 0,
-          autoAlpha: 1,
-          duration: 0.07,
-          ease: "power2.out",
-        },
+        websiteCard,
+        { xPercent: 0, autoAlpha: 1, duration: 0.07, ease: "power2.out" },
         0.555,
       );
-
       timeline.to(
-        detailMotifs,
-        {
-          scale: 1,
-          autoAlpha: 0.68,
-          duration: 0.07,
-          stagger: 0.01,
-          ease: "power1.out",
-        },
-        0.58,
+        [...aiMotifs, ...websiteMotifs],
+        { scale: 1, autoAlpha: 0.68, duration: 0.065, ease: "power1.out" },
+        0.575,
       );
 
-      // Reserve the remaining normalized timeline for detailB, detailC and final.
-      timeline.to({}, { duration: 1 - SERVICES_SCROLL_PHASES.detailA.end }, SERVICES_SCROLL_PHASES.detailA.end);
+      // detailB: existing cards separate vertically and Web Development rises in.
+      timeline.to(
+        aiCard,
+        { top: "27%", duration: 0.11, ease: "power1.inOut" },
+        SERVICES_SCROLL_PHASES.detailB.start,
+      );
+      timeline.to(
+        websiteCard,
+        { top: "76%", duration: 0.11, ease: "power1.inOut" },
+        SERVICES_SCROLL_PHASES.detailB.start,
+      );
+      timeline.to(
+        webCard,
+        {
+          top: "77%",
+          xPercent: 0,
+          autoAlpha: 1,
+          duration: 0.105,
+          ease: "power2.out",
+        },
+        SERVICES_SCROLL_PHASES.detailB.start + 0.015,
+      );
+      timeline.to(
+        webMotifs,
+        { scale: 1, autoAlpha: 0.7, duration: 0.06, ease: "power1.out" },
+        0.7,
+      );
+
+      // detailC: WordPress drops into the upper-right while the other cards settle.
+      timeline.to(
+        wordpressCard,
+        {
+          top: "26%",
+          xPercent: 0,
+          autoAlpha: 1,
+          duration: 0.105,
+          ease: "power2.out",
+        },
+        SERVICES_SCROLL_PHASES.detailC.start,
+      );
+      timeline.to(
+        wordpressMotifs,
+        { scale: 1, autoAlpha: 0.72, duration: 0.06, ease: "power1.out" },
+        0.805,
+      );
+      timeline.to(
+        aiCard,
+        { left: "10.8vw", top: "25%", duration: 0.1, ease: "power1.inOut" },
+        0.79,
+      );
+      timeline.to(
+        websiteCard,
+        { right: "5.6vw", top: "78%", duration: 0.1, ease: "power1.inOut" },
+        0.79,
+      );
+
+      // final: four-card composition around the central stone.
+      timeline.to(
+        aiCard,
+        {
+          left: "10.8vw",
+          top: "24%",
+          scale: 0.96,
+          duration: 0.1,
+          ease: "power1.inOut",
+        },
+        SERVICES_SCROLL_PHASES.final.start,
+      );
+      timeline.to(
+        wordpressCard,
+        {
+          right: "2.6vw",
+          top: "24%",
+          scale: 0.98,
+          duration: 0.1,
+          ease: "power1.inOut",
+        },
+        SERVICES_SCROLL_PHASES.final.start,
+      );
+      timeline.to(
+        webCard,
+        {
+          left: "2.6vw",
+          top: "78%",
+          scale: 0.98,
+          duration: 0.1,
+          ease: "power1.inOut",
+        },
+        SERVICES_SCROLL_PHASES.final.start,
+      );
+      timeline.to(
+        websiteCard,
+        {
+          right: "5.2vw",
+          top: "79%",
+          scale: 0.96,
+          duration: 0.1,
+          ease: "power1.inOut",
+        },
+        SERVICES_SCROLL_PHASES.final.start,
+      );
+      timeline.to({}, { duration: 0.02 }, 0.98);
 
       const progressTrigger = ScrollTrigger.create({
         trigger: section,
@@ -476,7 +649,6 @@ export function HomeServicesShowcase() {
             filter: "blur(30px)",
           }}
         />
-
         <div
           data-services-smoke
           aria-hidden="true"
@@ -487,7 +659,6 @@ export function HomeServicesShowcase() {
             filter: "blur(38px)",
           }}
         />
-
         <div
           data-services-smoke
           aria-hidden="true"
@@ -498,7 +669,6 @@ export function HomeServicesShowcase() {
             filter: "blur(24px)",
           }}
         />
-
         <div
           aria-hidden="true"
           className="absolute inset-0"
@@ -508,7 +678,7 @@ export function HomeServicesShowcase() {
           }}
         />
 
-        <ServiceDetailPanels />
+        <ServiceDetailCards />
 
         <canvas
           ref={canvasRef}
