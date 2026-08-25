@@ -3,17 +3,34 @@ import * as THREE from "three";
 const SLAB_WIDTH = 2.34;
 const SLAB_HEIGHT = 2.46;
 const SLAB_DEPTH = 0.5;
+const TEXTURE_SIZE = 512;
+
+type CutIndex = 0 | 1 | 2;
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function smoothStep(value: number) {
+  const t = clamp01(value);
+  return t * t * (3 - 2 * t);
+}
+
+function fract(value: number) {
+  return value - Math.floor(value);
+}
 
 function hash2(x: number, y: number) {
-  const value = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
-  return value - Math.floor(value);
+  return fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453123);
 }
 
 function valueNoise(x: number, y: number) {
   const x0 = Math.floor(x);
   const y0 = Math.floor(y);
+
   const tx = x - x0;
   const ty = y - y0;
+
   const sx = tx * tx * (3 - 2 * tx);
   const sy = ty * ty * (3 - 2 * ty);
 
@@ -28,7 +45,7 @@ function valueNoise(x: number, y: number) {
   return THREE.MathUtils.lerp(top, bottom, sy);
 }
 
-function fbm(x: number, y: number, octaves = 5) {
+function fbm(x: number, y: number, octaves = 4) {
   let value = 0;
   let amplitude = 0.55;
   let frequency = 1;
@@ -37,23 +54,7 @@ function fbm(x: number, y: number, octaves = 5) {
   for (let octave = 0; octave < octaves; octave += 1) {
     value += valueNoise(x * frequency, y * frequency) * amplitude;
     normalization += amplitude;
-    frequency *= 2.04;
-    amplitude *= 0.47;
-  }
 
-  return normalization > 0 ? value / normalization : value;
-}
-
-function ridgedNoise(x: number, y: number, octaves = 4) {
-  let value = 0;
-  let amplitude = 0.55;
-  let frequency = 1;
-  let normalization = 0;
-
-  for (let octave = 0; octave < octaves; octave += 1) {
-    const noise = valueNoise(x * frequency, y * frequency);
-    value += (1 - Math.abs(noise * 2 - 1)) * amplitude;
-    normalization += amplitude;
     frequency *= 2.03;
     amplitude *= 0.48;
   }
@@ -61,108 +62,302 @@ function ridgedNoise(x: number, y: number, octaves = 4) {
   return normalization > 0 ? value / normalization : value;
 }
 
-function smoothThreshold(value: number, low: number, high: number) {
-  const t = THREE.MathUtils.clamp((value - low) / (high - low), 0, 1);
-  return t * t * (3 - 2 * t);
-}
+function ridgedNoise(x: number, y: number, octaves = 3) {
+  let value = 0;
+  let amplitude = 0.55;
+  let frequency = 1;
+  let normalization = 0;
 
-function createStoneCanvases(size = 512) {
-  const colorCanvas = document.createElement("canvas");
-  const bumpCanvas = document.createElement("canvas");
-  const roughnessCanvas = document.createElement("canvas");
+  for (let octave = 0; octave < octaves; octave += 1) {
+    const noise = valueNoise(x * frequency, y * frequency);
 
-  colorCanvas.width = size;
-  colorCanvas.height = size;
-  bumpCanvas.width = size;
-  bumpCanvas.height = size;
-  roughnessCanvas.width = size;
-  roughnessCanvas.height = size;
+    value += (1 - Math.abs(noise * 2 - 1)) * amplitude;
+    normalization += amplitude;
 
-  const colorContext = colorCanvas.getContext("2d");
-  const bumpContext = bumpCanvas.getContext("2d");
-  const roughnessContext = roughnessCanvas.getContext("2d");
-
-  if (!colorContext || !bumpContext || !roughnessContext) {
-    return { colorCanvas, bumpCanvas, roughnessCanvas };
+    frequency *= 2.04;
+    amplitude *= 0.47;
   }
 
-  const colorImage = colorContext.createImageData(size, size);
-  const bumpImage = bumpContext.createImageData(size, size);
-  const roughnessImage = roughnessContext.createImageData(size, size);
+  return normalization > 0 ? value / normalization : value;
+}
 
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      const u = x / size;
-      const v = y / size;
+function createStoneTexture() {
+  const canvas = document.createElement("canvas");
 
-      const broad = fbm(u * 3.5 + 1.6, v * 3.5 + 3.8, 5);
-      const medium = fbm(u * 14.5 + 7.2, v * 14.5 + 5.6, 5);
-      const grit = ridgedNoise(u * 48 + 2.7, v * 48 + 8.8, 3);
-      const micro = valueNoise(u * 112 + 4.3, v * 112 + 9.6);
-      const mineral = fbm(u * 9.4 + 21.1, v * 9.4 - 3.7, 3);
-      const pitField = fbm(u * 31 + 15.4, v * 31 + 7.1, 3);
-      const pits = smoothThreshold(pitField, 0.66, 0.84);
-      const brightGrain = smoothThreshold(
-        valueNoise(u * 86 + 4.8, v * 86 + 12.2),
-        0.76,
-        0.94,
-      );
+  canvas.width = TEXTURE_SIZE;
+  canvas.height = TEXTURE_SIZE;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return null;
+  }
+
+  const image = context.createImageData(TEXTURE_SIZE, TEXTURE_SIZE);
+
+  for (let y = 0; y < TEXTURE_SIZE; y += 1) {
+    for (let x = 0; x < TEXTURE_SIZE; x += 1) {
+      const u = x / TEXTURE_SIZE;
+      const v = y / TEXTURE_SIZE;
+
+      const broad = fbm(u * 4.2 + 1.4, v * 4.2 + 3.2, 4);
+      const medium = fbm(u * 15.5 + 8.2, v * 15.5 + 5.7, 4);
+      const grit = ridgedNoise(u * 47 + 2.9, v * 47 + 8.1, 3);
+      const micro = valueNoise(u * 105 + 4.8, v * 105 + 11.4);
 
       const stone =
-        broad * 0.21 +
+        broad * 0.25 +
         medium * 0.34 +
-        grit * 0.27 +
-        micro * 0.18;
+        grit * 0.25 +
+        micro * 0.16;
 
+      // Önceki sürümden daha koyu charcoal.
       const tone = THREE.MathUtils.clamp(
-        45 + stone * 101 + mineral * 9 + brightGrain * 11 - pits * 24,
-        42,
-        149,
+        32 + stone * 96,
+        34,
+        127,
       );
 
-      const coolShift = (medium - 0.5) * 7;
-      const warmShift = (mineral - 0.5) * 5;
-      const index = (y * size + x) * 4;
+      const index = (y * TEXTURE_SIZE + x) * 4;
 
-      colorImage.data[index] = Math.round(tone * 0.92 + warmShift);
-      colorImage.data[index + 1] = Math.round(tone * 0.94 + warmShift * 0.35);
-      colorImage.data[index + 2] = Math.round(tone * 0.97 + coolShift);
-      colorImage.data[index + 3] = 255;
-
-      const heightValue = THREE.MathUtils.clamp(
-        72 +
-          medium * 49 +
-          grit * 75 +
-          micro * 42 +
-          brightGrain * 18 -
-          pits * 68,
-        22,
-        238,
-      );
-
-      bumpImage.data[index] = Math.round(heightValue);
-      bumpImage.data[index + 1] = Math.round(heightValue);
-      bumpImage.data[index + 2] = Math.round(heightValue);
-      bumpImage.data[index + 3] = 255;
-
-      const roughnessValue = THREE.MathUtils.clamp(
-        220 + medium * 17 + grit * 18 + pits * 13 - brightGrain * 24,
-        182,
-        252,
-      );
-
-      roughnessImage.data[index] = Math.round(roughnessValue);
-      roughnessImage.data[index + 1] = Math.round(roughnessValue);
-      roughnessImage.data[index + 2] = Math.round(roughnessValue);
-      roughnessImage.data[index + 3] = 255;
+      image.data[index] = Math.round(tone * 0.94);
+      image.data[index + 1] = Math.round(tone * 0.97);
+      image.data[index + 2] = Math.round(tone);
+      image.data[index + 3] = 255;
     }
   }
 
-  colorContext.putImageData(colorImage, 0, 0);
-  bumpContext.putImageData(bumpImage, 0, 0);
-  roughnessContext.putImageData(roughnessImage, 0, 0);
+  context.putImageData(image, 0, 0);
 
-  return { colorCanvas, bumpCanvas, roughnessCanvas };
+  const texture = new THREE.CanvasTexture(canvas);
+
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+
+  return texture;
+}
+
+function drawIrregularWedge(
+  context: CanvasRenderingContext2D,
+  {
+    centerX,
+    centerY,
+    length,
+    startWidth,
+    endWidth,
+    angle,
+    seed,
+  }: {
+    centerX: number;
+    centerY: number;
+    length: number;
+    startWidth: number;
+    endWidth: number;
+    angle: number;
+    seed: number;
+  },
+) {
+  context.save();
+
+  context.translate(
+    centerX * TEXTURE_SIZE,
+    centerY * TEXTURE_SIZE,
+  );
+
+  context.rotate((angle * Math.PI) / 180);
+
+  const halfLength = (length * TEXTURE_SIZE) / 2;
+  const startHalf = (startWidth * TEXTURE_SIZE) / 2;
+  const endHalf = (endWidth * TEXTURE_SIZE) / 2;
+
+  const jitter = (value: number, amount: number) => {
+    return (
+      value +
+      (hash2(seed + value * 0.013, seed * 1.91) - 0.5) *
+        amount
+    );
+  };
+
+  const segments = 10;
+
+  const upper: Array<[number, number]> = [];
+  const lower: Array<[number, number]> = [];
+
+  for (let index = 0; index <= segments; index += 1) {
+    const t = index / segments;
+
+    const x = THREE.MathUtils.lerp(
+      -halfLength,
+      halfLength,
+      t,
+    );
+
+    // Uca giderken ciddi taper.
+    const taper = Math.pow(1 - t, 0.35);
+
+    const width =
+      THREE.MathUtils.lerp(
+        startHalf,
+        endHalf,
+        t,
+      ) *
+      (0.72 + taper * 0.28);
+
+    const noise =
+      (hash2(
+        seed + index * 1.71,
+        seed * 3.12 + index,
+      ) -
+        0.5) *
+      TEXTURE_SIZE *
+      0.006;
+
+    upper.push([
+      jitter(x, TEXTURE_SIZE * 0.003),
+      -width + noise,
+    ]);
+
+    lower.push([
+      jitter(x, TEXTURE_SIZE * 0.003),
+      width + noise,
+    ]);
+  }
+
+  context.beginPath();
+
+  context.moveTo(
+    upper[0][0],
+    upper[0][1],
+  );
+
+  for (let index = 1; index < upper.length; index += 1) {
+    context.lineTo(
+      upper[index][0],
+      upper[index][1],
+    );
+  }
+
+  // Sivri uç.
+  context.lineTo(
+    halfLength + TEXTURE_SIZE * 0.008,
+    0,
+  );
+
+  for (let index = lower.length - 1; index >= 0; index -= 1) {
+    context.lineTo(
+      lower[index][0],
+      lower[index][1],
+    );
+  }
+
+  context.closePath();
+  context.fill();
+
+  context.restore();
+}
+
+function drawCut(
+  context: CanvasRenderingContext2D,
+  index: CutIndex,
+  expansion = 0,
+) {
+  if (index === 0) {
+    // Sol, uzun diagonal.
+    drawIrregularWedge(context, {
+      centerX: 0.445,
+      centerY: 0.505,
+      length: 0.37 + expansion,
+      startWidth: 0.052 + expansion * 0.28,
+      endWidth: 0.014 + expansion * 0.12,
+      angle: -64,
+      seed: 7.1,
+    });
+
+    return;
+  }
+
+  if (index === 1) {
+    // Sağdaki daha kısa diagonal.
+    drawIrregularWedge(context, {
+      centerX: 0.595,
+      centerY: 0.49,
+      length: 0.29 + expansion,
+      startWidth: 0.046 + expansion * 0.25,
+      endWidth: 0.012 + expansion * 0.1,
+      angle: -68,
+      seed: 19.3,
+    });
+
+    return;
+  }
+
+  // Üçüncü kesik özellikle yukarıdakilerden ayrı.
+  drawIrregularWedge(context, {
+    centerX: 0.535,
+    centerY: 0.705,
+    length: 0.17 + expansion,
+    startWidth: 0.039 + expansion * 0.2,
+    endWidth: 0.016 + expansion * 0.1,
+    angle: -12,
+    seed: 31.7,
+  });
+}
+
+function createCutTexture(
+  index: CutIndex,
+  {
+    expansion = 0,
+    blur = 0,
+  }: {
+    expansion?: number;
+    blur?: number;
+  } = {},
+) {
+  const canvas = document.createElement("canvas");
+
+  canvas.width = TEXTURE_SIZE;
+  canvas.height = TEXTURE_SIZE;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return null;
+  }
+
+  context.clearRect(
+    0,
+    0,
+    TEXTURE_SIZE,
+    TEXTURE_SIZE,
+  );
+
+  if (blur > 0) {
+    context.filter = `blur(${blur}px)`;
+  }
+
+  context.fillStyle = "#ffffff";
+
+  drawCut(
+    context,
+    index,
+    expansion,
+  );
+
+  context.filter = "none";
+
+  const texture = new THREE.CanvasTexture(canvas);
+
+  texture.colorSpace = THREE.NoColorSpace;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+
+  return texture;
 }
 
 function createSlabGeometry() {
@@ -170,13 +365,14 @@ function createSlabGeometry() {
     SLAB_WIDTH,
     SLAB_HEIGHT,
     SLAB_DEPTH,
-    32,
+    30,
     34,
     8,
   );
 
   const positions = geometry.attributes.position;
   const normals = geometry.attributes.normal;
+
   const halfWidth = SLAB_WIDTH * 0.5;
   const halfHeight = SLAB_HEIGHT * 0.5;
 
@@ -185,60 +381,113 @@ function createSlabGeometry() {
     let y = positions.getY(index);
     let z = positions.getZ(index);
 
-    const normalX = normals.getX(index);
-    const normalY = normals.getY(index);
-    const normalZ = normals.getZ(index);
-    const normalizedX = Math.abs(x) / halfWidth;
-    const normalizedY = Math.abs(y) / halfHeight;
+    const nx = normals.getX(index);
+    const ny = normals.getY(index);
+    const nz = normals.getZ(index);
 
-    if (Math.abs(normalZ) > 0.8) {
-      const mediumRelief =
-        (valueNoise(x * 6.8 + 2.7, y * 6.8 + 9.3) - 0.5) * 0.038;
-      const fineRelief =
-        (valueNoise(x * 15.4 + 8.4, y * 15.4 + 3.1) - 0.5) * 0.017;
-      const edgeRelief =
-        Math.pow(Math.max(normalizedX, normalizedY), 5) *
-        (valueNoise(x * 10.2 + 4.2, y * 10.2 + 6.7) - 0.5) *
-        0.058;
+    const normalizedX =
+      Math.abs(x) / halfWidth;
 
-      z += Math.sign(normalZ) * (mediumRelief + fineRelief + edgeRelief);
+    const normalizedY =
+      Math.abs(y) / halfHeight;
+
+    if (Math.abs(nz) > 0.8) {
+      const medium =
+        (valueNoise(
+          x * 6.3 + 2.2,
+          y * 6.3 + 8.1,
+        ) -
+          0.5) *
+        0.036;
+
+      const fine =
+        (valueNoise(
+          x * 15.8 + 5.4,
+          y * 15.8 + 3.7,
+        ) -
+          0.5) *
+        0.016;
+
+      const edge =
+        Math.pow(
+          Math.max(
+            normalizedX,
+            normalizedY,
+          ),
+          5,
+        ) *
+        (valueNoise(
+          x * 10.1 + 4.8,
+          y * 10.1 + 6.4,
+        ) -
+          0.5) *
+        0.064;
+
+      z += Math.sign(nz) * (medium + fine + edge);
     }
 
-    if (Math.abs(normalX) > 0.8) {
-      const sideChunk =
-        (valueNoise(y * 4.7 + 4.9, z * 8.8 + 2.7) - 0.5) * 0.108;
-      const sideChip =
-        (valueNoise(y * 13.4 + 1.3, z * 16.2 + 8.6) - 0.5) * 0.042;
+    if (Math.abs(nx) > 0.8) {
+      const side =
+        (valueNoise(
+          y * 4.6 + 5.1,
+          z * 8.7 + 2.2,
+        ) -
+          0.5) *
+        0.12;
 
-      x += Math.sign(normalX) * (sideChunk + sideChip);
+      x += Math.sign(nx) * side;
     }
 
-    if (Math.abs(normalY) > 0.8) {
-      const capChunk =
-        (valueNoise(x * 4.5 + 7.2, z * 9.1 + 3.4) - 0.5) * 0.084;
-      const capChip =
-        (valueNoise(x * 13.8 + 2.1, z * 15.1 + 6.8) - 0.5) * 0.038;
+    if (Math.abs(ny) > 0.8) {
+      const cap =
+        (valueNoise(
+          x * 4.7 + 7.5,
+          z * 8.9 + 3.8,
+        ) -
+          0.5) *
+        0.095;
 
-      y += Math.sign(normalY) * (capChunk + capChip);
+      y += Math.sign(ny) * cap;
     }
 
+    // Köşeleri daha taş gibi kır.
     const corner = THREE.MathUtils.clamp(
-      (normalizedX + normalizedY - 1.38) / 0.62,
+      (
+        normalizedX +
+        normalizedY -
+        1.37
+      ) /
+        0.63,
       0,
       1,
     );
 
     if (corner > 0) {
-      const chipNoise = valueNoise(x * 8.4 + 2.1, y * 8.4 + 6.9);
-      const chip = 1 - corner * (0.045 + chipNoise * 0.068);
-      x *= chip;
-      y *= chip;
+      const random =
+        valueNoise(
+          x * 8.1 + 2.5,
+          y * 8.1 + 7.2,
+        );
+
+      const reduction =
+        1 -
+        corner *
+          (0.045 + random * 0.075);
+
+      x *= reduction;
+      y *= reduction;
     }
 
-    positions.setXYZ(index, x, y, z);
+    positions.setXYZ(
+      index,
+      x,
+      y,
+      z,
+    );
   }
 
   positions.needsUpdate = true;
+
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();
@@ -248,197 +497,358 @@ function createSlabGeometry() {
 
 export class ServicesSlab {
   readonly root = new THREE.Group();
-  readonly mesh: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>;
+
+  readonly mesh: THREE.Mesh<
+    THREE.BoxGeometry,
+    THREE.MeshStandardMaterial
+  >;
 
   private readonly geometry: THREE.BoxGeometry;
   private readonly material: THREE.MeshStandardMaterial;
-  private readonly colorTexture: THREE.CanvasTexture;
-  private readonly bumpTexture: THREE.CanvasTexture;
-  private readonly roughnessTexture: THREE.CanvasTexture;
-  private readonly cutUniforms = {
-    first: { value: 0 },
-    second: { value: 0 },
-    third: { value: 0 },
-  };
+
+  private readonly stoneTexture: THREE.CanvasTexture | null;
+
+  private readonly cutTextures: Array<THREE.CanvasTexture | null>;
+  private readonly rimTextures: Array<THREE.CanvasTexture | null>;
+
+  /**
+   * Bunlar doğrudan shader'a referans olarak veriliyor.
+   * setCutProgress() value'ları değiştirdiğinde shader otomatik görüyor.
+   */
+  private readonly cutProgressUniforms = [
+    { value: 0 },
+    { value: 0 },
+    { value: 0 },
+  ];
 
   constructor() {
     this.geometry = createSlabGeometry();
 
-    const { colorCanvas, bumpCanvas, roughnessCanvas } = createStoneCanvases();
+    this.stoneTexture = createStoneTexture();
 
-    this.colorTexture = new THREE.CanvasTexture(colorCanvas);
-    this.colorTexture.colorSpace = THREE.SRGBColorSpace;
-    this.colorTexture.wrapS = THREE.RepeatWrapping;
-    this.colorTexture.wrapT = THREE.RepeatWrapping;
-    this.colorTexture.repeat.set(1.06, 1.06);
-    this.colorTexture.anisotropy = 4;
+    this.cutTextures = [
+      createCutTexture(0),
+      createCutTexture(1),
+      createCutTexture(2),
+    ];
 
-    this.bumpTexture = new THREE.CanvasTexture(bumpCanvas);
-    this.bumpTexture.colorSpace = THREE.NoColorSpace;
-    this.bumpTexture.wrapS = THREE.RepeatWrapping;
-    this.bumpTexture.wrapT = THREE.RepeatWrapping;
-    this.bumpTexture.repeat.copy(this.colorTexture.repeat);
-    this.bumpTexture.anisotropy = 4;
-
-    this.roughnessTexture = new THREE.CanvasTexture(roughnessCanvas);
-    this.roughnessTexture.colorSpace = THREE.NoColorSpace;
-    this.roughnessTexture.wrapS = THREE.RepeatWrapping;
-    this.roughnessTexture.wrapT = THREE.RepeatWrapping;
-    this.roughnessTexture.repeat.copy(this.colorTexture.repeat);
-    this.roughnessTexture.anisotropy = 4;
+    this.rimTextures = [
+      createCutTexture(0, {
+        expansion: 0.028,
+        blur: 3,
+      }),
+      createCutTexture(1, {
+        expansion: 0.025,
+        blur: 3,
+      }),
+      createCutTexture(2, {
+        expansion: 0.022,
+        blur: 3,
+      }),
+    ];
 
     this.material = new THREE.MeshStandardMaterial({
-      color: 0x929691,
-      map: this.colorTexture,
-      bumpMap: this.bumpTexture,
-      bumpScale: 0.105,
-      roughness: 0.94,
-      roughnessMap: this.roughnessTexture,
+      // Bilerek koyu charcoal.
+      color: 0xa1a3a2,
+      map: this.stoneTexture,
+      roughness: 0.965,
       metalness: 0,
-      envMapIntensity: 0.31,
+      envMapIntensity: 0.32,
     });
 
+    /**
+     * Önemli:
+     * Burada THREE.Shader diye custom type kullanmıyoruz.
+     * onBeforeCompile kendi shader tipini inference ediyor.
+     */
     this.material.onBeforeCompile = (shader) => {
-      shader.uniforms.uServicesCut1 = this.cutUniforms.first;
-      shader.uniforms.uServicesCut2 = this.cutUniforms.second;
-      shader.uniforms.uServicesCut3 = this.cutUniforms.third;
+      shader.uniforms.uServiceCut1 = this.cutProgressUniforms[0];
+      shader.uniforms.uServiceCut2 = this.cutProgressUniforms[1];
+      shader.uniforms.uServiceCut3 = this.cutProgressUniforms[2];
+
+      shader.uniforms.uServiceCutMask1 = {
+        value: this.cutTextures[0],
+      };
+
+      shader.uniforms.uServiceCutMask2 = {
+        value: this.cutTextures[1],
+      };
+
+      shader.uniforms.uServiceCutMask3 = {
+        value: this.cutTextures[2],
+      };
+
+      shader.uniforms.uServiceCutRim1 = {
+        value: this.rimTextures[0],
+      };
+
+      shader.uniforms.uServiceCutRim2 = {
+        value: this.rimTextures[1],
+      };
+
+      shader.uniforms.uServiceCutRim3 = {
+        value: this.rimTextures[2],
+      };
 
       shader.vertexShader = shader.vertexShader
         .replace(
           "#include <common>",
-          `#include <common>\nvarying vec3 vServicesObjectNormal;`,
+          `
+#include <common>
+
+varying vec3 vServicesObjectNormal;
+          `,
         )
         .replace(
           "#include <beginnormal_vertex>",
-          `#include <beginnormal_vertex>\nvServicesObjectNormal = objectNormal;`,
+          `
+#include <beginnormal_vertex>
+
+vServicesObjectNormal = objectNormal;
+          `,
         );
 
       shader.fragmentShader = shader.fragmentShader
         .replace(
           "#include <common>",
-          `#include <common>
+          `
+#include <common>
+
 varying vec3 vServicesObjectNormal;
-uniform float uServicesCut1;
-uniform float uServicesCut2;
-uniform float uServicesCut3;
 
-float servicesHash(float value) {
-  return fract(sin(value * 91.173) * 43758.5453123);
-}
+uniform float uServiceCut1;
+uniform float uServiceCut2;
+uniform float uServiceCut3;
 
-float servicesSegmentDistance(vec2 point, vec2 startPoint, vec2 endPoint) {
-  vec2 pa = point - startPoint;
-  vec2 ba = endPoint - startPoint;
-  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-  return length(pa - ba * h);
-}
+uniform sampler2D uServiceCutMask1;
+uniform sampler2D uServiceCutMask2;
+uniform sampler2D uServiceCutMask3;
 
-float servicesSegmentPosition(vec2 point, vec2 startPoint, vec2 endPoint) {
-  vec2 pa = point - startPoint;
-  vec2 ba = endPoint - startPoint;
-  return clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-}
-
-float servicesStroke(
-  vec2 uv,
-  vec2 startPoint,
-  vec2 endPoint,
-  float width,
-  float seed,
-  float reveal
-) {
-  vec2 direction = normalize(endPoint - startPoint);
-  vec2 perpendicular = vec2(-direction.y, direction.x);
-  float segmentPosition = servicesSegmentPosition(uv, startPoint, endPoint);
-  float cell = floor(segmentPosition * 34.0);
-  float jagged = (servicesHash(cell + seed) - 0.5) * 0.018;
-  vec2 roughUv = uv + perpendicular * jagged;
-  float distanceToStroke = servicesSegmentDistance(roughUv, startPoint, endPoint);
-  float body = 1.0 - smoothstep(width * 0.7, width, distanceToStroke);
-  float draw = smoothstep(0.0, 0.075, reveal * 1.08 - segmentPosition);
-  return body * draw;
-}
-
-float servicesCutCore(vec2 uv) {
-  float first = servicesStroke(
-    uv,
-    vec2(0.56, 0.79),
-    vec2(0.37, 0.36),
-    0.047,
-    7.0,
-    uServicesCut1
-  );
-  float second = servicesStroke(
-    uv,
-    vec2(0.72, 0.73),
-    vec2(0.55, 0.39),
-    0.043,
-    19.0,
-    uServicesCut2
-  );
-  float third = servicesStroke(
-    uv,
-    vec2(0.34, 0.31),
-    vec2(0.61, 0.28),
-    0.052,
-    31.0,
-    uServicesCut3
-  );
-  return clamp(max(max(first, second), third), 0.0, 1.0);
-}
-
-float servicesCutOuter(vec2 uv) {
-  float first = servicesStroke(
-    uv,
-    vec2(0.56, 0.79),
-    vec2(0.37, 0.36),
-    0.071,
-    7.0,
-    uServicesCut1
-  );
-  float second = servicesStroke(
-    uv,
-    vec2(0.72, 0.73),
-    vec2(0.55, 0.39),
-    0.066,
-    19.0,
-    uServicesCut2
-  );
-  float third = servicesStroke(
-    uv,
-    vec2(0.34, 0.31),
-    vec2(0.61, 0.28),
-    0.078,
-    31.0,
-    uServicesCut3
-  );
-  return clamp(max(max(first, second), third), 0.0, 1.0);
-}`,
+uniform sampler2D uServiceCutRim1;
+uniform sampler2D uServiceCutRim2;
+uniform sampler2D uServiceCutRim3;
+          `,
         )
         .replace(
           "#include <map_fragment>",
-          `#include <map_fragment>
-float servicesFrontFace = smoothstep(0.72, 0.96, vServicesObjectNormal.z);
-float servicesCore = servicesCutCore(vMapUv) * servicesFrontFace;
-float servicesOuter = servicesCutOuter(vMapUv) * servicesFrontFace;
-float servicesLip = clamp(servicesOuter - servicesCore, 0.0, 1.0);
+          `
+#include <map_fragment>
 
-vec3 servicesCavity = vec3(0.006, 0.008, 0.009);
-vec3 servicesBrokenEdge = diffuseColor.rgb * 0.46 + vec3(0.025, 0.027, 0.028);
-diffuseColor.rgb = mix(diffuseColor.rgb, servicesBrokenEdge, servicesLip * 0.78);
-diffuseColor.rgb = mix(diffuseColor.rgb, servicesCavity, servicesCore * 0.97);`,
+float servicesFrontFace =
+  smoothstep(
+    0.72,
+    0.96,
+    vServicesObjectNormal.z
+  );
+
+float servicesP1 =
+  smoothstep(
+    0.0,
+    1.0,
+    uServiceCut1
+  );
+
+float servicesP2 =
+  smoothstep(
+    0.0,
+    1.0,
+    uServiceCut2
+  );
+
+float servicesP3 =
+  smoothstep(
+    0.0,
+    1.0,
+    uServiceCut3
+  );
+
+float servicesCut1 =
+  texture2D(
+    uServiceCutMask1,
+    vMapUv
+  ).r *
+  servicesP1 *
+  servicesFrontFace;
+
+float servicesCut2 =
+  texture2D(
+    uServiceCutMask2,
+    vMapUv
+  ).r *
+  servicesP2 *
+  servicesFrontFace;
+
+float servicesCut3 =
+  texture2D(
+    uServiceCutMask3,
+    vMapUv
+  ).r *
+  servicesP3 *
+  servicesFrontFace;
+
+float servicesRim1 =
+  texture2D(
+    uServiceCutRim1,
+    vMapUv
+  ).r *
+  servicesP1 *
+  servicesFrontFace;
+
+float servicesRim2 =
+  texture2D(
+    uServiceCutRim2,
+    vMapUv
+  ).r *
+  servicesP2 *
+  servicesFrontFace;
+
+float servicesRim3 =
+  texture2D(
+    uServiceCutRim3,
+    vMapUv
+  ).r *
+  servicesP3 *
+  servicesFrontFace;
+
+float servicesCut =
+  clamp(
+    max(
+      max(
+        servicesCut1,
+        servicesCut2
+      ),
+      servicesCut3
+    ),
+    0.0,
+    1.0
+  );
+
+float servicesOuter =
+  clamp(
+    max(
+      max(
+        servicesRim1,
+        servicesRim2
+      ),
+      servicesRim3
+    ),
+    0.0,
+    1.0
+  );
+
+float servicesLip =
+  clamp(
+    servicesOuter -
+    servicesCut,
+    0.0,
+    1.0
+  );
+
+/*
+ * Taşı genel olarak biraz karart.
+ * Trionn'daki charcoal slab'a daha yakın.
+ */
+diffuseColor.rgb *=
+  vec3(
+    0.78,
+    0.80,
+    0.82
+  );
+
+/*
+ * Oyuk tamamen düz siyah değil.
+ * İçeride stone detail'in ufak bir kısmı kalıyor.
+ */
+vec3 servicesOriginalStone =
+  diffuseColor.rgb;
+
+vec3 servicesDeepCavity =
+  vec3(
+    0.018,
+    0.021,
+    0.023
+  );
+
+vec3 servicesCavityDetail =
+  servicesOriginalStone *
+  0.12 +
+  vec3(
+    0.018,
+    0.019,
+    0.020
+  );
+
+vec3 servicesCavity =
+  mix(
+    servicesCavityDetail,
+    servicesDeepCavity,
+    0.77
+  );
+
+/*
+ * Kırılmış kaya dudağı.
+ */
+vec3 servicesBrokenEdge =
+  servicesOriginalStone *
+  0.48 +
+  vec3(
+    0.045,
+    0.047,
+    0.048
+  );
+
+/*
+ * Önce lip, sonra cavity.
+ */
+diffuseColor.rgb =
+  mix(
+    diffuseColor.rgb,
+    servicesBrokenEdge,
+    servicesLip * 0.76
+  );
+
+diffuseColor.rgb =
+  mix(
+    diffuseColor.rgb,
+    servicesCavity,
+    servicesCut * 0.965
+  );
+          `,
         )
         .replace(
           "#include <roughnessmap_fragment>",
-          `#include <roughnessmap_fragment>
-roughnessFactor = mix(roughnessFactor, 1.0, servicesCore * 0.92);
-roughnessFactor = mix(roughnessFactor, 0.78, servicesLip * 0.34);`,
+          `
+#include <roughnessmap_fragment>
+
+/*
+ * Oyuk içi çok rough.
+ * Kenar ise hafif ışık yakalasın.
+ */
+roughnessFactor =
+  mix(
+    roughnessFactor,
+    1.0,
+    servicesCut * 0.86
+  );
+
+roughnessFactor =
+  mix(
+    roughnessFactor,
+    0.78,
+    servicesLip * 0.3
+  );
+          `,
         );
     };
 
-    this.material.customProgramCacheKey = () => "services-stone-cuts-v1";
+    this.material.customProgramCacheKey = () =>
+      "services-slab-wedge-cuts-v4";
 
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh = new THREE.Mesh(
+      this.geometry,
+      this.material,
+    );
+
     this.mesh.castShadow = false;
     this.mesh.receiveShadow = false;
     this.mesh.frustumCulled = false;
@@ -447,17 +857,55 @@ roughnessFactor = mix(roughnessFactor, 0.78, servicesLip * 0.34);`,
     this.root.add(this.mesh);
   }
 
-  setCutProgress(first: number, second: number, third: number) {
-    this.cutUniforms.first.value = THREE.MathUtils.clamp(first, 0, 1);
-    this.cutUniforms.second.value = THREE.MathUtils.clamp(second, 0, 1);
-    this.cutUniforms.third.value = THREE.MathUtils.clamp(third, 0, 1);
+  /**
+   * ServicesScene.ts tarafından çağrılıyor.
+   *
+   * Örnek:
+   * this.slab.setCutProgress(
+   *   firstCut,
+   *   secondCut,
+   *   thirdCut,
+   * );
+   */
+  setCutProgress(
+    first: number,
+    second: number,
+    third: number,
+  ) {
+    this.cutProgressUniforms[0].value =
+      THREE.MathUtils.clamp(
+        first,
+        0,
+        1,
+      );
+
+    this.cutProgressUniforms[1].value =
+      THREE.MathUtils.clamp(
+        second,
+        0,
+        1,
+      );
+
+    this.cutProgressUniforms[2].value =
+      THREE.MathUtils.clamp(
+        third,
+        0,
+        1,
+      );
   }
 
   dispose() {
     this.geometry.dispose();
     this.material.dispose();
-    this.colorTexture.dispose();
-    this.bumpTexture.dispose();
-    this.roughnessTexture.dispose();
+
+    this.stoneTexture?.dispose();
+
+    this.cutTextures.forEach((texture) => {
+      texture?.dispose();
+    });
+
+    this.rimTextures.forEach((texture) => {
+      texture?.dispose();
+    });
   }
 }
