@@ -4,6 +4,49 @@ export type PluckOptions = {
   duration?: number;
 };
 
+export type AudioPlaybackStatus =
+  | "idle"
+  | "loading"
+  | "ready"
+  | "playing"
+  | "paused"
+  | "error";
+
+export type AudioPlaybackState = {
+  status: AudioPlaybackStatus;
+  muted: boolean;
+  volume: number;
+  currentTime: number;
+  duration: number;
+  progress: number;
+  canPlay: boolean;
+  error: string | null;
+};
+
+export type AudioSource = {
+  src: string;
+  type: string;
+};
+
+export type FrequencyBands = {
+  bass: number;
+  lowMid: number;
+  mid: number;
+  high: number;
+  overall: number;
+};
+
+const INITIAL_PLAYBACK_STATE: AudioPlaybackState = {
+  status: "idle",
+  muted: true,
+  volume: 0.52,
+  currentTime: 0,
+  duration: 0,
+  progress: 0,
+  canPlay: false,
+  error: null,
+};
+
 class AudioManager {
   private context: AudioContext | null = null;
   private masterGain: GainNode | null = null;
@@ -11,6 +54,20 @@ class AudioManager {
   private analyser: AnalyserNode | null = null;
   private frequencyData: Uint8Array<ArrayBuffer> | null = null;
   private noiseBuffer: AudioBuffer | null = null;
+
+  private mediaElement: HTMLAudioElement | null = null;
+  private mediaSource: MediaElementAudioSourceNode | null = null;
+  private mediaGain: GainNode | null = null;
+  private loadedSource: string | null = null;
+  private hasPlaybackStarted = false;
+  private mediaFadeTimer: number | null = null;
+  private lastThunderPulseAt = 0;
+
+  private playbackState: AudioPlaybackState = {
+    ...INITIAL_PLAYBACK_STATE,
+  };
+
+  private listeners = new Set<() => void>();
 
   private chargeOscillator: OscillatorNode | null = null;
   private chargeGain: GainNode | null = null;
@@ -20,7 +77,7 @@ class AudioManager {
   private whooshGain: GainNode | null = null;
   private whooshFilter: BiquadFilterNode | null = null;
 
-  private muted = false;
+  private muted = true;
 
   private ensureContext() {
     if (this.context && this.context.state !== "closed") {
@@ -37,7 +94,9 @@ class AudioManager {
      * deliberately gentle: it only catches weld/explosion peaks when
      * several procedural layers overlap.
      */
-    masterGain.gain.value = this.muted ? 0 : 0.52;
+    masterGain.gain.value = this.muted
+      ? 0
+      : this.playbackState.volume;
 
     compressor.threshold.value = -14;
     compressor.knee.value = 16;
@@ -45,7 +104,7 @@ class AudioManager {
     compressor.attack.value = 0.003;
     compressor.release.value = 0.15;
 
-    analyser.fftSize = 256;
+    analyser.fftSize = 512;
     analyser.smoothingTimeConstant = 0.8;
 
     masterGain.connect(compressor);
@@ -63,6 +122,305 @@ class AudioManager {
 
     return context;
   }
+
+  private emitPlaybackState(
+    patch: Partial<AudioPlaybackState>,
+  ) {
+    this.playbackState = {
+      ...this.playbackState,
+      ...patch,
+    };
+
+    for (const listener of this.listeners) {
+      listener();
+    }
+  }
+
+  private syncMediaTime = () => {
+    const media = this.mediaElement;
+    if (!media) return;
+
+    const duration = Number.isFinite(media.duration)
+      ? media.duration
+      : 0;
+    const currentTime = Number.isFinite(media.currentTime)
+      ? media.currentTime
+      : 0;
+
+    this.emitPlaybackState({
+      currentTime,
+      duration,
+      progress: duration > 0
+        ? Math.min(1, currentTime / duration)
+        : 0,
+    });
+  };
+
+  private handleMediaLoadStart = () => {
+    this.emitPlaybackState({
+      status: "loading",
+      canPlay: false,
+      error: null,
+    });
+  };
+
+  private handleMediaReady = () => {
+    this.syncMediaTime();
+    this.emitPlaybackState({
+      status: this.mediaElement?.paused
+        ? this.hasPlaybackStarted
+          ? "paused"
+          : "ready"
+        : "playing",
+      canPlay: true,
+      error: null,
+    });
+  };
+
+  private handleMediaPlay = () => {
+    this.hasPlaybackStarted = true;
+    this.emitPlaybackState({
+      status: "playing",
+      canPlay: true,
+      error: null,
+    });
+  };
+
+  private handleMediaPause = () => {
+    if (this.playbackState.status === "error") return;
+
+    this.syncMediaTime();
+    this.emitPlaybackState({
+      status: "paused",
+    });
+  };
+
+  private handleMediaError = () => {
+    this.emitPlaybackState({
+      status: "error",
+      canPlay: false,
+      error: "Audio unavailable",
+    });
+  };
+
+  private addMediaListeners(media: HTMLAudioElement) {
+    media.addEventListener("loadstart", this.handleMediaLoadStart);
+    media.addEventListener("loadedmetadata", this.handleMediaReady);
+    media.addEventListener("canplay", this.handleMediaReady);
+    media.addEventListener("play", this.handleMediaPlay);
+    media.addEventListener("pause", this.handleMediaPause);
+    media.addEventListener("timeupdate", this.syncMediaTime);
+    media.addEventListener("durationchange", this.syncMediaTime);
+    media.addEventListener("error", this.handleMediaError);
+  }
+
+  private removeMediaListeners(media: HTMLAudioElement) {
+    media.removeEventListener("loadstart", this.handleMediaLoadStart);
+    media.removeEventListener("loadedmetadata", this.handleMediaReady);
+    media.removeEventListener("canplay", this.handleMediaReady);
+    media.removeEventListener("play", this.handleMediaPlay);
+    media.removeEventListener("pause", this.handleMediaPause);
+    media.removeEventListener("timeupdate", this.syncMediaTime);
+    media.removeEventListener("durationchange", this.syncMediaTime);
+    media.removeEventListener("error", this.handleMediaError);
+  }
+
+  private ensureMediaGraph() {
+    const media = this.mediaElement;
+    const context = this.ensureContext();
+
+    if (!media || this.mediaSource) {
+      return;
+    }
+
+    const source = context.createMediaElementSource(media);
+    const gain = context.createGain();
+    gain.gain.value = 0.0001;
+    source.connect(gain);
+    gain.connect(this.masterGain!);
+
+    this.mediaSource = source;
+    this.mediaGain = gain;
+  }
+
+  load(sources: AudioSource | AudioSource[]) {
+    if (typeof window === "undefined") return;
+
+    const candidates = Array.isArray(sources)
+      ? sources
+      : [sources];
+    const media = this.mediaElement ?? new Audio();
+    const selected =
+      candidates.find(({ type }) => media.canPlayType(type) !== "") ??
+      candidates[0];
+
+    if (!selected || this.loadedSource === selected.src) {
+      return;
+    }
+
+    if (!this.mediaElement) {
+      media.preload = "metadata";
+      media.loop = true;
+      media.crossOrigin = "anonymous";
+      this.addMediaListeners(media);
+      this.mediaElement = media;
+    }
+
+    this.loadedSource = selected.src;
+    media.src = selected.src;
+    media.load();
+  }
+
+  async play() {
+    const media = this.mediaElement;
+    if (!media) {
+      this.emitPlaybackState({
+        status: "error",
+        error: "Audio unavailable",
+      });
+      return false;
+    }
+
+    try {
+      await this.unlock();
+      this.ensureMediaGraph();
+      await media.play();
+      return true;
+    } catch {
+      this.emitPlaybackState({
+        status: "paused",
+        error: "Select play to start audio",
+      });
+      return false;
+    }
+  }
+
+  pause() {
+    if (this.mediaFadeTimer !== null) {
+      window.clearTimeout(this.mediaFadeTimer);
+      this.mediaFadeTimer = null;
+    }
+    this.mediaElement?.pause();
+  }
+
+  async playThunderPulse(
+    intensity = 0.45,
+    duration = 0.72,
+  ) {
+    if (this.muted || !this.mediaElement) {
+      return false;
+    }
+
+    const nowMs = window.performance.now();
+    if (nowMs - this.lastThunderPulseAt < 90) {
+      return true;
+    }
+    this.lastThunderPulseAt = nowMs;
+
+    const running = await this.unlock();
+    if (!running) return false;
+
+    this.ensureMediaGraph();
+    const context = this.context;
+    const media = this.mediaElement;
+    const gain = this.mediaGain;
+
+    if (!context || !gain) return false;
+
+    const normalized = Math.max(0.1, Math.min(intensity, 1));
+    const pulseDuration = Math.max(0.28, Math.min(duration, 1.4));
+    const now = context.currentTime;
+    const currentGain = Math.max(0.0001, gain.gain.value);
+
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(currentGain, now);
+    gain.gain.exponentialRampToValueAtTime(
+      0.16 + normalized * 0.28,
+      now + 0.025,
+    );
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + pulseDuration,
+    );
+
+    if (this.mediaFadeTimer !== null) {
+      window.clearTimeout(this.mediaFadeTimer);
+    }
+
+    try {
+      if (media.paused) {
+        await media.play();
+      }
+    } catch {
+      return false;
+    }
+
+    this.mediaFadeTimer = window.setTimeout(() => {
+      media.pause();
+      this.mediaFadeTimer = null;
+    }, pulseDuration * 1000 + 70);
+
+    return true;
+  }
+
+  async toggle() {
+    if (this.playbackState.status === "playing") {
+      this.pause();
+      return false;
+    }
+
+    return this.play();
+  }
+
+  mute() {
+    this.setMuted(true);
+  }
+
+  unmute() {
+    this.setMuted(false);
+  }
+
+  toggleMute() {
+    this.setMuted(!this.playbackState.muted);
+  }
+
+  seek(seconds: number) {
+    const media = this.mediaElement;
+    if (!media || !Number.isFinite(seconds)) return;
+
+    const duration = Number.isFinite(media.duration)
+      ? media.duration
+      : 0;
+    const endSafeTime = duration > 0
+      ? Math.max(0, duration - 0.05)
+      : 0;
+    media.currentTime = Math.max(0, Math.min(seconds, endSafeTime));
+    this.syncMediaTime();
+  }
+
+  setVolume(value: number) {
+    const volume = Math.max(0, Math.min(value, 1));
+    this.emitPlaybackState({ volume });
+
+    if (!this.context || !this.masterGain || this.muted) return;
+
+    this.masterGain.gain.setTargetAtTime(
+      volume,
+      this.context.currentTime,
+      0.02,
+    );
+  }
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  };
+
+  getSnapshot = () => this.playbackState;
+
+  getServerSnapshot = () => INITIAL_PLAYBACK_STATE;
 
   private getNoiseBuffer(context: AudioContext) {
     if (this.noiseBuffer) {
@@ -370,6 +728,39 @@ class AudioManager {
     this.startWhoosh();
   }
 
+  playJoin() {
+    if (
+      !this.context ||
+      !this.masterGain ||
+      this.context.state !== "running"
+    ) {
+      return;
+    }
+
+    const context = this.context;
+    const now = context.currentTime;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(92, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      178,
+      now + 0.24,
+    );
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.045, now + 0.045);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+    oscillator.connect(gain);
+    gain.connect(this.masterGain);
+    oscillator.start(now);
+    oscillator.stop(now + 0.32);
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gain.disconnect();
+    };
+  }
+
   private playPanelHoverBeep(
     frequency: number,
     strength: number,
@@ -429,6 +820,92 @@ class AudioManager {
     overtone.onended = () => {
       overtone.disconnect();
       overtoneGain.disconnect();
+    };
+  }
+
+  playFooterNote(
+    frequency: number,
+    strength = 0.5,
+    duration = 0.72,
+  ) {
+    if (
+      this.muted ||
+      !this.context ||
+      !this.masterGain ||
+      this.context.state !== "running"
+    ) {
+      return;
+    }
+
+    const context = this.context;
+    const now = context.currentTime;
+    const baseFrequency = Math.max(110, Math.min(frequency, 660));
+    const noteDuration = Math.max(0.32, Math.min(duration, 1.1));
+    const normalized = Math.max(0.1, Math.min(strength, 1));
+    const partials = [
+      { ratio: 1, gain: 0.075, type: "triangle" as OscillatorType },
+      { ratio: 2.01, gain: 0.025, type: "sine" as OscillatorType },
+      { ratio: 3.98, gain: 0.009, type: "sine" as OscillatorType },
+    ];
+
+    partials.forEach((partial, index) => {
+      const oscillator = context.createOscillator();
+      const envelope = context.createGain();
+      const peak = partial.gain * normalized;
+
+      oscillator.type = partial.type;
+      oscillator.frequency.setValueAtTime(
+        baseFrequency * partial.ratio,
+        now,
+      );
+      oscillator.detune.setValueAtTime(index === 1 ? 2.5 : -1.5, now);
+
+      envelope.gain.setValueAtTime(0.0001, now);
+      envelope.gain.exponentialRampToValueAtTime(
+        peak,
+        now + 0.004 + index * 0.002,
+      );
+      envelope.gain.exponentialRampToValueAtTime(
+        0.0001,
+        now + noteDuration * (1 - index * 0.12),
+      );
+
+      oscillator.connect(envelope);
+      envelope.connect(this.masterGain!);
+      oscillator.start(now);
+      oscillator.stop(now + noteDuration + 0.02);
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        envelope.disconnect();
+      };
+    });
+
+    const hammer = context.createBufferSource();
+    const hammerFilter = context.createBiquadFilter();
+    const hammerGain = context.createGain();
+    const hammerDuration = 0.035;
+
+    hammer.buffer = this.getNoiseBuffer(context);
+    hammerFilter.type = "bandpass";
+    hammerFilter.frequency.setValueAtTime(baseFrequency * 3.2, now);
+    hammerFilter.Q.setValueAtTime(1.4, now);
+    hammerGain.gain.setValueAtTime(0.018 * normalized, now);
+    hammerGain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + hammerDuration,
+    );
+    hammer.connect(hammerFilter);
+    hammerFilter.connect(hammerGain);
+    hammerGain.connect(this.masterGain);
+    hammer.start(
+      now,
+      this.randomNoiseOffset(hammer.buffer, hammerDuration),
+      hammerDuration,
+    );
+    hammer.onended = () => {
+      hammer.disconnect();
+      hammerFilter.disconnect();
+      hammerGain.disconnect();
     };
   }
 
@@ -543,6 +1020,7 @@ class AudioManager {
 
   setMuted(muted: boolean) {
     this.muted = muted;
+    this.emitPlaybackState({ muted });
 
     if (!this.context || !this.masterGain) {
       return;
@@ -551,10 +1029,64 @@ class AudioManager {
     const now = this.context.currentTime;
     this.masterGain.gain.cancelScheduledValues(now);
     this.masterGain.gain.setTargetAtTime(
-      muted ? 0 : 0.52,
+      muted ? 0 : this.playbackState.volume,
       now,
       0.02,
     );
+  }
+
+  getFrequencyData() {
+    if (!this.analyser || !this.frequencyData) {
+      return null;
+    }
+
+    this.analyser.getByteFrequencyData(this.frequencyData);
+    return this.frequencyData;
+  }
+
+  getFrequencyBands(): FrequencyBands {
+    const data = this.getFrequencyData();
+    const analyser = this.analyser;
+    const context = this.context;
+
+    if (!data || !analyser || !context) {
+      return {
+        bass: 0,
+        lowMid: 0,
+        mid: 0,
+        high: 0,
+        overall: 0,
+      };
+    }
+
+    const binWidth = context.sampleRate / analyser.fftSize;
+    const averageBand = (minimum: number, maximum: number) => {
+      const start = Math.max(0, Math.floor(minimum / binWidth));
+      const end = Math.min(data.length, Math.ceil(maximum / binWidth));
+      let total = 0;
+
+      for (let index = start; index < end; index += 1) {
+        total += data[index];
+      }
+
+      return end > start
+        ? total / (end - start) / 255
+        : 0;
+    };
+
+    let squaredTotal = 0;
+    for (let index = 0; index < data.length; index += 1) {
+      const normalized = data[index] / 255;
+      squaredTotal += normalized * normalized;
+    }
+
+    return {
+      bass: averageBand(20, 160),
+      lowMid: averageBand(160, 500),
+      mid: averageBand(500, 2000),
+      high: averageBand(2000, 12000),
+      overall: Math.sqrt(squaredTotal / data.length),
+    };
   }
 
   getEnergy() {
@@ -586,6 +1118,21 @@ class AudioManager {
     this.stopCharge();
     this.stopWhoosh();
 
+    if (this.mediaFadeTimer !== null) {
+      window.clearTimeout(this.mediaFadeTimer);
+      this.mediaFadeTimer = null;
+    }
+
+    if (this.mediaElement) {
+      this.removeMediaListeners(this.mediaElement);
+      this.mediaElement.pause();
+      this.mediaElement.removeAttribute("src");
+      this.mediaElement.load();
+    }
+
+    this.mediaSource?.disconnect();
+    this.mediaGain?.disconnect();
+
     if (this.context && this.context.state !== "closed") {
       await this.context.close();
     }
@@ -596,6 +1143,16 @@ class AudioManager {
     this.analyser = null;
     this.frequencyData = null;
     this.noiseBuffer = null;
+    this.mediaElement = null;
+    this.mediaSource = null;
+    this.mediaGain = null;
+    this.loadedSource = null;
+    this.hasPlaybackStarted = false;
+    this.playbackState = {
+      ...INITIAL_PLAYBACK_STATE,
+    };
+    this.muted = true;
+    this.listeners.clear();
   }
 }
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getRockGltfBundle } from "@/lib/polyhaven/rockAsset";
 
-export const revalidate = 60 * 60 * 24;
+export const revalidate = 86400;
 
 export async function GET() {
   try {

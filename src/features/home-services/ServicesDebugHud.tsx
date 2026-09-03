@@ -1,104 +1,213 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 type DebugState = {
   phase: string;
-  progress: string;
-  detailA: string;
-  detailB: string;
-  detailC: string;
-  final: string;
-  webVisible: boolean;
-  wordpressVisible: boolean;
+
+  master: string;
+
+  overlap: string;
+
+  breakup: string;
+
+  pairA: string;
+
+  pairB: string;
+
+  pairC: string;
 };
 
 const EMPTY_STATE: DebugState = {
   phase: "missing",
-  progress: "0",
-  detailA: "0",
-  detailB: "0",
-  detailC: "0",
-  final: "0",
-  webVisible: false,
-  wordpressVisible: false,
+
+  master: "0",
+
+  overlap: "0",
+
+  breakup: "0",
+
+  pairA: "0",
+
+  pairB: "0",
+
+  pairC: "0",
 };
 
 export function ServicesDebugHud() {
-  const [debug, setDebug] = useState<DebugState>(EMPTY_STATE);
+  const [
+    state,
+    setState,
+  ] =
+    useState<DebugState>(
+      EMPTY_STATE,
+    );
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "production") return;
+    if (
+      process.env
+        .NODE_ENV ===
+      "production"
+    ) {
+      return;
+    }
 
-    let raf = 0;
+    let frame = 0;
 
     const update = () => {
-      const section = document.querySelector<HTMLElement>(
-        "[data-home-services-showcase]",
-      );
+      const section =
+        document.querySelector<HTMLElement>(
+          "[data-home-services-showcase]",
+        );
 
       if (!section) {
-        setDebug(EMPTY_STATE);
-        raf = requestAnimationFrame(update);
+        setState(
+          EMPTY_STATE,
+        );
+
+        frame =
+          requestAnimationFrame(
+            update,
+          );
+
         return;
       }
 
-      const style = getComputedStyle(section);
-      const webCard = section.querySelector<HTMLElement>(
-        '[data-service-card="web"]',
-      );
-      const wordpressCard = section.querySelector<HTMLElement>(
-        '[data-service-card="wordpress"]',
-      );
+      const style =
+        getComputedStyle(
+          section,
+        );
 
-      setDebug({
-        phase: section.dataset.servicesPhase ?? "unset",
-        progress: style.getPropertyValue("--services-progress").trim() || "0",
-        detailA: style.getPropertyValue("--services-detail-a").trim() || "0",
-        detailB: style.getPropertyValue("--services-detail-b").trim() || "0",
-        detailC: style.getPropertyValue("--services-detail-c").trim() || "0",
-        final: style.getPropertyValue("--services-final").trim() || "0",
-        webVisible: Boolean(
-          webCard &&
-            Number.parseFloat(getComputedStyle(webCard).opacity || "0") > 0.01,
-        ),
-        wordpressVisible: Boolean(
-          wordpressCard &&
-            Number.parseFloat(getComputedStyle(wordpressCard).opacity || "0") >
-              0.01,
-        ),
+      setState({
+        phase:
+          section
+            .dataset
+            .servicesPhase ??
+          "unset",
+
+        master:
+          style
+            .getPropertyValue(
+              "--services-progress",
+            )
+            .trim() ||
+          "0",
+
+        overlap:
+          style
+            .getPropertyValue(
+              "--services-overlap",
+            )
+            .trim() ||
+          "0",
+
+        breakup:
+          style
+            .getPropertyValue(
+              "--services-breakup",
+            )
+            .trim() ||
+          "0",
+
+        pairA:
+          style
+            .getPropertyValue(
+              "--services-pair-a",
+            )
+            .trim() ||
+          "0",
+
+        pairB:
+          style
+            .getPropertyValue(
+              "--services-pair-b",
+            )
+            .trim() ||
+          "0",
+
+        pairC:
+          style
+            .getPropertyValue(
+              "--services-pair-c",
+            )
+            .trim() ||
+          "0",
       });
 
-      raf = requestAnimationFrame(update);
+      frame =
+        requestAnimationFrame(
+          update,
+        );
     };
 
-    raf = requestAnimationFrame(update);
+    frame =
+      requestAnimationFrame(
+        update,
+      );
 
-    return () => cancelAnimationFrame(raf);
+    return () =>
+      cancelAnimationFrame(
+        frame,
+      );
   }, []);
 
-  if (process.env.NODE_ENV === "production") return null;
+  if (
+    process.env.NODE_ENV ===
+    "production"
+  ) {
+    return null;
+  }
 
   return (
     <div
       style={{
-        position: "fixed",
+        position:
+          "fixed",
+
         left: 14,
+
         top: 90,
+
         zIndex: 99999,
-        padding: "10px 12px",
-        border: "1px solid rgba(255,255,255,.35)",
+
+        padding:
+          "10px 12px",
+
+        border:
+          "1px solid rgba(255,255,255,.35)",
+
         borderRadius: 8,
-        background: "rgba(0,0,0,.82)",
+
+        background:
+          "rgba(0,0,0,.84)",
+
         color: "#fff",
-        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+
+        fontFamily:
+          "ui-monospace,SFMono-Regular,Menlo,monospace",
+
         fontSize: 11,
+
         lineHeight: 1.45,
-        pointerEvents: "none",
-        whiteSpace: "pre",
+
+        pointerEvents:
+          "none",
+
+        whiteSpace:
+          "pre",
       }}
     >
-      {`SERVICES DBG E5\nphase: ${debug.phase}\nmaster: ${debug.progress}\nA:${debug.detailA} B:${debug.detailB}\nC:${debug.detailC} F:${debug.final}\nweb:${debug.webVisible ? "on" : "off"} wp:${debug.wordpressVisible ? "on" : "off"}`}
+      {`SERVICES FLOW K
+phase: ${state.phase}
+master: ${state.master}
+overlap: ${state.overlap}
+breakup: ${state.breakup}
+pairA: ${state.pairA}
+pairB: ${state.pairB}
+pairC: ${state.pairC}`}
     </div>
   );
 }

@@ -22,6 +22,10 @@ import {
 } from "./HeroWeldLines";
 
 type HeroSceneEvents = {
+  onModelReady?: () => void;
+
+  onModelError?: () => void;
+
   onChargeStart?: () => void;
 
   onChargeProgress?: (
@@ -30,7 +34,21 @@ type HeroSceneEvents = {
 
   onBlast?: () => void;
 
-  onReturnStart?: () => void;
+  onReturnStart?: (
+    completedBlast: boolean,
+  ) => void;
+
+  onInteractionChange?: (
+    state: {
+      phase:
+        | "idle"
+        | "charging"
+        | "blasting"
+        | "returning";
+      progress: number;
+      burst: number;
+    },
+  ) => void;
 
   onHoverPanel?: () => void;
 
@@ -39,6 +57,9 @@ type HeroSceneEvents = {
   onVibrate?: (
     amount: number,
     phase: number,
+    burst: number,
+    holdTime: number,
+    holding: boolean,
   ) => void;
 };
 
@@ -62,6 +83,208 @@ function seededRandom(
       4294967296
     );
   };
+}
+
+type CinematicFrame = {
+  progress: number;
+  cameraX: number;
+  cameraY: number;
+  cameraZ: number;
+  targetX: number;
+  targetY: number;
+  fov: number;
+  scale: number;
+  rootX: number;
+  rootY: number;
+  rotationX: number;
+  rotationY: number;
+  exposure: number;
+  ambient: number;
+  key: number;
+  upperRim: number;
+  lowerRim: number;
+  warmA: number;
+  warmB: number;
+  particles: number;
+  glow: number;
+};
+
+const CINEMATIC_FRAMES:
+  CinematicFrame[] = [
+    {
+      progress: 0,
+      cameraX: 0,
+      cameraY: 0,
+      cameraZ: 5,
+      targetX: 0,
+      targetY: 0,
+      fov: 40,
+      scale: 0.48,
+      rootX: 0,
+      rootY: 0.055,
+      rotationX: 0,
+      rotationY: 0,
+      exposure: 0.46,
+      ambient: 0.016,
+      key: 0.44,
+      upperRim: 0.19,
+      lowerRim: 0.14,
+      warmA: 0.9,
+      warmB: 0.3,
+      particles: 0.25,
+      glow: 0.08,
+    },
+    {
+      progress: 0.25,
+      cameraX: -0.08,
+      cameraY: 0.04,
+      cameraZ: 5.9,
+      targetX: -0.04,
+      targetY: 0.02,
+      fov: 43,
+      scale: 0.43,
+      rootX: -0.04,
+      rootY: 0.02,
+      rotationX: -0.08,
+      rotationY: 0.22,
+      exposure: 0.42,
+      ambient: 0.009,
+      key: 0.3,
+      upperRim: 0.11,
+      lowerRim: 0.08,
+      warmA: 0.48,
+      warmB: 0.16,
+      particles: 0.14,
+      glow: 0.015,
+    },
+    {
+      progress: 0.5,
+      cameraX: 0.04,
+      cameraY: -0.02,
+      cameraZ: 4.72,
+      targetX: 0.02,
+      targetY: -0.01,
+      fov: 38.5,
+      scale: 0.5,
+      rootX: 0.015,
+      rootY: 0.015,
+      rotationX: 0.045,
+      rotationY: 0.48,
+      exposure: 0.44,
+      ambient: 0.012,
+      key: 0.36,
+      upperRim: 0.17,
+      lowerRim: 0.11,
+      warmA: 0.42,
+      warmB: 0.14,
+      particles: 0.075,
+      glow: 0.045,
+    },
+    {
+      progress: 0.75,
+      cameraX: -0.035,
+      cameraY: 0.025,
+      cameraZ: 4.92,
+      targetX: 0,
+      targetY: 0,
+      fov: 40.5,
+      scale: 0.47,
+      rootX: 0,
+      rootY: -0.015,
+      rotationX: -0.025,
+      rotationY: 0.68,
+      exposure: 0.39,
+      ambient: 0.009,
+      key: 0.29,
+      upperRim: 0.14,
+      lowerRim: 0.09,
+      warmA: 0.26,
+      warmB: 0.09,
+      particles: 0.025,
+      glow: 0.02,
+    },
+    {
+      progress: 1,
+      cameraX: 0,
+      cameraY: 0.05,
+      cameraZ: 5.35,
+      targetX: 0,
+      targetY: 0,
+      fov: 42,
+      scale: 0.42,
+      rootX: 0,
+      rootY: -0.04,
+      rotationX: 0,
+      rotationY: 0.82,
+      exposure: 0.34,
+      ambient: 0.006,
+      key: 0.2,
+      upperRim: 0.1,
+      lowerRim: 0.06,
+      warmA: 0.12,
+      warmB: 0.04,
+      particles: 0,
+      glow: 0,
+    },
+  ];
+
+function sampleCinematicFrame(
+  progress: number,
+) {
+  const clamped =
+    THREE.MathUtils.clamp(
+      progress,
+      0,
+      1,
+    );
+  let upperIndex = 1;
+
+  while (
+    upperIndex <
+      CINEMATIC_FRAMES.length - 1 &&
+    CINEMATIC_FRAMES[upperIndex]
+      .progress < clamped
+  ) {
+    upperIndex += 1;
+  }
+
+  const previous =
+    CINEMATIC_FRAMES[
+      upperIndex - 1
+    ];
+  const next =
+    CINEMATIC_FRAMES[upperIndex];
+  const span =
+    Math.max(
+      0.0001,
+      next.progress -
+        previous.progress,
+    );
+  const amount =
+    THREE.MathUtils.smoothstep(
+      clamped,
+      previous.progress,
+      previous.progress + span,
+    );
+  const sampled = {
+    ...previous,
+  };
+
+  for (const key of Object.keys(
+    previous,
+  ) as Array<keyof CinematicFrame>) {
+    sampled[key] =
+      THREE.MathUtils.lerp(
+        previous[key],
+        next[key],
+        amount,
+      );
+  }
+
+  sampled.progress =
+    clamped;
+
+  return sampled;
 }
 
 export class HeroScene
@@ -123,6 +346,18 @@ export class HeroScene
   private readonly warmLightB:
     THREE.PointLight;
 
+  private readonly ambientLight:
+    THREE.AmbientLight;
+
+  private readonly keyLight:
+    THREE.DirectionalLight;
+
+  private readonly upperRimLight:
+    THREE.DirectionalLight;
+
+  private readonly lowerRimLight:
+    THREE.DirectionalLight;
+
   private readonly particleGeometry:
     THREE.BufferGeometry;
 
@@ -183,6 +418,24 @@ export class HeroScene
 
   private rotationY =
     0;
+
+  private cinematicRotationX =
+    0;
+
+  private cinematicRotationY =
+    0;
+
+  private cinematicGlow =
+    0;
+
+  private warmBaseA =
+    1.24;
+
+  private warmBaseB =
+    0.44;
+
+  private viewportWidth =
+    1280;
 
   constructor(
     canvas:
@@ -384,43 +637,43 @@ export class HeroScene
     /*
      * Much darker idle lighting.
      */
-    const ambient =
+    this.ambientLight =
       new THREE.AmbientLight(
         0xffffff,
         0.018,
       );
 
-    const key =
+    this.keyLight =
       new THREE.DirectionalLight(
         0xdce5f2,
         0.58,
       );
 
-    key.position.set(
+    this.keyLight.position.set(
       3.4,
       4.8,
       5.2,
     );
 
-    const upperRim =
+    this.upperRimLight =
       new THREE.DirectionalLight(
         0x8599b8,
         0.2,
       );
 
-    upperRim.position.set(
+    this.upperRimLight.position.set(
       -3,
       3,
       -4,
     );
 
-    const lowerRim =
+    this.lowerRimLight =
       new THREE.DirectionalLight(
         0x405a86,
         0.16,
       );
 
-    lowerRim.position.set(
+    this.lowerRimLight.position.set(
       2,
       -4,
       -3,
@@ -460,16 +713,20 @@ export class HeroScene
     );
 
     this.scene.add(
-      ambient,
-      key,
-      upperRim,
-      lowerRim,
+      this.ambientLight,
+      this.keyLight,
+      this.upperRimLight,
+      this.lowerRimLight,
     );
 
     void this.model
       .load(
-        "/models/trionn-test-model.glb",
+        "/models/trionn-test-model.optimized.glb",
       )
+      .then(() => {
+        this.events
+          .onModelReady?.();
+      })
       .catch(
         (
           error,
@@ -478,6 +735,9 @@ export class HeroScene
             "Hero model could not be loaded:",
             error,
           );
+
+          this.events
+            .onModelError?.();
         },
       );
   }
@@ -503,7 +763,9 @@ export class HeroScene
       true;
   }
 
-  resetPointer() {
+  resetPointer(
+    endInteraction = true,
+  ) {
     this.pointerTarget.set(
       0,
       0,
@@ -521,7 +783,9 @@ export class HeroScene
     this.hoveredMesh =
       null;
 
-    this.endHold();
+    if (endInteraction) {
+      this.endHold();
+    }
   }
 
   setScrollProgress(
@@ -546,11 +810,8 @@ export class HeroScene
   startHold() {
     if (
       this.holding ||
-      !this.hoveredMesh ||
       this.scrollProgress >=
         0.08 ||
-      this.clickBurst >=
-        0.05 ||
       this.introAmount >=
         0.08
     ) {
@@ -585,6 +846,9 @@ export class HeroScene
       .onVibrate?.(
         1,
         0,
+        0,
+        0,
+        true,
       );
 
     return true;
@@ -598,8 +862,14 @@ export class HeroScene
     this.holding =
       false;
 
+    this.vibrateAmount =
+      0;
+
     this.events
-      .onReturnStart?.();
+      .onReturnStart?.(
+        this.clickBurst >=
+          0.98,
+      );
   }
 
   private updateRaycast() {
@@ -705,12 +975,20 @@ export class HeroScene
             .onBlast?.();
         }
 
-        this.vibrateAmount *=
-          Math.pow(
-            0.88,
-            delta *
-              60,
-          );
+        if (
+          this.holdTime <
+          0.7
+        ) {
+          this.vibrateAmount =
+            1;
+        } else {
+          this.vibrateAmount *=
+            Math.pow(
+              0.88,
+              delta *
+                60,
+            );
+        }
 
         this.clickBurst =
           Math.min(
@@ -747,14 +1025,6 @@ export class HeroScene
               1.5,
         );
 
-      this.vibrateAmount =
-        Math.max(
-          0,
-          this.vibrateAmount -
-            delta *
-              4.8,
-        );
-
       if (
         this.clickBurst <=
         0.0001
@@ -768,7 +1038,32 @@ export class HeroScene
       .onVibrate?.(
         this.vibrateAmount,
         this.vibratePhase,
+        this.clickBurst,
+        this.holdTime,
+        this.holding,
       );
+
+    const interactionPhase =
+      this.holding
+        ? this.blastTriggered
+          ? "blasting"
+          : "charging"
+        : this.clickBurst >
+            0.0001 ||
+          this.chargeProgress >
+            0.0001
+          ? "returning"
+          : "idle";
+
+    this.events
+      .onInteractionChange?.({
+        phase:
+          interactionPhase,
+        progress:
+          this.chargeProgress,
+        burst:
+          this.clickBurst,
+      });
 
     const charge =
       this.holding
@@ -776,12 +1071,12 @@ export class HeroScene
         : 0;
 
     const targetA =
-      1.35 +
+      this.warmBaseA +
       charge *
         4.85;
 
     const targetB =
-      0.5 +
+      this.warmBaseB +
       charge *
         1.9;
 
@@ -854,17 +1149,37 @@ export class HeroScene
   }
 
   private getModelDrives() {
-    /*
-     * Scroll and hold remain
-     * synchronized in time but use
-     * separate geometric strength.
-     */
-    const scroll =
-      THREE.MathUtils.smoothstep(
-        this.scrollProgress,
-        0.025,
-        0.58,
-      );
+    const progress =
+      this.scrollProgress;
+    let scroll = 0;
+
+    if (
+      progress >= 0.07 &&
+      progress < 0.2
+    ) {
+      scroll =
+        THREE.MathUtils.smoothstep(
+          progress,
+          0.07,
+          0.2,
+        );
+    } else if (
+      progress >= 0.2 &&
+      progress <= 0.29
+    ) {
+      scroll = 1;
+    } else if (
+      progress > 0.29 &&
+      progress < 0.49
+    ) {
+      scroll =
+        1 -
+        THREE.MathUtils.smoothstep(
+          progress,
+          0.29,
+          0.49,
+        );
+    }
 
     const blast =
       this.scrollProgress <
@@ -881,6 +1196,69 @@ export class HeroScene
 
       blast,
     };
+  }
+
+  private applyCinematicState() {
+    const frame =
+      sampleCinematicFrame(
+        this.scrollProgress,
+      );
+    const mobileScale =
+      this.viewportWidth < 768
+        ? 0.5
+        : 1;
+    const mobileX =
+      this.viewportWidth < 768
+        ? 0.14
+        : 0;
+
+    this.camera.position.set(
+      frame.cameraX,
+      frame.cameraY,
+      frame.cameraZ,
+    );
+    this.camera.fov =
+      frame.fov;
+    this.camera.lookAt(
+      frame.targetX,
+      frame.targetY,
+      0,
+    );
+    this.camera.updateProjectionMatrix();
+
+    this.baseRootPosition.set(
+      frame.rootX + mobileX,
+      frame.rootY,
+      0,
+    );
+    this.root.scale.setScalar(
+      frame.scale *
+        mobileScale,
+    );
+
+    this.cinematicRotationX =
+      frame.rotationX;
+    this.cinematicRotationY =
+      frame.rotationY;
+    this.cinematicGlow =
+      frame.glow;
+    this.warmBaseA =
+      frame.warmA;
+    this.warmBaseB =
+      frame.warmB;
+
+    this.renderer.toneMappingExposure =
+      frame.exposure;
+    this.ambientLight.intensity =
+      frame.ambient;
+    this.keyLight.intensity =
+      frame.key;
+    this.upperRimLight.intensity =
+      frame.upperRim;
+    this.lowerRimLight.intensity =
+      frame.lowerRim;
+    this.particleMaterial.opacity =
+      frame.particles;
   }
 
   private updateRotation(
@@ -909,11 +1287,13 @@ export class HeroScene
 
     const targetX =
       this.rotationX +
+      this.cinematicRotationX +
       this.pointerCurrent.y *
         0.22;
 
     const targetY =
       this.rotationY +
+      this.cinematicRotationY +
       this.pointerCurrent.x *
         0.22;
 
@@ -1022,6 +1402,8 @@ export class HeroScene
       pointerEase,
     );
 
+    this.applyCinematicState();
+
     this.updateRotation(
       frame,
     );
@@ -1062,7 +1444,10 @@ export class HeroScene
       frame.delta,
       drives.scroll,
       drives.blast,
-      this.chargeProgress,
+      Math.max(
+        this.chargeProgress,
+        this.cinematicGlow,
+      ),
       this.coreWorld,
     );
 
@@ -1143,6 +1528,9 @@ export class HeroScene
         1,
       );
 
+    this.viewportWidth =
+      width;
+
     this.camera.aspect =
       width /
       height;
@@ -1182,34 +1570,7 @@ export class HeroScene
       height,
     );
 
-    if (
-      width <
-      768
-    ) {
-      this.baseRootPosition.set(
-        0.08,
-        -0.08,
-        0,
-      );
-
-      this.root.scale.setScalar(
-        0.55,
-      );
-    } else {
-      /*
-       * Previous .58 was visibly
-       * too far right.
-       */
-      this.baseRootPosition.set(
-        0.2,
-        -0.08,
-        0,
-      );
-
-      this.root.scale.setScalar(
-        0.66,
-      );
-    }
+    this.applyCinematicState();
 
     this.root.position.copy(
       this.baseRootPosition,

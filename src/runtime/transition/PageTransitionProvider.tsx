@@ -150,8 +150,24 @@ export function PageTransitionProvider({
         return;
       }
 
-      document.documentElement.style.overflow =
+      const previousOverflow =
         previousOverflowRef.current;
+      const menuOpen =
+        document.querySelector<HTMLElement>(
+          "header[data-menu-open]",
+        )?.dataset.menuOpen === "true";
+      const bodyOwnsScrollLock =
+        document.body.style.overflow ===
+          "hidden" ||
+        document.body.style.position ===
+          "fixed";
+
+      document.documentElement.style.overflow =
+        previousOverflow === "hidden" &&
+        !menuOpen &&
+        !bodyOwnsScrollLock
+          ? ""
+          : previousOverflow;
 
       previousOverflowRef.current =
         null;

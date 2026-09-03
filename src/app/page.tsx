@@ -27,8 +27,24 @@ import {
 } from "@/features/home-services/HomeServicesShowcase";
 
 import {
+  HomeClientStories,
+} from "@/features/home-testimonials/HomeClientStories";
+
+import {
+  HomeDesignInMotion,
+} from "@/features/home-design-motion/HomeDesignInMotion";
+
+import {
+  HomeAudioFooter,
+} from "@/features/home-footer/HomeAudioFooter";
+
+import {
   ServicesDebugHud,
 } from "@/features/home-services/ServicesDebugHud";
+
+const servicesDebugEnabled =
+  process.env.NEXT_PUBLIC_SERVICES_DEBUG ===
+  "true";
 
 export const metadata:
   Metadata = {
@@ -41,7 +57,10 @@ export const metadata:
 
 export default function HomePage() {
   return (
-    <main className="bg-transparent">
+    <main
+      data-home-page
+      className="relative z-[1] w-full overflow-x-clip bg-transparent"
+    >
       <HomeHero />
 
       <HomeAboutIntro />
@@ -54,7 +73,15 @@ export default function HomePage() {
 
       <HomeServicesShowcase />
 
-      <ServicesDebugHud />
+      <HomeClientStories />
+
+      <HomeDesignInMotion />
+
+      <HomeAudioFooter />
+
+      {servicesDebugEnabled ? (
+        <ServicesDebugHud />
+      ) : null}
     </main>
   );
 }

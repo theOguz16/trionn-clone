@@ -1,4 +1,5 @@
 import { gsap } from "@/lib/gsap/client";
+import { qualityManager } from "@/runtime/quality/QualityManager";
 
 import type {
   RuntimeFrame,
@@ -15,16 +16,39 @@ class CanvasManager {
 
   private initialized = false;
 
+  private tickerAttached = false;
+
+  private resizeFrame: number | null = null;
+
+  private lastReducedTick = 0;
+
   private readonly tick = (
     time: number,
     deltaTime: number,
     frame: number,
   ) => {
+    if (
+      qualityManager.prefersReducedMotion &&
+      time - this.lastReducedTick < 0.1
+    ) {
+      return;
+    }
+
+    this.lastReducedTick = time;
+
     const runtimeFrame: RuntimeFrame = {
       time,
       delta: Math.min(deltaTime / 1000, 0.05),
       frame,
     };
+
+    if (
+      qualityManager.observeFrame(
+        deltaTime,
+      )
+    ) {
+      this.resizeActiveScenes();
+    }
 
     for (const record of this.scenes.values()) {
       if (!record.active) {
@@ -36,21 +60,70 @@ class CanvasManager {
   };
 
   private readonly handleResize = () => {
+    if (this.resizeFrame !== null) {
+      return;
+    }
+
+    this.resizeFrame =
+      window.requestAnimationFrame(
+        () => {
+          this.resizeFrame = null;
+          this.resizeActiveScenes();
+        },
+      );
+  };
+
+  private readonly handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      this.resizeActiveScenes();
+    }
+
+    this.reconcileTicker();
+  };
+
+  private resizeActiveScenes() {
     for (const record of this.scenes.values()) {
+      if (!record.active) {
+        continue;
+      }
+
       record.scene.resize();
     }
-  };
+  }
+
+  private reconcileTicker() {
+    const shouldRun =
+      document.visibilityState === "visible" &&
+      Array.from(
+        this.scenes.values(),
+      ).some(({ active }) => active);
+
+    if (shouldRun === this.tickerAttached) {
+      return;
+    }
+
+    if (shouldRun) {
+      gsap.ticker.add(this.tick);
+    } else {
+      gsap.ticker.remove(this.tick);
+    }
+
+    this.tickerAttached = shouldRun;
+  }
 
   init() {
     if (this.initialized) {
       return;
     }
 
-    gsap.ticker.add(this.tick);
-
     window.addEventListener(
       "resize",
       this.handleResize,
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      this.handleVisibilityChange,
     );
 
     this.initialized = true;
@@ -75,6 +148,8 @@ class CanvasManager {
 
     scene.resize();
 
+    this.reconcileTicker();
+
     return () => {
       this.unregister(scene.id);
     };
@@ -90,6 +165,8 @@ class CanvasManager {
     record.scene.destroy();
 
     this.scenes.delete(id);
+
+    this.reconcileTicker();
   }
 
   setActive(
@@ -102,7 +179,17 @@ class CanvasManager {
       return;
     }
 
+    if (record.active === active) {
+      return;
+    }
+
     record.active = active;
+
+    if (active) {
+      record.scene.resize();
+    }
+
+    this.reconcileTicker();
   }
 
   destroy() {
@@ -110,12 +197,27 @@ class CanvasManager {
       return;
     }
 
-    gsap.ticker.remove(this.tick);
+    if (this.tickerAttached) {
+      gsap.ticker.remove(this.tick);
+      this.tickerAttached = false;
+    }
 
     window.removeEventListener(
       "resize",
       this.handleResize,
     );
+
+    document.removeEventListener(
+      "visibilitychange",
+      this.handleVisibilityChange,
+    );
+
+    if (this.resizeFrame !== null) {
+      window.cancelAnimationFrame(
+        this.resizeFrame,
+      );
+      this.resizeFrame = null;
+    }
 
     for (const record of this.scenes.values()) {
       record.scene.destroy();

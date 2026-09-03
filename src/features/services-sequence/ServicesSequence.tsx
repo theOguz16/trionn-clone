@@ -1111,6 +1111,9 @@ export function ServicesSequence() {
         {/* FRAME SEQUENCE */}
 
         {hasFrames && (
+          // The sequence swaps preloaded frame URLs on every tick; next/image's
+          // optimization wrapper is intentionally unsuitable for this canvas-like surface.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             ref={frameRef}
             src={frameUrl(

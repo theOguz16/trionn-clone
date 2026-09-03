@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
+    "build:turbopack": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:visual-compare": "node --test scripts/visual-compare.test.mjs",
+    "visual:compare": "node scripts/visual-compare.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -25,6 +28,9 @@
     "@types/three": "^0.185.4",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "pixelmatch": "^7.2.0",
+    "playwright-core": "^1.62.1",
+    "pngjs": "^7.0.0",
     "postcss": "^8.5.26",
     "tailwindcss": "^4",
     "typescript": "^5"

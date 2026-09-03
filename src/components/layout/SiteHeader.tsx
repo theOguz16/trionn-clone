@@ -4,7 +4,10 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
+
+import { usePathname } from "next/navigation";
 
 import {
   TransitionLink,
@@ -75,63 +78,39 @@ type MotionVariant =
 
 function BrandMark() {
   return (
-    <span className="flex items-center gap-[4px]">
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 22 20"
-        className="h-[18px] w-[20px]"
-        fill="none"
-      >
+    <svg
+      data-brand-mark
+      aria-hidden="true"
+      viewBox="0 0 94 25"
+      fill="none"
+    >
+      <g fill="currentColor">
         <path
-          d="M2.5 15.5L7.2 7.2L9 10.2L12.5 3.6"
           stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
+          strokeWidth=".25"
+          d="m10.796 14.06 2.007.002h.071l.037.061 4.524 7.815.11.19-.22-.003-2.02-.034-.071-.001-.035-.06-1.738-2.96H2.5l.114-.19 1.04-1.725.036-.06h8.65l-1.652-2.848-.11-.188zM16.898 2.36l.98 1.76.035.06-.036.062-1.72 3.007 5.351 9.227.11.191-.22-.003-2.02-.034-.07-.002-.036-.06-4.262-7.345-1.603 2.792-.109.188-.108-.188-1.017-1.765-.036-.062.036-.063 1.718-2.96 2.79-4.807.11-.19zm-6.615-.422.98 1.76.034.06-.035.062-4.265 7.352h3.667l-.106.186-.97 1.725-.037.064H.178l.114-.19 1.04-1.725.037-.06h3.34l5.356-9.235.11-.19z"
         />
-        <path
-          d="M6.2 15.5H13.1L10.9 11.7"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-        <path
-          d="M13 5.7L19.2 15.5H14.8"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-        <path
-          d="M2 11.4H5.2"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-      </svg>
-
-      <span className="text-[15px] font-medium leading-none tracking-[-0.045em]">
-        TRIONN
-      </span>
-
-      <sup className="-ml-[2px] self-start pt-[1px] text-[4px] font-normal tracking-normal">
-        ®
-      </sup>
-    </span>
+        <path d="M90.46 10.92q-.71 0-1.27-.32a2.37 2.37 0 0 1-.87-.87A2.5 2.5 0 0 1 88 8.46q0-.71.32-1.26.32-.56.87-.88.56-.32 1.27-.32t1.26.32q.56.32.88.88.32.55.32 1.26t-.32 1.27a2.34 2.34 0 0 1-.88.87 2.46 2.46 0 0 1-1.26.32m0-.57q.87 0 1.36-.51.5-.51.5-1.38t-.5-1.38q-.49-.51-1.36-.51t-1.37.51q-.49.51-.49 1.38t.49 1.38q.5.51 1.37.51m-.36-.69h-.6v-2.4h1.17q.46 0 .68.19t.22.52a.66.66 0 0 1-.46.64l.53 1v.05h-.65l-.49-.96h-.4zm0-1.95v.54h.49a.5.5 0 0 0 .24-.05q.11-.05.11-.21 0-.17-.11-.22a.5.5 0 0 0-.24-.06zM74.722 17.15h.4V6h4.195l4.59 11.15h.4V6h2.112v13h-4.125L77.72 7.85h-.4V19H73.11L68.535 7.85h-.4V19h-2.112V6h4.108zM58.023 6a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13m0 2.241a4.259 4.259 0 1 0 0 8.518 4.259 4.259 0 0 0 0-8.518M50.023 19H47.78V6h2.242zM40.747 6c1 0 1.857.147 2.562.448l.132.059c.648.3 1.152.73 1.503 1.293l.07.113q.5.863.498 2.057a3.6 3.6 0 0 1-.388 1.667q-.38.75-1.096 1.278-.42.308-.937.52l2.984 5.207.206.358h-2.419l-.049-.087-2.802-5.043h-2.697V19h-2.28V6zm-2.433 5.94 2.355.004c.606 0 1.096-.101 1.48-.294.39-.202.676-.467.868-.796.194-.332.292-.478.292-.884 0-.464-.094-.63-.277-.967-.178-.329-.46-.586-.858-.77l-.003-.001c-.39-.188-.905-.288-1.556-.288l-2.301-.005zM34.534 8.108h-4.096V19h-2.341V8.108H24V6h10.534z" />
+      </g>
+    </svg>
   );
 }
 
 function SoundButton({
   soundOn,
+  playing,
   light = false,
   onClick,
 }: {
   soundOn: boolean;
+  playing: boolean;
   light?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
+      data-sound-button
+      data-audio-playing={playing ? "true" : "false"}
       type="button"
       onClick={onClick}
       aria-label={
@@ -148,33 +127,21 @@ function SoundButton({
       ].join(" ")}
     >
       <svg
+        data-sound-icon
         aria-hidden="true"
-        viewBox="0 0 20 20"
-        className="h-[14px] w-[14px]"
+        viewBox="0 0 16 15"
         fill="none"
       >
-        <path
-          d="M3.7 8H6.8L10.5 5V15L6.8 12H3.7V8Z"
-          fill="currentColor"
-        />
-        <path
-          d="M12.4 7.1C13.8 8.5 13.8 11.5 12.4 12.9"
-          stroke="currentColor"
-          strokeWidth="1.25"
-          strokeLinecap="round"
-        />
-        {soundOn ? (
+        <g opacity="0.4" fill="currentColor">
+          <path d="M13.722 1.457a.37.37 0 0 0-.525.529c1.329 1.339 2.061 3.12 2.061 5.014s-.732 3.675-2.061 5.015a.375.375 0 0 0 .525.529C15.191 11.063 16 9.094 16 7s-.809-4.062-2.278-5.543" />
+          <path d="M12.165 4.034a.37.37 0 0 0-.525.529c.645.65 1 1.515 1 2.436s-.355 1.787-1 2.437a.375.375 0 0 0 .525.529A4.2 4.2 0 0 0 13.382 7a4.2 4.2 0 0 0-1.217-2.966" />
+          <path d="M9.409.06a.59.59 0 0 0-.62.067L4.593 3.451l-.203.161v3.382a.385.385 0 1 1-.769 0V3.622h-2.57C.472 3.622 0 4.098 0 4.682v4.636c0 .584.472 1.06 1.051 1.06h3.326l2.902 2.298v-2.625a.385.385 0 1 1 .768 0v3.234l.742.588a.59.59 0 0 0 .62.067.59.59 0 0 0 .331-.533V.593A.59.59 0 0 0 9.409.06" />
+        </g>
+        {!soundOn && (
           <path
-            d="M14.4 5.5C16.8 7.8 16.8 12.2 14.4 14.5"
+            d="m15 .708-13.293 13.293"
             stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-          />
-        ) : (
-          <path
-            d="M4.8 4.2L15.8 15.8"
-            stroke="currentColor"
-            strokeWidth="1.25"
+            strokeOpacity="0.6"
             strokeLinecap="round"
           />
         )}
@@ -538,6 +505,7 @@ function playTextMotion(
 }
 
 export function SiteHeader() {
+  const pathname = usePathname();
   const rootRef =
     useRef<HTMLElement>(
       null,
@@ -558,6 +526,16 @@ export function SiteHeader() {
     useRef<HTMLDivElement>(
       null,
     );
+  const menuButtonRef =
+    useRef<HTMLButtonElement>(
+      null,
+    );
+  const closeMenuButtonRef =
+    useRef<HTMLButtonElement>(
+      null,
+    );
+  const scrollPositionRef =
+    useRef(0);
   const timelineRef =
     useRef<ReturnType<
       typeof gsap.timeline
@@ -568,10 +546,18 @@ export function SiteHeader() {
     setIsOpen,
   ] = useState(false);
 
+  const audioSnapshot = useSyncExternalStore(
+    audioManager.subscribe,
+    audioManager.getSnapshot,
+    audioManager.getServerSnapshot,
+  );
+  const soundOn = !audioSnapshot.muted;
+  const audioPlaying = audioSnapshot.status === "playing";
+
   const [
-    soundOn,
-    setSoundOn,
-  ] = useState(true);
+    isMobileMenu,
+    setIsMobileMenu,
+  ] = useState(false);
 
   const [
     hoveredMenuIndex,
@@ -590,6 +576,8 @@ export function SiteHeader() {
         backdropRef.current;
       const closedControls =
         closedControlsRef.current;
+      const isMobile =
+        isMobileMenu;
 
       if (
         !layer ||
@@ -630,7 +618,9 @@ export function SiteHeader() {
         panel,
         {
           clipPath:
-            "inset(0 0 calc(100% - 38px) calc(100% - 96px) round 999px)",
+            isMobile
+              ? "inset(0 0 100% 0 round 0px)"
+              : "inset(0 0 calc(100% - 38px) calc(100% - 96px) round 999px)",
           transformOrigin:
             "100% 0%",
           willChange:
@@ -706,6 +696,9 @@ export function SiteHeader() {
               setHoveredMenuIndex(
                 null,
               );
+              menuButtonRef.current?.focus({
+                preventScroll: true,
+              });
             },
         });
 
@@ -735,8 +728,13 @@ export function SiteHeader() {
           panel,
           {
             clipPath:
-              "inset(0 0 0% 0% round 10px)",
-            duration: 0.88,
+              isMobile
+                ? "inset(0 0 0% 0% round 0px)"
+                : "inset(0 0 0% 0% round 10px)",
+            duration:
+              isMobile
+                ? 0.58
+                : 0.88,
             ease:
               "power4.inOut",
           },
@@ -751,31 +749,46 @@ export function SiteHeader() {
             ease:
               "power3.out",
           },
-          0.28,
+          isMobile
+            ? 0.16
+            : 0.28,
         )
         .to(
           "[data-menu-nav-item]",
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.48,
-            stagger: 0.045,
+            duration:
+              isMobile
+                ? 0.34
+                : 0.48,
+            stagger:
+              isMobile
+                ? 0.035
+                : 0.045,
             ease:
               "power3.out",
           },
-          0.36,
+          isMobile
+            ? 0.2
+            : 0.36,
         )
         .to(
           "[data-menu-secondary]",
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.42,
+            duration:
+              isMobile
+                ? 0.3
+                : 0.42,
             stagger: 0.045,
             ease:
               "power3.out",
           },
-          0.46,
+          isMobile
+            ? 0.28
+            : 0.46,
         );
 
       timeline.progress(0).pause();
@@ -791,8 +804,55 @@ export function SiteHeader() {
     {
       scope:
         rootRef,
+      dependencies: [
+        isMobileMenu,
+      ],
+      revertOnUpdate: true,
     },
   );
+
+  useEffect(() => {
+    const query =
+      window.matchMedia(
+        "(max-width: 767px)",
+      );
+
+    const sync = () => {
+      setIsMobileMenu(
+        query.matches,
+      );
+      setIsOpen(false);
+    };
+
+    sync();
+    query.addEventListener(
+      "change",
+      sync,
+    );
+
+    return () => {
+      query.removeEventListener(
+        "change",
+        sync,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const frame =
+      window.requestAnimationFrame(
+        () => {
+          setIsOpen(false);
+          audioManager.stopCharge();
+        },
+      );
+
+    return () => {
+      window.cancelAnimationFrame(
+        frame,
+      );
+    };
+  }, [pathname]);
 
   useEffect(
     () => {
@@ -804,9 +864,28 @@ export function SiteHeader() {
       }
 
       if (isOpen) {
-        timeline.play();
+        if (
+          window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches
+        ) {
+          timeline.progress(1).pause();
+        } else {
+          timeline.play();
+        }
       } else {
-        timeline.reverse();
+        if (
+          window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches
+        ) {
+          timeline.progress(0).pause();
+          menuButtonRef.current?.focus({
+            preventScroll: true,
+          });
+        } else {
+          timeline.reverse();
+        }
       }
     },
     [isOpen],
@@ -820,16 +899,68 @@ export function SiteHeader() {
 
       const html =
         document.documentElement;
+      const body =
+        document.body;
       const previousOverflow =
         html.style.overflow;
+      const previousBodyOverflow =
+        body.style.overflow;
+      const previousBodyPosition =
+        body.style.position;
+      const previousBodyTop =
+        body.style.top;
+      const previousBodyWidth =
+        body.style.width;
+      const main =
+        document.querySelector<HTMLElement>(
+          "main",
+        );
+      const mainWasInert =
+        main?.inert ?? false;
+
+      scrollPositionRef.current =
+        window.scrollY;
 
       html.style.overflow =
         "hidden";
+      body.style.overflow =
+        "hidden";
+      body.style.position =
+        "fixed";
+      body.style.top =
+        `${-scrollPositionRef.current}px`;
+      body.style.width =
+        "100%";
+      if (main) {
+        main.inert = true;
+      }
       scrollManager.stop();
 
       return () => {
         html.style.overflow =
           previousOverflow;
+        body.style.overflow =
+          previousBodyOverflow;
+        body.style.position =
+          previousBodyPosition;
+        body.style.top =
+          previousBodyTop;
+        body.style.width =
+          previousBodyWidth;
+        if (main) {
+          main.inert = mainWasInert;
+        }
+        window.scrollTo(
+          0,
+          scrollPositionRef.current,
+        );
+        scrollManager.scrollTo(
+          scrollPositionRef.current,
+          {
+            immediate: true,
+            force: true,
+          },
+        );
         scrollManager.start();
       };
     },
@@ -850,8 +981,79 @@ export function SiteHeader() {
           "Escape"
         ) {
           setIsOpen(false);
+          return;
+        }
+
+        if (
+          event.key !== "Tab"
+        ) {
+          return;
+        }
+
+        const layer =
+          layerRef.current;
+
+        if (!layer) {
+          return;
+        }
+
+        const focusable =
+          Array.from(
+            layer.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          ).filter(
+            (element) =>
+              element.tabIndex >= 0 &&
+              element.getClientRects()
+                .length > 0,
+          );
+
+        if (
+          focusable.length === 0
+        ) {
+          return;
+        }
+
+        const first =
+          focusable[0];
+        const last =
+          focusable[
+            focusable.length - 1
+          ];
+
+        if (
+          event.shiftKey &&
+          document.activeElement ===
+            first
+        ) {
+          event.preventDefault();
+          last.focus();
+        } else if (
+          !event.shiftKey &&
+          document.activeElement ===
+            last
+        ) {
+          event.preventDefault();
+          first.focus();
         }
       };
+
+      const focusTimer =
+        window.setTimeout(
+          () => {
+            closeMenuButtonRef.current?.focus({
+              preventScroll: true,
+            });
+          },
+          window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches
+            ? 0
+            : isMobileMenu
+              ? 190
+              : 310,
+        );
 
       window.addEventListener(
         "keydown",
@@ -859,13 +1061,16 @@ export function SiteHeader() {
       );
 
       return () => {
+        window.clearTimeout(
+          focusTimer,
+        );
         window.removeEventListener(
           "keydown",
           handleKeyDown,
         );
       };
     },
-    [isOpen],
+    [isOpen, isMobileMenu],
   );
 
   const closeMenu = () => {
@@ -874,22 +1079,14 @@ export function SiteHeader() {
 
   const toggleSound =
     async () => {
-      const next =
-        !soundOn;
-
-      setSoundOn(next);
-
-      if (next) {
+      if (audioSnapshot.muted) {
+        audioManager.unmute();
         await audioManager.unlock();
-        audioManager.setMuted(
-          false,
-        );
+
         return;
       }
 
-      audioManager.setMuted(
-        true,
-      );
+      audioManager.mute();
     };
 
   const pillTextStyle = {
@@ -900,14 +1097,21 @@ export function SiteHeader() {
   return (
     <header
       ref={rootRef}
-      className="pointer-events-none fixed inset-x-0 top-0 z-[300]"
+      data-menu-open={
+        isOpen
+          ? "true"
+          : "false"
+      }
+      className="pointer-events-none"
     >
       <div
         data-hero-nav-vibrate
-        className="relative z-[40] flex h-[72px] items-center justify-between px-[18px] md:px-[32px]"
+        data-header-bar
+        className="fixed inset-x-0 top-0 z-[300] flex h-[63px] items-center justify-between px-[18px] md:h-[102px] md:px-[36px]"
       >
         <TransitionLink
           href="/"
+          aria-label="Trionn home"
           onClick={closeMenu}
           className="pointer-events-auto text-[#eeeeeb]"
         >
@@ -916,10 +1120,13 @@ export function SiteHeader() {
 
         <div
           ref={closedControlsRef}
+          data-closed-controls
+          inert={isOpen}
           className="pointer-events-auto ml-auto flex items-center gap-[7px]"
         >
           <SoundButton
             soundOn={soundOn}
+            playing={audioPlaying}
             onClick={toggleSound}
           />
 
@@ -934,7 +1141,7 @@ export function SiteHeader() {
                 event.currentTarget,
               );
             }}
-            className="group hidden h-[31px] items-center justify-center overflow-hidden rounded-full bg-[#f5f5f2] px-[15px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] !text-[#111] focus:outline-none md:flex"
+            className="group flex items-center justify-center overflow-hidden rounded-full bg-[#f5f5f2] font-normal uppercase !text-[#111] focus:outline-none"
           >
             <MotionText
               text="LET'S TALK"
@@ -943,6 +1150,8 @@ export function SiteHeader() {
           </TransitionLink>
 
           <button
+            ref={menuButtonRef}
+            data-header-menu-button
             type="button"
             aria-expanded={isOpen}
             aria-controls="site-navigation"
@@ -958,16 +1167,29 @@ export function SiteHeader() {
             onClick={() => {
               setIsOpen(true);
             }}
-            className="group flex h-[31px] items-center gap-[6px] rounded-full border border-white/60 bg-transparent px-[12px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] text-[#eeeeeb] transition-[background-color,border-color] duration-300 hover:border-white/85 hover:bg-white/[0.035] focus:outline-none"
+            className="group flex items-center rounded-full border border-white/60 bg-transparent font-normal uppercase text-[#eeeeeb] transition-[background-color,border-color] duration-200 hover:border-white/85 hover:bg-white/[0.035] focus:outline-none"
           >
-            <MotionText
-              text="MENU"
-              variant="pill"
-            />
-            <span className="flex w-[8px] flex-col gap-[2.5px]">
-              <span className="h-px w-full bg-current" />
-              <span className="h-px w-full bg-current" />
+            <span data-header-menu-label>
+              <MotionText
+                text="MENU"
+                variant="pill"
+              />
             </span>
+            <span
+              data-desktop-menu-icon
+              className="flex w-[8px] flex-col gap-[2.5px]"
+            >
+              <span data-menu-line="top" className="h-px w-full bg-current" />
+              <span data-menu-line="bottom" className="h-px w-full bg-current" />
+            </span>
+            <svg
+              data-mobile-menu-icon
+              aria-hidden="true"
+              viewBox="0 0 40 40"
+            >
+              <path d="M0 16H40" />
+              <path d="M0 25H40" />
+            </svg>
           </button>
         </div>
       </div>
@@ -976,11 +1198,13 @@ export function SiteHeader() {
         id="site-navigation"
         ref={layerRef}
         aria-hidden={!isOpen}
-        className="pointer-events-none fixed inset-0 z-[30] opacity-0"
+        inert={!isOpen}
+        className="pointer-events-none fixed inset-0 z-[290] opacity-0"
       >
         <button
           ref={backdropRef}
           type="button"
+          tabIndex={-1}
           aria-label="Close navigation"
           onClick={closeMenu}
           className="absolute inset-0 cursor-default bg-black/20 focus:outline-none"
@@ -988,6 +1212,10 @@ export function SiteHeader() {
 
         <aside
           ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site navigation"
+          data-menu-panel
           className="absolute bottom-[10px] right-[10px] top-[10px] w-[calc(100vw-20px)] overflow-hidden rounded-[10px] border border-black/[0.05] bg-[#f3f2ee] text-[#151515] shadow-[0_18px_70px_rgba(0,0,0,0.18)] sm:w-[min(468px,calc(100vw-20px))]"
         >
           <div
@@ -997,6 +1225,7 @@ export function SiteHeader() {
             <SoundButton
               light
               soundOn={soundOn}
+              playing={audioPlaying}
               onClick={toggleSound}
             />
 
@@ -1012,7 +1241,7 @@ export function SiteHeader() {
                   event.currentTarget,
                 );
               }}
-              className="group hidden h-[31px] items-center overflow-hidden rounded-full bg-[#0c0c0c] px-[15px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] !text-white sm:flex"
+              className="group flex items-center overflow-hidden rounded-full bg-[#0c0c0c] font-normal uppercase text-white"
             >
               <MotionText
                 text="LET'S TALK"
@@ -1021,6 +1250,8 @@ export function SiteHeader() {
             </TransitionLink>
 
             <button
+              ref={closeMenuButtonRef}
+              data-header-menu-button
               type="button"
               aria-label="Close menu"
               style={pillTextStyle}
@@ -1032,12 +1263,14 @@ export function SiteHeader() {
                 );
               }}
               onClick={closeMenu}
-              className="group flex h-[31px] items-center gap-[6px] rounded-full border border-black/70 px-[12px] text-[8.5px] font-normal uppercase leading-none tracking-[0.025em] text-[#111] transition-[background-color,border-color] duration-300 hover:border-black/90 hover:bg-black/[0.025] focus:outline-none"
+              className="group flex items-center rounded-full border border-black/70 font-normal uppercase text-[#111] transition-[background-color,border-color] duration-200 hover:border-black/90 hover:bg-black/[0.025] focus:outline-none"
             >
-              <MotionText
-                text="MENU"
-                variant="pill"
-              />
+              <span data-header-menu-label>
+                <MotionText
+                  text="MENU"
+                  variant="pill"
+                />
+              </span>
               <span className="relative block h-[9px] w-[9px]">
                 <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-current" />
                 <span className="absolute left-1/2 top-1/2 h-px w-[9px] -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-current" />
@@ -1045,7 +1278,10 @@ export function SiteHeader() {
             </button>
           </div>
 
-          <div className="flex h-full flex-col px-[24px] pb-[26px] pt-[145px] sm:px-[32px] sm:pb-[31px] sm:pt-[154px]">
+          <div
+            data-menu-content
+            className="flex h-full flex-col px-[24px] pb-[26px] pt-[145px] sm:px-[32px] sm:pb-[31px] sm:pt-[154px]"
+          >
             <nav
               aria-label="Main navigation"
               onMouseLeave={() => {
@@ -1145,9 +1381,13 @@ export function SiteHeader() {
               </span>
             </TransitionLink>
 
-            <div className="mt-auto">
+            <div
+              data-menu-footer
+              className="mt-auto"
+            >
               <div
                 data-menu-secondary
+                data-menu-enquiry
               >
                 <p className="mb-[13px] text-[10px] font-normal uppercase tracking-[0.025em] text-black/38">
                   Business enquiry
@@ -1204,6 +1444,7 @@ export function SiteHeader() {
 
               <div
                 data-menu-secondary
+                data-menu-social
                 className="mt-[42px]"
               >
                 <p className="mb-[12px] text-[9.5px] font-normal uppercase tracking-[0.025em] text-black/36">
@@ -1236,6 +1477,33 @@ export function SiteHeader() {
                     ),
                   )}
                 </div>
+              </div>
+            </div>
+
+            <div
+              data-menu-secondary
+              data-menu-stat
+              className="hidden"
+            >
+              <div className="flex flex-col items-center justify-center border-r border-white/20">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 28 18"
+                  className="mb-[5px] h-[16px] w-[25px]"
+                  fill="none"
+                >
+                  <ellipse cx="14" cy="9" rx="11" ry="7" stroke="currentColor" />
+                  <ellipse cx="14" cy="9" rx="5" ry="7" stroke="currentColor" />
+                  <path d="M3 9H25" stroke="currentColor" />
+                </svg>
+                <span>Est. 2012</span>
+              </div>
+              <div className="flex items-center px-[12px]">
+                <span>
+                  14+ years shaping
+                  <br />
+                  digital direction.
+                </span>
               </div>
             </div>
           </div>

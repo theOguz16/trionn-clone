@@ -2,11 +2,6 @@ import type {
   Metadata,
 } from "next";
 
-import {
-  Familjen_Grotesk,
-  Martian_Mono,
-} from "next/font/google";
-
 import type {
   ReactNode,
 } from "react";
@@ -23,30 +18,19 @@ import {
 } from "@/components/layout/SiteHeader";
 
 import {
+  InitialPreloader,
+} from "@/components/layout/InitialPreloader";
+
+import {
   PageTransitionProvider,
 } from "@/runtime/transition/PageTransitionProvider";
 
-const displayFont =
-  Familjen_Grotesk({
-    subsets: [
-      "latin",
-    ],
-    variable:
-      "--font-trionn-display",
-    display:
-      "swap",
-  });
-
-const monoFont =
-  Martian_Mono({
-    subsets: [
-      "latin",
-    ],
-    variable:
-      "--font-trionn-mono",
-    display:
-      "swap",
-  });
+import {
+  trionnBodyFont,
+  trionnDisplayFont,
+  trionnEditorialFont,
+  trionnMonoFont,
+} from "./fonts";
 
 export const metadata:
   Metadata = {
@@ -73,18 +57,28 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${displayFont.variable} ${monoFont.variable}`}
+      className={`${trionnDisplayFont.variable} ${trionnBodyFont.variable} ${trionnMonoFont.variable} ${trionnEditorialFont.variable}`}
     >
+      <head>
+        <link
+          rel="preload"
+          href="/models/trionn-test-model.optimized.glb"
+          as="fetch"
+          crossOrigin="anonymous"
+          fetchPriority="high"
+        />
+      </head>
+
       <body>
         <AppRuntime>
           <PageTransitionProvider>
             <SiteHeader />
 
-            <main>
-              {children}
-            </main>
+            {children}
           </PageTransitionProvider>
         </AppRuntime>
+
+        <InitialPreloader />
       </body>
     </html>
   );

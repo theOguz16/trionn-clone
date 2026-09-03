@@ -1,0 +1,22 @@
+<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .wave{stroke:#8a8a8a;stroke-width:.5;stroke-linecap:round;fill:none}
+    .l1{animation:w1 3s ease-in-out infinite}.l2{animation:w2 3s ease-in-out infinite}
+    .l3{animation:w3 3s ease-in-out infinite}.l4{animation:w4 3s ease-in-out infinite}
+    @keyframes w1{0%,100%{d:path("M0 4 Q6 1 12 4 T24 4")}50%{d:path("M0 4 Q6 8 12 4 T24 4")}}
+    @keyframes w2{0%,100%{d:path("M0 8 Q6 4 12 8 T24 8")}50%{d:path("M0 8 Q6 12 12 8 T24 8")}}
+    @keyframes w3{0%,100%{d:path("M0 13 Q6 9 12 13 T24 13")}50%{d:path("M0 13 Q6 17 12 13 T24 13")}}
+    @keyframes w4{0%,100%{d:path("M0 18 Q6 14 12 18 T24 18")}50%{d:path("M0 18 Q6 22 12 18 T24 18")}}
+    .note{transform-origin:center;animation:float 2.5s ease-in-out infinite}
+    .noteWrap{transform-origin:12px 12px;animation:pulse 2.2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(.5)}50%{transform:scale(.7)}}
+    @keyframes float{50%{transform:translateY(-1px)}}
+  </style>
+  <path class="wave l1" d="M0 4 Q6 1 12 4 T24 4"/>
+  <path class="wave l2" d="M0 8 Q6 4 12 8 T24 8"/>
+  <path class="wave l3" d="M0 13 Q6 9 12 13 T24 13"/>
+  <path class="wave l4" d="M0 18 Q6 14 12 18 T24 18"/>
+  <g class="noteWrap" transform="translate(3.15 2.65) scale(0.76)">
+    <path class="note" d="M19.6252 14.4871C20.2852 9.72015 17.4937 7.60401 13.9011 7.04831C13.9695 11.5464 14.1152 16.8285 14.0423 19.7797C13.9858 22.1091 11.8499 24 9.14617 24C6.44242 24 4.25 22.1106 4.25 19.7797C4.25 17.4488 6.44242 15.5594 9.14617 15.5594C11.8499 15.5594 11.6715 16.2368 12.1457 16.7985C12.0803 11.0013 11.9926 4.7189 11.9495 1.50338C11.9331 0.297372 12.3018 0 12.7834 0C13.5355 0 13.5607 0.868085 13.7971 1.27209C14.4154 2.41802 15.6491 2.51564 16.9319 3.01877C19.0069 3.83279 20.6419 5.87384 21.1002 8.56338C21.4535 10.6337 20.9882 12.7189 19.6252 14.4871Z" fill="white"/>
+  </g>
+</svg>

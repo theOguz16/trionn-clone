@@ -780,20 +780,20 @@ export class HeroModel {
        * mostly along a flat radial direction. That read as a diagrammatic
        * separation rather than an explosion.
        *
-       * Drive scroll through the SAME blastDir used by Hold-to-Blast. A
-       * small radial term keeps the silhouette coherent, while 4.45 units
-       * gives a genuine all-parts blast without throwing the temporary GLB
-       * so far away that the About composition becomes unreadable.
+       * Drive scroll through the SAME blastDir used by Hold-to-Blast. The
+       * narrative camera pulls back during this phase, so a restrained
+       * world-space distance keeps the exploded silhouette inside the same
+       * visual field as the reference instead of filling every edge.
        */
       const narrativeDistance =
         scrollAmt *
         state.scrollScale *
-        4.45;
+        3.05;
 
       const narrativeRadialDistance =
         scrollAmt *
         state.scrollScale *
-        0.34;
+        0.22;
 
       const blastDistance =
         blastLocal *
