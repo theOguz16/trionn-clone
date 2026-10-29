@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Interactive Agency Website — Frontend Study
 
-## Getting Started
+An **unofficial frontend implementation / visual engineering study** exploring complex motion, 3D scenes and interaction patterns in a modern agency website.
 
-First, run the development server:
+This repository is an independent study of a reference experience, **not the official TRIONN website** and not affiliated with the reference brand.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+## Engineering focus
+
+- Interactive page sections and scroll-based motion
+- Three.js scenes and 3D visual elements
+- GSAP animation orchestration and transitions
+- Smooth scrolling with Lenis
+- Component-oriented implementation in Next.js / React
+- Visual comparison tooling for UI regression and reference alignment
+
+## Stack
+
+- **Framework:** Next.js 16, React 19, TypeScript
+- **Motion & graphics:** GSAP, @gsap/react, Three.js, Lenis
+- **Styling:** Tailwind CSS 4
+- **Validation:** ESLint, Node.js tests, Playwright-based visual comparison tooling
+
+## Run locally
+
+Requirements: a recent Node.js version and pnpm 10.x.
+
+\`\`\`bash
+pnpm install
 pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Quality checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+\`\`\`bash
+pnpm lint
+pnpm build
+pnpm test:visual-compare
+\`\`\`
 
-## Learn More
+Visual comparison commands may need additional browser or reference-image setup; see [visual comparison documentation](docs/visual-comparison.md).
 
-To learn more about Next.js, take a look at the following resources:
+## Code organization
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- \`src/app/\`: Next.js App Router entry points
+- \`src/features/\`: feature-oriented home page sections (hero, services, work, motion, footer)
+- \`scripts/\`: visual comparison utilities and tests
+- \`docs/\`: reference inventories and comparison notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scope and limitations
 
-## Deploy on Vercel
+This is a frontend engineering and interaction study, not a production service or an official company website. Visual similarities to the referenced website are for analysis and learning; third-party names, designs and assets remain the property of their respective owners.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The repository demonstrates implementation techniques rather than a claim of original ownership of the reference design.
