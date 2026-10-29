@@ -24,29 +24,29 @@ This repository is an independent study of a reference experience, **not the off
 
 Requirements: a recent Node.js version and pnpm 10.x.
 
-\`\`\`bash
+```bash
 pnpm install
 pnpm dev
-\`\`\`
+```
 
 Open http://localhost:3000
 
 ### Quality checks
 
-\`\`\`bash
+```bash
 pnpm lint
 pnpm build
 pnpm test:visual-compare
-\`\`\`
+```
 
 Visual comparison commands may need additional browser or reference-image setup; see [visual comparison documentation](docs/visual-comparison.md).
 
 ## Code organization
 
-- \`src/app/\`: Next.js App Router entry points
-- \`src/features/\`: feature-oriented home page sections (hero, services, work, motion, footer)
-- \`scripts/\`: visual comparison utilities and tests
-- \`docs/\`: reference inventories and comparison notes
+- `src/app/`: Next.js App Router entry points
+- `src/features/`: feature-oriented home page sections (hero, services, work, motion, footer)
+- `scripts/`: visual comparison utilities and tests
+- `docs/`: reference inventories and comparison notes
 
 ## Scope and limitations
 
